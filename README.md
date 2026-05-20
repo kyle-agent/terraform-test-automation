@@ -1,0 +1,127 @@
+# terraform-provider-samsungcloudplatformv2 회귀 테스트 자동화
+
+`terraform-provider-samsungcloudplatformv2`에 보고된 사용자 영향 결함이 회귀하지 않도록 검증하는 자동 회귀 테스트 시스템.
+
+각 테스트는 보고 이슈(Chapter 1~7 + Deep Audit)와 1:1 또는 1:다로 매핑되며, 픽스가 머지된 뒤에도 회귀가 발생하면 자동으로 GitHub 이슈를 다시 열도록 설계되어 있다.
+
+---
+
+## 구성요소
+
+| 구성 | 역할 |
+|---|---|
+| `tests/` | Go 기반 회귀 테스트 (chapter별 디렉터리) |
+| `scenarios/` | 각 테스트가 사용하는 `.tf` 픽스처 |
+| `tests/common/` | 공통 helper (Terraform CLI 래퍼, 진단 파서, 리포터) |
+| `.github/workflows/` | 정기/PR 트리거 CI |
+| `scripts/` | 로컬·CI에서 쓰는 실행 스크립트 |
+| `config/` | 환경별 정책(드라이런/통합 모드, 리전 등) |
+| `docs/` | 아키텍처 · 테스트 카탈로그 · 새 테스트 추가 가이드 |
+
+---
+
+## 실행 모드
+
+| 모드 | 환경변수 | 설명 |
+|---|---|---|
+| **dry-run** (기본, 안전) | `MODE=dry-run` | `terraform plan` 만 실행. 실제 자원 생성 없음. 스키마 결함·플랜 회귀만 검증. |
+| **integration** | `MODE=integration` | `terraform apply` 까지 실제 실행. SCP 계정 자격증명 필요. 자원 생성·재실행·정리. |
+| **canary** | `MODE=canary` | integration 중 최소 자원으로 빠르게 (옵션) |
+
+자격증명 (integration 모드):
+
+```bash
+export SCP_TF_ACCESS_KEY=...
+export SCP_TF_SECRET_KEY=...
+export SCP_TF_AUTH_URL=https://iam.s.samsungsdscloud.com/v1
+export SCP_DEFAULT_REGION=kr-west1
+export SCP_ACCOUNT_ID=...
+```
+
+---
+
+## 빠른 시작
+
+```bash
+# 1) 도구 준비 (Go 1.22+, terraform 1.6+ 필요)
+make tools
+
+# 2) dry-run 전체 회귀
+make test
+
+# 3) 특정 챕터만
+make test-chapter CH=chapter1_core
+
+# 4) 단일 테스트
+make test-one TEST=TestIssue02_SecurityGroupRule_IdReplace_Regression
+
+# 5) integration 모드 (실 자원 생성)
+MODE=integration make test
+```
+
+---
+
+## 테스트 카탈로그 (요약)
+
+자세한 목록은 `docs/test-catalog.md` 참고.
+
+| Chapter | 테스트 ID | 검증 대상 |
+|---|---|---|
+| 1 | `TestIssue02_SecurityGroupRule_IdReplace_Regression` | id RequiresReplace 회귀 |
+| 1 | `TestIssue03_DB_Update_HandlerMissing_Diff` | DB Update 핸들러 누락 diff |
+| 1 | `TestIssue04_SKE_AdvancedSettings_RequiredOnRerun` | SKE nodepool 재실행 실패 |
+| 1 | `TestIssue05_SecurityGroupRule_Panic_OnUpdate` | panic("implement me") 회귀 |
+| 1 | `TestIssue06_ImportState_Coverage` | ImportState 미지원 |
+| 2 | `TestIssue07_RequiredDefaults_DBPort` | DB Port Required 회귀 |
+| 2 | `TestIssue08_LbListener_UpdateNoActiveWait` | 라우팅 부분 실패 |
+| 2 | `TestIssue08D_LbListener_InsertClientIp_IsSetMisuse` | bool 변환 오류 |
+| 2 | `TestIssue10_LbListener_Protocol_104` | 프로토콜 검증 오류 |
+| 3 | `TestIssue11_Configure_HttpTimeout_CommentedOut` | client.go:234 |
+| 3 | `TestIssue12_ServiceCheck_StallOnSlowEndpoint` | 헬스체크 stall |
+| 3 | `TestIssue13_GetEndpointList_NoRetry` | IAM 재시도 |
+| 4 | `TestIssue14_EventStreams_AllowableIpList_OrderDiff` | List 순서 diff |
+| 4 | `TestIssue15_EventStreams_NestedList_Order` | nested list 순서 |
+| 4 | `TestIssue16_EventStreams_PartialCreate_Orphan` | Create 부분 실패 orphan |
+| 5 | `TestIssue17_FileStorage_ExternalRule_Deleted` | K8s Auto Scaling 호환 |
+| 6 | `TestIssue19_Backend_Keyless_Documented` | 가이드 존재 검증 |
+| Deep | `TestD01_SliceIndex_Panic_Multi` | 빈 리스트 인덱싱 |
+| Deep | `TestD03_LbMember_StateBeforeWait` | wait 전 state.Set |
+| Deep | `TestD09_NotFound_StringMatching` | 404 문자열 매칭 |
+| ... | ... | ... |
+
+---
+
+## 결과 리포팅
+
+테스트 종료 시:
+
+1. JUnit XML → `out/junit.xml` (CI에 노출)
+2. JSON 결과 → `out/results.json` (커스텀 리포터 입력)
+3. **회귀 발견 시**: `scripts/publish_report.sh` 가 `terraform-provider-samsungcloudplatformv2` 리포지토리의 해당 sub-issue를 자동으로 다시 open 하고 회귀 로그를 첨부 (GH_TOKEN 필요)
+4. 일일 리포트는 README 배지 + 별도 Confluence 페이지로 발행 (옵션)
+
+---
+
+## CI 트리거
+
+- **PR**: dry-run 전체 실행. 회귀 발견 시 PR check fail.
+- **main 머지 후 nightly 02:00 KST**: integration 모드 전체 실행.
+- **수동 실행**: `workflow_dispatch` (특정 chapter 지정 가능)
+
+---
+
+## 새 테스트 추가
+
+`docs/adding-tests.md` 참고. 요지:
+
+1. `scenarios/<scenario_name>/` 에 `.tf` 픽스처 작성
+2. `tests/<chapter>/issueNN_..._test.go` 에 테스트 함수 작성
+3. `tests/common/` helper 활용 (`RunPlan`, `RunApply`, `AssertNoChanges`, `AssertReplacementCount` 등)
+4. `docs/test-catalog.md` 에 한 줄 추가
+5. PR 생성 → CI green 확인 → 머지
+
+---
+
+## 라이선스
+
+내부 사용. 외부 공개 전 검토 필요.
