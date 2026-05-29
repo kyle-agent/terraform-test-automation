@@ -1,0 +1,145 @@
+name: Dynamic Regression
+
+# A self-discovering regression pipeline:
+#   discover  -> builds the test matrix from tests/* and scenarios/* at run time
+#   regression-> fans out one job per chapter (dynamic matrix), N iterations each
+#   aggregate -> fans in all shards, posts a summary, reopens regressed issues
+#
+# Adding a tests/<chapter>/ package or a scenarios/<name>/ dir requires no edit
+# to this file — the next run picks it up automatically.
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Test mode'
+        type: choice
+        options: [dry-run, integration, canary]
+        default: dry-run
+      iterations:
+        description: 'Repeat each chapter N times (flaky/regression shake-out)'
+        default: '1'
+      chapter:
+        description: 'Restrict to a single chapter (blank = all, discovered dynamically)'
+        required: false
+        default: ''
+      coverage_min:
+        description: 'Fail if resource coverage drops below this percent (blank = report only)'
+        required: false
+        default: ''
+  schedule:
+    - cron: '0 18 * * *'   # 03:00 KST — after the existing nightly integration
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+      - id: set
+        name: Build dynamic matrix
+        run: |
+          chapter='${{ github.event.inputs.chapter }}'
+          full="$(scripts/discover.sh chapters)"
+          if [ -n "$chapter" ]; then
+            # Narrow the discovered matrix to the requested chapter.
+            full="$(echo "$full" | jq -c --arg c "$chapter" '{include: [.include[] | select(.chapter==$c)]}')"
+          fi
+          echo "matrix=$full" >> "$GITHUB_OUTPUT"
+          echo "Discovered matrix: $full"
+          scripts/discover.sh list
+
+  regression:
+    needs: discover
+    runs-on: ubuntu-latest
+    # Integration touches real cloud resources, so it needs the protected env.
+    environment: ${{ (github.event.inputs.mode == 'integration' || github.event.inputs.mode == 'canary') && 'scp-integration' || '' }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.discover.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.6.6'
+          terraform_wrapper: false
+      - name: Run chapter ${{ matrix.chapter }} (${{ matrix.tests }} tests)
+        env:
+          MODE: ${{ github.event.inputs.mode || 'dry-run' }}
+          ITERATIONS: ${{ github.event.inputs.iterations || '1' }}
+          COVERAGE_MIN: ${{ github.event.inputs.coverage_min }}
+          OUTPUT_DIR: ${{ github.workspace }}/out/${{ matrix.chapter }}
+          # Integration secrets — unused/empty in dry-run.
+          SCP_TF_ACCESS_KEY: ${{ secrets.SCP_TF_ACCESS_KEY }}
+          SCP_TF_SECRET_KEY: ${{ secrets.SCP_TF_SECRET_KEY }}
+          SCP_TF_AUTH_URL:   ${{ secrets.SCP_TF_AUTH_URL }}
+          SCP_DEFAULT_REGION: ${{ secrets.SCP_DEFAULT_REGION }}
+          # Provider reads SCP_TF_DEFAULT_REGION per the registry docs; export
+          # both from the same secret so either provider behavior works.
+          SCP_TF_DEFAULT_REGION: ${{ secrets.SCP_DEFAULT_REGION }}
+          SCP_ACCOUNT_ID:     ${{ secrets.SCP_ACCOUNT_ID }}
+          TEST_VPC_ID:            ${{ secrets.TEST_VPC_ID }}
+          TEST_SUBNET_ID:         ${{ secrets.TEST_SUBNET_ID }}
+          TEST_SECURITY_GROUP_ID: ${{ secrets.TEST_SECURITY_GROUP_ID }}
+          TEST_DBAAS_ENGINE_VERSION_ID: ${{ secrets.TEST_DBAAS_ENGINE_VERSION_ID }}
+          TEST_SERVER_TYPE_NAME:        ${{ secrets.TEST_SERVER_TYPE_NAME }}
+          TEST_GPUNODE_ID:              ${{ secrets.TEST_GPUNODE_ID }}
+        run: |
+          mkdir -p "$OUTPUT_DIR"
+          for i in $(seq 1 "${ITERATIONS}"); do
+            echo "::group::${{ matrix.chapter }} iteration $i/${ITERATIONS}"
+            go test "${{ matrix.package }}" -v -count=1 -timeout 60m \
+              -json > "$OUTPUT_DIR/gotest.iter${i}.jsonl" 2>&1 || true
+            cat "$OUTPUT_DIR/gotest.iter${i}.jsonl"
+            echo "::endgroup::"
+          done
+      - name: Upload shard results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-${{ matrix.chapter }}
+          path: out/${{ matrix.chapter }}/
+
+  aggregate:
+    needs: regression
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download all shard results
+        uses: actions/download-artifact@v4
+        with:
+          path: out
+          pattern: results-*
+      - name: Merge + summarize
+        id: merge
+        run: |
+          # download-artifact nests each artifact under out/results-<chapter>/;
+          # merge_results.sh discovers every results.json beneath out/.
+          scripts/merge_results.sh out
+      - name: Upload merged report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: regression-report
+          path: |
+            out/results.json
+            out/junit.xml
+            out/**/coverage.md
+      - name: Re-open regressed issues
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.PROVIDER_REPO_GH_TOKEN }}
+        run: scripts/publish_report.sh out/results.json

@@ -25,6 +25,9 @@ jobs:
           SCP_TF_SECRET_KEY: ${{ secrets.SCP_TF_SECRET_KEY }}
           SCP_TF_AUTH_URL:   ${{ secrets.SCP_TF_AUTH_URL }}
           SCP_DEFAULT_REGION: ${{ secrets.SCP_DEFAULT_REGION }}
+          # Provider reads SCP_TF_DEFAULT_REGION per the registry docs; export
+          # both from the same secret so either provider behavior works.
+          SCP_TF_DEFAULT_REGION: ${{ secrets.SCP_DEFAULT_REGION }}
           SCP_ACCOUNT_ID:     ${{ secrets.SCP_ACCOUNT_ID }}
         run: make test MODE=integration
       - name: Upload results

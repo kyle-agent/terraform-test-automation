@@ -10,6 +10,12 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
+# regr:no-validate
+# This fixture is intentionally partial: the resource block omits required
+# arguments (filled via TF_VAR_* / imported state in the integration variant),
+# so `terraform validate` would correctly reject it with "Missing required
+# argument". The schema sweep (tests/schema) skips it via the marker above.
+#
 # Empty placeholder used by Chapter 1 #6 import smoke.
 # The test runs `terraform import <addr> <id>` against this dir; the resource
 # block itself is not strictly required for `import` to invoke the provider's
