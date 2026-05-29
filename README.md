@@ -38,7 +38,8 @@
 export SCP_TF_ACCESS_KEY=...
 export SCP_TF_SECRET_KEY=...
 export SCP_TF_AUTH_URL=https://iam.s.samsungsdscloud.com/v1
-export SCP_DEFAULT_REGION=kr-west1
+export SCP_TF_DEFAULT_REGION=kr-west1      # provider가 읽는 공식 이름
+export SCP_DEFAULT_REGION=kr-west1         # 구 관례 alias (동일 값 유지)
 export SCP_ACCOUNT_ID=...
 ```
 
