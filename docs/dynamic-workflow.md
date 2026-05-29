@@ -106,7 +106,7 @@ make coverage     # out/coverage.{json,md}
 1. 시나리오가 카탈로그에 없는 리소스를 참조 → 오타이거나 카탈로그 재동기화 필요.
 2. `COVERAGE_MIN` 설정 시 커버리지가 그 % 미만이면 실패 (점진적 ratchet 용).
 
-`out/coverage.md` 의 *Uncovered* 목록이 곧 "아직 회귀 시나리오가 없는 리소스" 백로그다. 오늘 기준 3/87.
+`out/coverage.md` 의 *Uncovered* 목록이 곧 "아직 회귀 시나리오가 없는 리소스" 백로그다. 오늘 기준 9/87 (10.3%).
 
 ### 카탈로그 갱신
 

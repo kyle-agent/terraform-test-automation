@@ -27,6 +27,12 @@ PR 형태로 새 fix가 들어오면 이 표에 한 줄을 추가하고, `tests/
 | 9-A~D | Target Type IP 미지원 | `TestIssue09_LbMember_TargetTypeIP` | TODO |
 | 10-A~D | L7 protocol 104 | `TestIssue10_LbListener_Protocol_104` | TODO |
 
+또한 LB 패밀리 전반의 생성+재플랜 멱등성 가드:
+
+| 테스트 | 검증 | 상태 |
+|---|---|---|
+| `TestLoadBalancer_Create_Idempotent` | loadbalancer 생성 후 재플랜 시 spurious diff/replace 없음 | 작성됨 |
+
 ## Chapter 3 — Provider Configure ([#13](https://github.com/kyle-agent/terraform-provider-samsungcloudplatformv2/issues/13))
 
 | Sub | 결함 | 테스트 | 상태 |
@@ -72,6 +78,20 @@ PR 형태로 새 fix가 들어오면 이 표에 한 줄을 추가하고, `tests/
 | 테스트 | 검증 | 상태 |
 |---|---|---|
 | `TestCoverage_ResourceSurface` | 알 수 없는 리소스 참조 차단 + (선택) `COVERAGE_MIN` 하한 | 작성됨 |
+| `TestScenarios_ValidateAll` (`tests/schema`) | 모든 시나리오를 `terraform validate` (dry-run, 자격증명 불필요) — provider 스키마 회귀 감지 | 작성됨 |
+
+### 리소스 멱등성 커버리지 (dry-run 스키마 + integration 멱등성)
+
+provider 리소스 표면을 넓히기 위해 추가한 시나리오/테스트. dry-run에서는 위 `TestScenarios_ValidateAll` 가 스키마를 검증하고, integration에서는 각 테스트가 생성→재플랜 멱등성을 확인한다.
+
+| Chapter | 테스트 | 리소스 |
+|---|---|---|
+| `chapter_vpc` | `TestVpc_Vpc_Idempotent` | `vpc_vpc` |
+| `chapter_vpc` | `TestVpc_Subnet_Idempotent` | `vpc_subnet` |
+| `chapter_vpc` | `TestVpc_PublicIp_Idempotent` | `vpc_publicip` |
+| `chapter_compute` | `TestSecurityGroup_Idempotent` | `security_group_security_group` |
+| `chapter_compute` | `TestVirtualServerKeypair_Idempotent` | `virtualserver_keypair` |
+| `chapter2_loadbalancer` | `TestLoadBalancer_Create_Idempotent` | `loadbalancer_loadbalancer` |
 
 ## Deep Audit ([#18](https://github.com/kyle-agent/terraform-provider-samsungcloudplatformv2/issues/18))
 
