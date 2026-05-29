@@ -12,11 +12,15 @@
 |---|---|
 | `tests/` | Go 기반 회귀 테스트 (chapter별 디렉터리) |
 | `scenarios/` | 각 테스트가 사용하는 `.tf` 픽스처 |
-| `tests/common/` | 공통 helper (Terraform CLI 래퍼, 진단 파서, 리포터) |
-| `.github/workflows/` | 정기/PR 트리거 CI |
-| `scripts/` | 로컬·CI에서 쓰는 실행 스크립트 |
-| `config/` | 환경별 정책(드라이런/통합 모드, 리전 등) |
-| `docs/` | 아키텍처 · 테스트 카탈로그 · 새 테스트 추가 가이드 |
+| `tests/common/` | 공통 helper (Terraform CLI 래퍼, 진단 파서, 리포터, 동적 발견) |
+| `tests/coverage/` | provider 리소스 표면 대비 시나리오 커버리지 회귀 가드 |
+| `.github/workflows/` | 정기/PR 트리거 CI + **동적 회귀 파이프라인** |
+| `scripts/` | 로컬·CI에서 쓰는 실행 스크립트 (발견·취합·반복 루프) |
+| `config/` | 환경별 정책(드라이런/통합 모드, 리전 등) + provider 리소스 카탈로그 |
+| `docs/` | 아키텍처 · 테스트 카탈로그 · 동적 워크플로우 · 새 테스트 추가 가이드 |
+
+> SCP provider(`SamsungSDSCloud/samsungcloudplatformv2`, 현재 87개 리소스)를 **동적으로 발견·팬아웃·반복 실행**하는
+> 파이프라인은 `docs/dynamic-workflow.md` 참고. 핵심: 챕터/시나리오/리소스를 워크플로우 수정 없이 자동 추적.
 
 ---
 
@@ -57,6 +61,15 @@ make test-one TEST=TestIssue02_SecurityGroupRule_IdReplace_Regression
 
 # 5) integration 모드 (실 자원 생성)
 MODE=integration make test
+
+# 6) 동적 발견 — 무엇이 테스트되는지 확인
+make discover
+
+# 7) 리소스 커버리지 (provider 87개 리소스 대비)
+make coverage
+
+# 8) 반복 회귀 (flaky ↔ 회귀 분류)
+make loop ITER=5
 ```
 
 ---
@@ -104,9 +117,14 @@ MODE=integration make test
 
 ## CI 트리거
 
-- **PR**: dry-run 전체 실행. 회귀 발견 시 PR check fail.
-- **main 머지 후 nightly 02:00 KST**: integration 모드 전체 실행.
+- **PR**: dry-run 전체 실행. 회귀 발견 시 PR check fail. (`regression.yml`)
+- **main 머지 후 nightly 02:00 KST**: integration 모드 전체 실행. (`nightly.yml`)
+- **동적 회귀 03:00 KST / 수동**: `dynamic-regression.yml` — 챕터를 동적 matrix로 팬아웃,
+  `iterations`회 반복, 결과 취합 + 회귀 이슈 재오픈. `workflow_dispatch` 입력으로
+  `mode` / `iterations` / `chapter` / `coverage_min` 지정 가능.
 - **수동 실행**: `workflow_dispatch` (특정 chapter 지정 가능)
+
+자세한 내용은 `docs/dynamic-workflow.md`.
 
 ---
 

@@ -65,6 +65,14 @@ PR 형태로 새 fix가 들어오면 이 표에 한 줄을 추가하고, `tests/
 | 22-C | 스텁 description lint | `TestIssue22_Docs_StubDescription_Count` | TODO |
 | 23-C | example 커버리지 ≥ 80% | `TestIssue23_Docs_ExampleCoverage` | TODO |
 
+## Coverage (동적 — provider 리소스 표면 추적)
+
+`tests/coverage` 는 이슈 1:1 매핑이 아니라 **provider 리소스 표면 전체**(`config/scp_resources.json`, 현재 87개)와 `scenarios/` 가 실제 선언한 리소스를 교차검증하는 동적 가드다. *Uncovered* 목록이 곧 회귀 시나리오 백로그. 자세한 내용은 `docs/dynamic-workflow.md`.
+
+| 테스트 | 검증 | 상태 |
+|---|---|---|
+| `TestCoverage_ResourceSurface` | 알 수 없는 리소스 참조 차단 + (선택) `COVERAGE_MIN` 하한 | 작성됨 |
+
 ## Deep Audit ([#18](https://github.com/kyle-agent/terraform-provider-samsungcloudplatformv2/issues/18))
 
 | Sub | 결함 | 테스트 | 상태 |
