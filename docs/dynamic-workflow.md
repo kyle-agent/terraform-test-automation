@@ -117,7 +117,19 @@ make coverage     # out/coverage.{json,md}
 1. 시나리오가 카탈로그에 없는 리소스를 참조 → 오타이거나 카탈로그 재동기화 필요.
 2. `COVERAGE_MIN` 설정 시 커버리지가 그 % 미만이면 실패 (점진적 ratchet 용).
 
-`out/coverage.md` 의 *Uncovered* 목록이 곧 "아직 회귀 시나리오가 없는 리소스" 백로그다. 오늘 기준 9/87 (10.3%).
+`out/coverage.md` 의 *Uncovered* 목록이 곧 "아직 회귀 시나리오가 없는 리소스" 백로그다. 오늘 기준 70/87 (80.5%).
+
+### 시나리오 자동 생성 (scripts/gen_scenarios.py)
+
+provider 스키마 덤프(`terraform providers schema -json`)를 읽어, 아직 커버되지 않은 리소스에 대해
+**최소 스키마-유효 시나리오를 생성하고 실제 `terraform validate`로 검증한 뒤 통과한 것만** 남긴다.
+필수 중첩 블록은 재귀적으로 채우고, enum 검증은 validate 오류("must be one of ...")에서 허용값을
+학습해 재시도한다. 그래도 통과 못 하는 리소스(교차필드·정규식 검증 등)는 자동 제외 — 깨진 픽스처는
+절대 커밋되지 않는다. 생성물은 `# AUTO-GENERATED` 주석이 달린 스키마 존재/회귀 가드 픽스처로,
+손으로 만든 integration 시나리오와 구분된다(필요 시 integration 단언을 덧붙여 승격).
+
+레지스트리가 막힌 환경에서는 provider mirror(`TF_CLI_CONFIG_FILE`)가 필요하다. CI에는 생성
+스크립트가 아니라 **검증을 통과한 시나리오 산출물**만 커밋된다.
 
 ### 카탈로그 갱신
 

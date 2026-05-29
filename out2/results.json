@@ -1,0 +1,13 @@
+[
+  {
+    "test": "TestScenarios_ValidateAll",
+    "chapter": "schema",
+    "issue_ref": "kyle-agent/terraform-test-automation (dynamic schema validate)",
+    "severity": "high",
+    "status": "pass",
+    "mode": "dry-run",
+    "started_at": "2026-05-29T08:51:23.399770358Z",
+    "duration_ms": 57138,
+    "summary": "every scenario must match the provider schema (terraform validate)"
+  }
+]
