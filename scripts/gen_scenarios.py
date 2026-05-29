@@ -57,9 +57,13 @@ def scalar(name, t, overrides):
             return '{ tf = "terraform" }'
         if kind in ("list", "set"):
             if t[1] == "string":
-                if re.search(r"ip|cidr|address", name):
+                if re.search(r"ip|cidr|address|subnet", name):
                     return '["10.0.0.0/24"]'
                 return '["regr"]'
+            if t[1] == "number":
+                return "[1]"
+            if t[1] == "bool":
+                return "[false]"
             return None
         return None
     if t == "string":
@@ -71,6 +75,9 @@ def scalar(name, t, overrides):
             return '"10.0.0.0/24"'
         if re.search(r"ip|address", name):
             return '"10.0.0.10"'
+        # Fields with complexity validators (length + upper + digit + special).
+        if "password" in name:
+            return '"Regr1234!@"'
         return '"regr"'
     return None
 
@@ -114,28 +121,48 @@ def gen(rtype, attrs, overrides):
     return f'{HDR}\nresource "{rtype}" "regr" {{\n' + "\n".join(lines) + "\n}\n"
 
 ENUM_RE = re.compile(r'must be one of[:\s]+\[([^\]]+)\]', re.I)
-ATTR_RE = re.compile(r'Attribute\s+"?([a-z0-9_]+)"?', re.I)
+# Some validators phrase it as "must be one of (NFS, CIFS)" with parens.
+ENUM_PAREN_RE = re.compile(r'must be one of\s*\(([^)]+)\)', re.I)
+# Exact-value rule, e.g. `Value must be "true"`.
+EXACT_RE = re.compile(r'must be\s+"([^"]+)"', re.I)
+# The attribute may be a nested path: "Attribute firewall_rule_create.service[0].service_type value ..."
+ATTR_RE = re.compile(r'Attribute\s+([A-Za-z0-9_.\[\]]+)', re.I)
 
 def learn_enums(diags, overrides):
-    """Update overrides from OneOf validator errors. Returns True if learned."""
+    """Update overrides from OneOf validator errors. Returns True if learned.
+
+    Handles both `[ "A" "B" ]` and `(A, B)` enum phrasings, and resolves the
+    attribute to its *leaf* name even when the diagnostic reports a nested path
+    like `firewall_rule_create.service[0].service_type`. Overrides are keyed by
+    leaf name, so a nested attribute and a top-level one of the same name share
+    the learned value — acceptable for these minimal fixtures."""
     learned = False
     for d in diags:
-        text = (d.get("summary", "") + " " + d.get("detail", ""))
+        # Use the detail only for attribute resolution: the summary is the
+        # generic "Invalid Attribute Value Match", whose word "Attribute" would
+        # otherwise be mis-parsed as the attribute name ("Value").
+        text = d.get("detail", "") or d.get("summary", "")
         m = ENUM_RE.search(text)
-        if not m:
+        if m:
+            vals = re.findall(r'"([^"]+)"', m.group(1)) or \
+                   [x.strip() for x in m.group(1).split() if x.strip()]
+        elif ENUM_PAREN_RE.search(text):
+            m = ENUM_PAREN_RE.search(text)
+            vals = [x.strip().strip('"') for x in m.group(1).split(",") if x.strip()]
+        elif EXACT_RE.search(text) and "one of" not in text.lower():
+            vals = [EXACT_RE.search(text).group(1)]
+        else:
             continue
-        vals = re.findall(r'"([^"]+)"', m.group(1)) or \
-               [x.strip() for x in m.group(1).split() if x.strip()]
         if not vals:
             continue
-        # attribute name: prefer the diagnostic address tail, else "Attribute X"
+        # leaf attribute name: strip nested path + list indices.
         attr = None
         am = ATTR_RE.search(text)
         if am:
-            attr = am.group(1)
+            attr = re.sub(r'\[\d+\]', '', am.group(1)).split(".")[-1]
         elif d.get("address"):
             attr = d["address"].split(".")[-1]
-        if attr and attr not in overrides:
+        if attr and overrides.get(attr) != vals[0]:
             overrides[attr] = vals[0]
             learned = True
     return learned
