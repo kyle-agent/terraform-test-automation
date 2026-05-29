@@ -31,20 +31,19 @@ func TestIssue14_EventStreams_AllowableIpList_OrderDiff(t *testing.T) {
 
 	common.SkipUnlessIntegration(t, "creates a real eventstreams cluster")
 
+	// Provider schema (v3.x) dropped security_group_id / vpc_id from this
+	// resource; subnet_id is the only externally-supplied id the fixture needs.
 	for _, k := range []string{
-		"TEST_SUBNET_ID", "TEST_SECURITY_GROUP_ID",
+		"TEST_SUBNET_ID",
 		"TEST_DBAAS_ENGINE_VERSION_ID", "TEST_SERVER_TYPE_NAME",
-		"TEST_VPC_ID",
 	} {
 		if os.Getenv(k) == "" {
 			t.Skipf("%s not set", k)
 		}
 	}
 	t.Setenv("TF_VAR_subnet_id", os.Getenv("TEST_SUBNET_ID"))
-	t.Setenv("TF_VAR_security_group_id", os.Getenv("TEST_SECURITY_GROUP_ID"))
 	t.Setenv("TF_VAR_dbaas_engine_version_id", os.Getenv("TEST_DBAAS_ENGINE_VERSION_ID"))
 	t.Setenv("TF_VAR_server_type_name", os.Getenv("TEST_SERVER_TYPE_NAME"))
-	t.Setenv("TF_VAR_vpc_id", os.Getenv("TEST_VPC_ID"))
 
 	dir := common.ScenarioPath("eventstreams_basic")
 	common.MustInit(t, dir)

@@ -13,16 +13,10 @@ provider "samsungcloudplatformv2" {}
 variable "subnet_id" {
   type = string
 }
-variable "security_group_id" {
-  type = string
-}
 variable "dbaas_engine_version_id" {
   type = string
 }
 variable "server_type_name" {
-  type = string
-}
-variable "vpc_id" {
   type = string
 }
 variable "cluster_name" {
@@ -49,6 +43,17 @@ resource "samsungcloudplatformv2_eventstreams_cluster" "regression" {
   allowable_ip_addresses = var.allowable_ip_addresses
   dbaas_engine_version_id = var.dbaas_engine_version_id
 
+  # Required by the provider schema (v3.x). subnet_id is top-level; there is no
+  # security_group_id / vpc_id argument on this resource anymore.
+  instance_name_prefix = "regrevs"
+  nat_enabled          = false
+  service_state        = "RUNNING"
+  timezone             = "Asia/Seoul"
+
+  maintenance_option = {
+    use_maintenance_option = false
+  }
+
   init_config_option = {
     broker_port              = 9091
     broker_sasl_id           = "broker"
@@ -72,7 +77,5 @@ resource "samsungcloudplatformv2_eventstreams_cluster" "regression" {
     },
   ]
 
-  subnet_id         = var.subnet_id
-  security_group_id = var.security_group_id
-  vpc_id            = var.vpc_id
+  subnet_id = var.subnet_id
 }
