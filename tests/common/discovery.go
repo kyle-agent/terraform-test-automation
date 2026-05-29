@@ -98,6 +98,25 @@ func ListScenarioDirs() ([]string, error) {
 
 var resourceDeclRe = regexp.MustCompile(`(?m)^\s*resource\s+"(samsungcloudplatformv2_[a-z0-9_]+)"`)
 
+// validateOptOutMarker, when present in any of a scenario's .tf files, tells
+// the schema-validate sweep to skip that scenario. Used for intentionally
+// partial fixtures (e.g. an empty resource block whose required arguments are
+// filled by the integration variant via TF_VAR_* / imported state), which
+// would otherwise fail `terraform validate` with "Missing required argument".
+const validateOptOutMarker = "regr:no-validate"
+
+// ScenarioOptsOutOfValidate reports whether the named scenario carries the
+// opt-out marker in any of its .tf files.
+func ScenarioOptsOutOfValidate(name string) bool {
+	files, _ := filepath.Glob(filepath.Join(RepoRoot(), "scenarios", name, "*.tf"))
+	for _, f := range files {
+		if b, err := os.ReadFile(f); err == nil && strings.Contains(string(b), validateOptOutMarker) {
+			return true
+		}
+	}
+	return false
+}
+
 // ScanScenarioResources walks every scenario .tf file and returns the set of
 // provider resource types that are actually declared, deduplicated and sorted.
 func ScanScenarioResources() ([]string, error) {

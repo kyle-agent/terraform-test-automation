@@ -39,6 +39,9 @@ func TestScenarios_ValidateAll(t *testing.T) {
 	for _, name := range scenarios {
 		name := name
 		t.Run(name, func(t *testing.T) {
+			if common.ScenarioOptsOutOfValidate(name) {
+				t.Skip("scenario carries the regr:no-validate marker (intentionally partial fixture)")
+			}
 			common.Validate(t, common.ScenarioPath(name))
 		})
 	}
