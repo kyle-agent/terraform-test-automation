@@ -9,3 +9,6 @@ crash.log
 .env.local
 *.tfplan
 *.tfplan.json
+
+# Claude Code agent worktrees / local state
+.claude/
