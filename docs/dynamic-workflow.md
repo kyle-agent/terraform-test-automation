@@ -120,6 +120,28 @@ MODE=integration scripts/regression_loop.sh 3
 
 ---
 
+## Capability Matrix (general 틀 — 먼저 본다)
+
+특정 케이스(이슈 기반 테스트)로 들어가기 전에, **전 리소스가 단계별로 뭐가 되고 안 되는지**를
+한 장으로 보는 general 뷰. 챕터 단위 pass/fail가 아니라 **리소스 × 단계** 매트릭스다.
+
+```bash
+make matrix                 # dry-run: validate 단계만 채움 (자격증명 불필요)
+MODE=integration make matrix  # 전체 라이프사이클
+```
+
+단계(고정 파이프라인): `validate → plan → apply → replan(멱등) → destroy`.
+각 셀은 ✅ ok · ❌ fail · ⊘ not exercised. 결과:
+
+- `out/capability-matrix.md` — 단계별 집계 + ❌ 목록(드릴다운 대상) + 전체 매트릭스
+- `out/capability-matrix.json` — 기계 판독용
+
+권장 흐름: **`make matrix` 로 안 되는 것(❌)을 먼저 식별 → 그 리소스만 특정 케이스로 깊이 분석**.
+dry-run에서는 plan 이후가 자격증명을 요구하므로 validate까지만 측정한다(노이즈 방지). 실제 생성·멱등·삭제는
+`MODE=integration` 에서 채워진다. `tests/capability` 패키지이며 `CAPABILITY_MATRIX=1` 일 때만 동작(opt-in).
+
+---
+
 ## 커버리지 = 동적 백로그
 
 `tests/coverage` 는 카탈로그(87개)와 `scenarios/` 가 실제로 선언한 리소스를 교차검증한다.
