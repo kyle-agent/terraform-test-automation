@@ -10,10 +10,14 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-# AUTO-GENERATED minimal coverage fixture (scripts/gen_scenarios.py).
-# Validated against the real provider schema. Exercised in dry-run by the
-# tests/schema validate sweep; extend with integration assertions as needed.
+variable "dashboard_name" {
+  type        = string
+  description = "Display name of the ServiceWatch dashboard."
+  default     = "regr-dashboard"
+}
 
+# Minimal dashboard fixture guarding ServiceWatch dashboard coverage. Only
+# name is user-settable; share_type/type/widgets are computed by the provider.
 resource "samsungcloudplatformv2_servicewatch_dashboard" "regr" {
-
+  name = var.dashboard_name
 }

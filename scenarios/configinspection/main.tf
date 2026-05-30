@@ -10,20 +10,49 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-# AUTO-GENERATED minimal coverage fixture (scripts/gen_scenarios.py).
-# Validated against the real provider schema. Exercised in dry-run by the
-# tests/schema validate sweep; extend with integration assertions to promote.
+# Promoted regression fixture: config-inspection diagnosis with required
+# auth_key_request block and an optional schedule. UUID inputs default to the
+# zero-UUID and are overridable via TF_VAR_*; passes validate offline.
+
+variable "account_id" {
+  description = "SCP account UUID running the inspection."
+  type        = string
+  default     = "00000000-0000-0000-0000-000000000000"
+}
+
+variable "diagnosis_account_id" {
+  description = "Account UUID being diagnosed."
+  type        = string
+  default     = "00000000-0000-0000-0000-000000000000"
+}
+
+variable "auth_key_id" {
+  description = "Auth key UUID granting inspection access."
+  type        = string
+  default     = "00000000-0000-0000-0000-000000000000"
+}
+
+variable "diagnosis_id" {
+  description = "Diagnosis UUID."
+  type        = string
+  default     = "00000000-0000-0000-0000-000000000000"
+}
 
 resource "samsungcloudplatformv2_configinspection" "regr" {
-  account_id = "00000000-0000-0000-0000-000000000000"
+  account_id           = var.account_id
+  csp_type             = "SCP"
+  diagnosis_account_id = var.diagnosis_account_id
+  diagnosis_check_type = "BP"
+  diagnosis_id         = var.diagnosis_id
+  diagnosis_name       = "regr-diagnosis"
+  diagnosis_type       = "MANUAL"
+  plan_type            = "BASIC"
+
   auth_key_request = {
-      auth_key_id = "00000000-0000-0000-0000-000000000000"
-    }
-  csp_type = "regr"
-  diagnosis_account_id = "00000000-0000-0000-0000-000000000000"
-  diagnosis_check_type = "regr"
-  diagnosis_id = "00000000-0000-0000-0000-000000000000"
-  diagnosis_name = "regr"
-  diagnosis_type = "regr"
-  plan_type = "regr"
+    auth_key_id = var.auth_key_id
+  }
+
+  tags = {
+    env = "regression"
+  }
 }

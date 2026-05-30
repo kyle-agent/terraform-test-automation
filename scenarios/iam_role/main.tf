@@ -10,10 +10,62 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-# AUTO-GENERATED minimal coverage fixture (scripts/gen_scenarios.py).
-# Validated against the real provider schema. Exercised in dry-run by the
-# tests/schema validate sweep; extend with integration assertions as needed.
+variable "role_name" {
+  type        = string
+  description = "Name of the IAM role."
+  default     = "regr-iam-role"
+}
 
+variable "role_description" {
+  type        = string
+  description = "Free-text description of the IAM role."
+  default     = "regression test IAM role"
+}
+
+variable "max_session_duration" {
+  type        = number
+  description = "Maximum assumed-role session duration in seconds."
+  default     = 3600
+}
+
+variable "trusted_account_id" {
+  type        = string
+  description = "Account id trusted to assume the role. Integration runs override via TF_VAR_trusted_account_id."
+  default     = "000000000000"
+}
+
+variable "role_tags" {
+  type        = map(string)
+  description = "Tags applied to the role."
+  default = {
+    tf = "terraform"
+  }
+}
+
+# IAM role fixture: guards that a role with an assume-role trust policy (one
+# Allow statement scoped to a trusted account principal) re-plans cleanly. The
+# trusted account is a placeholder; integration supplies the real value via
+# TF_VAR_trusted_account_id. policy_ids are left unset to avoid referencing real
+# policy ids during offline validation.
 resource "samsungcloudplatformv2_iam_role" "regr" {
+  name                 = var.role_name
+  description          = var.role_description
+  max_session_duration = var.max_session_duration
+  tags                 = var.role_tags
 
+  assume_role_policy_document = {
+    version = "2024-10-01"
+    statement = [
+      {
+        sid    = "regrAssumeRole"
+        effect = "Allow"
+        action = ["sts:AssumeRole"]
+        principal = {
+          principal_map = {
+            account = [var.trusted_account_id]
+          }
+        }
+      }
+    ]
+  }
 }
