@@ -10,17 +10,58 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-# AUTO-GENERATED minimal coverage fixture (scripts/gen_scenarios.py).
-# Validated against the real provider schema. Exercised in dry-run by the
-# tests/schema validate sweep; extend with integration assertions to promote.
+# Promoted regression fixture: a GSLB with a round-robin algorithm, an HTTP
+# health check and a weighted backend resource. Inputs overridable via TF_VAR_*;
+# schema-valid defaults keep `terraform validate` green offline.
+
+variable "gslb_name" {
+  description = "GSLB display name."
+  type        = string
+  default     = "regr-gslb"
+}
+
+variable "gslb_algorithm" {
+  description = "Load-balancing algorithm enum (e.g. ROUND_ROBIN, RATIO)."
+  type        = string
+  default     = "ROUND_ROBIN"
+}
+
+variable "env_usage" {
+  description = "Environment usage enum for the GSLB (e.g. PUBLIC, PRIVATE)."
+  type        = string
+  default     = "PUBLIC"
+}
+
+variable "backend_destination" {
+  description = "Backend destination IP/host for the GSLB resource."
+  type        = string
+  default     = "10.0.0.10"
+}
 
 resource "samsungcloudplatformv2_gslb_gslb" "regr" {
   gslb_create = {
-      algorithm = "regr"
-      env_usage = "regr"
-      name = "regr"
-      resources = [
-      {}
-    ]
+    algorithm   = var.gslb_algorithm
+    env_usage   = var.env_usage
+    name        = var.gslb_name
+    description = "Regression GSLB fixture"
+
+    health_check = {
+      protocol     = "HTTP"
+      service_port = 80
+      send_string  = "GET / HTTP/1.0\r\n\r\n"
     }
+
+    resources = [
+      {
+        description = "Primary regression backend"
+        destination = var.backend_destination
+        region      = "kr-west1"
+        weight      = 100
+      }
+    ]
+  }
+
+  tags = {
+    env = "regression"
+  }
 }

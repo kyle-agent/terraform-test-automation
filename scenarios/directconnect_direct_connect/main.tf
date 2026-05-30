@@ -10,12 +10,37 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-# AUTO-GENERATED minimal coverage fixture (scripts/gen_scenarios.py).
-# Validated against the real provider schema. Exercised in dry-run by the
-# tests/schema validate sweep; extend with integration assertions as needed.
+# Promoted regression fixture: a Direct Connect attached to a VPC with a
+# bandwidth tier and firewall flags. vpc_id defaults to the zero-UUID and is
+# overridable via TF_VAR_vpc_id; passes validate offline.
+
+variable "vpc_id" {
+  description = "VPC UUID the Direct Connect attaches to."
+  type        = string
+  default     = "00000000-0000-0000-0000-000000000000"
+}
+
+variable "name" {
+  description = "Direct Connect name."
+  type        = string
+  default     = "regr-direct-connect"
+}
+
+variable "bandwidth" {
+  description = "Direct Connect bandwidth in Mbps."
+  type        = number
+  default     = 1000
+}
 
 resource "samsungcloudplatformv2_directconnect_direct_connect" "regr" {
-  bandwidth = 100
-  name = "regr"
-  vpc_id = "00000000-0000-0000-0000-000000000000"
+  bandwidth         = var.bandwidth
+  name              = var.name
+  vpc_id            = var.vpc_id
+  description       = "Regression Direct Connect fixture"
+  firewall_enabled  = true
+  firewall_loggable = false
+
+  tags = {
+    env = "regression"
+  }
 }

@@ -10,17 +10,57 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-# AUTO-GENERATED minimal coverage fixture (scripts/gen_scenarios.py).
-# Validated against the real provider schema. Exercised in dry-run by the
-# tests/schema validate sweep; extend with integration assertions to promote.
+# Promoted regression fixture: a Kubernetes (SKE) cluster pinned to a real
+# version with vpc/subnet/volume/security-group references. UUID inputs default
+# to the zero-UUID, overridable via TF_VAR_*; passes validate offline.
+
+variable "cluster_name" {
+  description = "SKE cluster name."
+  type        = string
+  default     = "regr-ske-cluster"
+}
+
+variable "kubernetes_version" {
+  description = "Kubernetes version string (e.g. 1.30.1)."
+  type        = string
+  default     = "1.30.1"
+}
+
+variable "vpc_id" {
+  description = "VPC UUID hosting the cluster."
+  type        = string
+  default     = "00000000-0000-0000-0000-000000000000"
+}
+
+variable "subnet_id" {
+  description = "Subnet UUID for the cluster control plane."
+  type        = string
+  default     = "00000000-0000-0000-0000-000000000000"
+}
+
+variable "volume_id" {
+  description = "Boot volume type UUID for cluster nodes."
+  type        = string
+  default     = "00000000-0000-0000-0000-000000000000"
+}
+
+variable "security_group_id_list" {
+  description = "Security group UUIDs attached to the cluster."
+  type        = list(string)
+  default     = ["00000000-0000-0000-0000-000000000000"]
+}
 
 resource "samsungcloudplatformv2_ske_cluster" "regr" {
-  cloud_logging_enabled = false
-  kubernetes_version = "v1.30.1"
-  name = "regr"
-  security_group_id_list = ["regr"]
+  name                          = var.cluster_name
+  kubernetes_version            = var.kubernetes_version
+  cloud_logging_enabled         = false
   service_watch_logging_enabled = false
-  subnet_id = "00000000-0000-0000-0000-000000000000"
-  volume_id = "00000000-0000-0000-0000-000000000000"
-  vpc_id = "00000000-0000-0000-0000-000000000000"
+  security_group_id_list        = var.security_group_id_list
+  subnet_id                     = var.subnet_id
+  volume_id                     = var.volume_id
+  vpc_id                        = var.vpc_id
+
+  tags = {
+    env = "regression"
+  }
 }
