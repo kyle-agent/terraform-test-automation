@@ -10,10 +10,29 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-# AUTO-GENERATED minimal coverage fixture (scripts/gen_scenarios.py).
-# Validated against the real provider schema. Exercised in dry-run by the
-# tests/schema validate sweep; extend with integration assertions as needed.
+variable "event_rule_service_id" {
+  type        = string
+  description = "ServiceWatch service ID the event rule belongs to. Override via TF_VAR_event_rule_service_id with a real service UUID."
+  default     = "00000000-0000-0000-0000-000000000000"
+}
 
+variable "event_rule_name" {
+  type        = string
+  description = "Display name of the ServiceWatch event rule."
+  default     = "regr-event-rule"
+}
+
+variable "event_rule_active_yn" {
+  type        = string
+  description = "Whether the event rule is active (Y/N)."
+  default     = "Y"
+}
+
+# Minimal ServiceWatch event-rule fixture guarding event_rule coverage. Only
+# service_id is required; name/active flag added for a realistic re-plan check.
 resource "samsungcloudplatformv2_servicewatch_event_rule" "regr" {
-  service_id = "00000000-0000-0000-0000-000000000000"
+  service_id  = var.event_rule_service_id
+  name        = var.event_rule_name
+  active_yn   = var.event_rule_active_yn
+  description = "Regression fixture: ServiceWatch event rule."
 }
