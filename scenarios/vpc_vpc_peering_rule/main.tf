@@ -10,12 +10,30 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-# AUTO-GENERATED minimal coverage fixture (scripts/gen_scenarios.py).
-# Validated against the real provider schema. Exercised in dry-run by the
-# tests/schema validate sweep; extend with integration assertions as needed.
+variable "vpc_peering_id" {
+  type        = string
+  description = "Existing VPC peering id owning the rule. Integration runs override via TF_VAR_vpc_peering_id."
+  default     = "00000000-0000-0000-0000-000000000000"
+}
 
+variable "destination_vpc_type" {
+  type        = string
+  description = "Side of the peering the route targets. Valid: REQUESTER_VPC, APPROVER_VPC."
+  default     = "APPROVER_VPC"
+}
+
+variable "destination_cidr" {
+  type        = string
+  description = "Destination CIDR reachable across the peering."
+  default     = "192.168.48.0/24"
+}
+
+# VPC peering rule fixture guarding networking coverage: a route across an
+# established peering must re-plan cleanly with no spurious update or replace.
+# Required args: destination_cidr, destination_vpc_type, vpc_peering_id.
+# Optional: tags.
 resource "samsungcloudplatformv2_vpc_vpc_peering_rule" "regr" {
-  destination_cidr = "10.0.0.0/24"
-  destination_vpc_type = "regr"
-  vpc_peering_id = "00000000-0000-0000-0000-000000000000"
+  destination_cidr     = var.destination_cidr
+  destination_vpc_type = var.destination_vpc_type
+  vpc_peering_id       = var.vpc_peering_id
 }

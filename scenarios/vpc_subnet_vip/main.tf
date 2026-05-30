@@ -10,10 +10,23 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-# AUTO-GENERATED minimal coverage fixture (scripts/gen_scenarios.py).
-# Validated against the real provider schema. Exercised in dry-run by the
-# tests/schema validate sweep; extend with integration assertions as needed.
+variable "subnet_id" {
+  type        = string
+  description = "Existing subnet id to allocate the VIP in. Integration runs override via TF_VAR_subnet_id."
+  default     = "00000000-0000-0000-0000-000000000000"
+}
 
+variable "virtual_ip_address" {
+  type        = string
+  description = "Virtual IP address to reserve within the subnet CIDR."
+  default     = "192.168.0.20"
+}
+
+# Subnet VIP fixture guarding networking coverage: a virtual IP reserved in a
+# subnet must re-plan cleanly with no spurious update or replacement.
+# Required arg: subnet_id. Optional: virtual_ip_address, description.
 resource "samsungcloudplatformv2_vpc_subnet_vip" "regr" {
-  subnet_id = "00000000-0000-0000-0000-000000000000"
+  subnet_id          = var.subnet_id
+  virtual_ip_address = var.virtual_ip_address
+  description        = "regr-test"
 }

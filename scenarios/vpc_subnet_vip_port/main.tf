@@ -10,12 +10,29 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-# AUTO-GENERATED minimal coverage fixture (scripts/gen_scenarios.py).
-# Validated against the real provider schema. Exercised in dry-run by the
-# tests/schema validate sweep; extend with integration assertions as needed.
+variable "subnet_id" {
+  type        = string
+  description = "Existing subnet id holding the VIP. Integration runs override via TF_VAR_subnet_id."
+  default     = "00000000-0000-0000-0000-000000000000"
+}
 
+variable "vip_id" {
+  type        = string
+  description = "Existing subnet VIP id to connect the port to. Integration runs override via TF_VAR_vip_id."
+  default     = "00000000-0000-0000-0000-000000000000"
+}
+
+variable "port_id" {
+  type        = string
+  description = "Existing port id to attach behind the VIP. Integration runs override via TF_VAR_port_id."
+  default     = "00000000-0000-0000-0000-000000000000"
+}
+
+# Subnet VIP port fixture guarding networking coverage: a port attached behind a
+# subnet VIP must re-plan cleanly with no spurious update or replacement.
+# Required args: port_id, subnet_id, vip_id.
 resource "samsungcloudplatformv2_vpc_subnet_vip_port" "regr" {
-  port_id = "00000000-0000-0000-0000-000000000000"
-  subnet_id = "00000000-0000-0000-0000-000000000000"
-  vip_id = "00000000-0000-0000-0000-000000000000"
+  port_id   = var.port_id
+  subnet_id = var.subnet_id
+  vip_id    = var.vip_id
 }
