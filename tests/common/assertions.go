@@ -6,6 +6,28 @@ import (
 	"testing"
 )
 
+// ChangedSummary returns a concise, log-free description of every non-noop
+// resource change in a plan (address + actions), suitable for storing in the
+// structured result so a failure is diagnosable without the full CI log.
+func ChangedSummary(plan PlanResult) string {
+	var parts []string
+	for _, c := range plan.ResourceChanges {
+		noop := true
+		for _, a := range c.Change.Actions {
+			if a != "no-op" && a != "read" {
+				noop = false
+			}
+		}
+		if !noop {
+			parts = append(parts, FormatActions(c))
+		}
+	}
+	if len(parts) == 0 {
+		return "no resource_changes parsed (see raw output)"
+	}
+	return strings.Join(parts, "; ")
+}
+
 // AssertNoChanges fails the test if the plan contains any non-noop changes.
 // This is the canonical assertion for "re-apply with no config changes should
 // produce a clean plan" regressions (e.g. Chapter 1 #2, Chapter 4 #14).
@@ -14,6 +36,7 @@ func AssertNoChanges(t *testing.T, plan PlanResult) {
 	for _, c := range plan.ResourceChanges {
 		for _, a := range c.Change.Actions {
 			if a != "no-op" && a != "read" {
+				AttachDetail(t.Name(), "unexpected plan change: "+ChangedSummary(plan))
 				t.Fatalf("expected no changes but got %s\nfull plan:\n%s",
 					FormatActions(c), plan.RawOutput)
 			}
@@ -33,6 +56,8 @@ func AssertReplacementCount(t *testing.T, plan PlanResult, want int) {
 		}
 	}
 	if got != want {
+		AttachDetail(t.Name(), fmt.Sprintf("replacement count got %d want %d: %s",
+			got, want, ChangedSummary(plan)))
 		t.Fatalf("replacement count: got %d, want %d\nplan:\n%s",
 			got, want, plan.RawOutput)
 	}
