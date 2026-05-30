@@ -21,7 +21,7 @@ set -euo pipefail
 RESULTS=${1:-out/results.json}
 REPO=${REPO:-${GITHUB_REPOSITORY:-}}
 TOKEN=${GITHUB_TOKEN:-${GH_TOKEN:-}}
-MARKER="[regression] integration failures"   # stable title prefix for dedup
+MARKER="${ISSUE_MARKER:-[regression] integration failures}"   # stable title prefix for dedup (override via ISSUE_MARKER)
 RUN_URL="${GITHUB_SERVER_URL:-https://github.com}/${REPO}/actions/runs/${GITHUB_RUN_ID:-}"
 
 if [ ! -f "$RESULTS" ]; then

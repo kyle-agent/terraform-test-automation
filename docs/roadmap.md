@@ -20,9 +20,25 @@ execution can continue across context resets without re-asking.
 
 - main: dynamic pipeline, 87/87 schema coverage, 6h integration schedule,
   provider mirror (PRs #1–#4 merged).
-- PR #7 (observability): capability matrix + diff-capturing auto issue reporting.
+- Observability (PR #7 merged): capability matrix + diff-capturing auto issue reporting.
+- Scenario promotion COMPLETE: 0 AUTO-GENERATED placeholders remain — all 87
+  scenarios are hand-written and pass real `terraform validate` (PRs #10, #11).
+- Scheduled capability matrix (this change): daily `make matrix` in integration
+  mode; failures auto-filed to a "[capability] matrix failures" tracking issue
+  via scripts/matrix_to_results.sh -> report_failures_to_issue.sh.
 - Known real regressions (issue #6): vpc_vpc, vpc_publicip,
   security_group_security_group, virtualserver_keypair — re-apply not idempotent.
+  Diagnosis in docs/findings/regression-idempotency.md.
+
+## Definition-of-done checklist
+
+- [x] 87/87 resources exercised by the capability matrix (validate; full
+      lifecycle in integration).
+- [x] Real integration failures auto-tracked as issues with the diff captured.
+- [x] All placeholder fixtures promoted to realistic, schema-valid scenarios.
+- [x] Everything runs unattended on schedule (6h integration + daily matrix).
+- [ ] Remaining follow-up: act on issue #6 (provider-side fixes or documented
+      lifecycle mitigations) as the provider is updated.
 
 ## Work breakdown (parallelizable units)
 
