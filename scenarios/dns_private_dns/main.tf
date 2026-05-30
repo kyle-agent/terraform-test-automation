@@ -10,10 +10,25 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-# AUTO-GENERATED minimal coverage fixture (scripts/gen_scenarios.py).
-# Validated against the real provider schema. Exercised in dry-run by the
-# tests/schema validate sweep; extend with integration assertions as needed.
+# DNS private DNS regression fixture. The resource takes a single nested object
+# attribute `private_dns_create`, modeled here as one object variable so the
+# fixture passes `terraform validate` without credentials. connected_vpc_ids
+# defaults to a zero-UUID placeholder; integration supplies real VPC ids via
+# TF_VAR_private_dns.
+variable "private_dns" {
+  type = object({
+    description       = string
+    name              = string
+    connected_vpc_ids = list(string)
+  })
+  default = {
+    description       = "regression-test private DNS"
+    name              = "regr-private-dns"
+    connected_vpc_ids = ["00000000-0000-0000-0000-000000000000"]
+  }
+  description = "Private DNS create input; connected_vpc_ids defaults to the zero-UUID and is supplied by integration."
+}
 
 resource "samsungcloudplatformv2_dns_private_dns" "regr" {
-
+  private_dns_create = var.private_dns
 }

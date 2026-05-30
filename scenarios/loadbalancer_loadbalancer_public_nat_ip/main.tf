@@ -10,10 +10,28 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-# AUTO-GENERATED minimal coverage fixture (scripts/gen_scenarios.py).
-# Validated against the real provider schema. Exercised in dry-run by the
-# tests/schema validate sweep; extend with integration assertions as needed.
+# LB public NAT IP regression fixture. The resource takes a required parent
+# `loadbalancer_id` plus an optional nested object `static_nat_create`, modeled
+# here as variables so the fixture passes `terraform validate` without
+# credentials. All ids default to the zero-UUID; integration supplies real ids
+# via TF_VAR_*.
+variable "loadbalancer_id" {
+  type        = string
+  default     = "00000000-0000-0000-0000-000000000000"
+  description = "Parent load balancer id; defaults to the zero-UUID and is supplied by integration."
+}
+
+variable "static_nat" {
+  type = object({
+    publicip_id = string
+  })
+  default = {
+    publicip_id = "00000000-0000-0000-0000-000000000000"
+  }
+  description = "Public static NAT create input; publicip_id defaults to the zero-UUID and is supplied by integration."
+}
 
 resource "samsungcloudplatformv2_loadbalancer_loadbalancer_public_nat_ip" "regr" {
-  loadbalancer_id = "00000000-0000-0000-0000-000000000000"
+  loadbalancer_id   = var.loadbalancer_id
+  static_nat_create = var.static_nat
 }
