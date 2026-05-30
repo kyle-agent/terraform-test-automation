@@ -27,7 +27,32 @@ type Result struct {
 var (
 	resultMu sync.Mutex
 	results  []Result
+
+	detailMu sync.Mutex
+	details  = map[string]string{} // test name -> diagnostic detail
 )
+
+// AttachDetail records a short, structured diagnostic for a test (e.g. the
+// concrete plan diff that broke an idempotency assertion). Wrap copies it into
+// the test's Result.Details so failures are diagnosable from results.json
+// alone — no need to scrape the full CI log.
+func AttachDetail(testName, detail string) {
+	detailMu.Lock()
+	defer detailMu.Unlock()
+	if prev := details[testName]; prev != "" {
+		details[testName] = prev + " | " + detail
+	} else {
+		details[testName] = detail
+	}
+}
+
+func takeDetail(testName string) string {
+	detailMu.Lock()
+	defer detailMu.Unlock()
+	d := details[testName]
+	delete(details, testName)
+	return d
+}
 
 // RecordResult appends a result to the in-memory buffer and writes the
 // running JSON file after each call so partial runs are not lost.
@@ -97,6 +122,7 @@ func Wrap(t interface {
 			StartedAt:  start,
 			DurationMs: time.Since(start).Milliseconds(),
 			Summary:    m.Summary,
+			Details:    takeDetail(m.Name),
 		})
 	}
 }

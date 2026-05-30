@@ -120,6 +120,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      issues: write   # so report_failures_to_issue.sh can file/update an issue
     steps:
       - uses: actions/checkout@v4
       - name: Download all shard results
@@ -142,7 +143,12 @@ jobs:
             out/results.json
             out/junit.xml
             out/**/coverage.md
-      - name: Re-open regressed issues
+      - name: File failures to a tracking issue in this repo
+        if: failure()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: scripts/report_failures_to_issue.sh out/results.json
+      - name: Re-open regressed provider issues
         if: failure()
         env:
           GH_TOKEN: ${{ secrets.PROVIDER_REPO_GH_TOKEN }}
