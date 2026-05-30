@@ -10,11 +10,21 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-# AUTO-GENERATED minimal coverage fixture (scripts/gen_scenarios.py).
-# Validated against the real provider schema. Exercised in dry-run by the
-# tests/schema validate sweep; extend with integration assertions to promote.
+variable "network_logging_bucket_name" {
+  type        = string
+  description = "Object storage bucket that receives network logs."
+  default     = "regr-network-logs"
+}
 
+variable "network_logging_resource_type" {
+  type        = string
+  description = "Resource type whose traffic is logged. One of FIREWALL, SECURITY_GROUP, NAT."
+  default     = "FIREWALL"
+}
+
+# Minimal network-logging-storage fixture guarding network_logging coverage;
+# both attributes are required. resource_type enum per provider v3.3.1.
 resource "samsungcloudplatformv2_network_logging_network_logging_storage" "regr" {
-  bucket_name = "regr"
-  resource_type = "FIREWALL"
+  bucket_name   = var.network_logging_bucket_name
+  resource_type = var.network_logging_resource_type
 }

@@ -10,11 +10,21 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-# AUTO-GENERATED minimal coverage fixture (scripts/gen_scenarios.py).
-# Validated against the real provider schema. Exercised in dry-run by the
-# tests/schema validate sweep; extend with integration assertions as needed.
+variable "log_stream_group_id" {
+  type        = string
+  description = "ID of the ServiceWatch log group that owns this stream. Override via TF_VAR_log_stream_group_id with a real log group UUID."
+  default     = "00000000-0000-0000-0000-000000000000"
+}
 
+variable "log_stream_name" {
+  type        = string
+  description = "Name of the ServiceWatch log stream."
+  default     = "regr-log-stream"
+}
+
+# Minimal ServiceWatch log-stream fixture guarding log_stream coverage; both
+# attributes are required. log_group_id defaults to a zero-UUID placeholder.
 resource "samsungcloudplatformv2_servicewatch_log_stream" "regr" {
-  log_group_id = "00000000-0000-0000-0000-000000000000"
-  name = "regr"
+  log_group_id = var.log_stream_group_id
+  name         = var.log_stream_name
 }

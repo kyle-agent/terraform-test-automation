@@ -10,11 +10,21 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-# AUTO-GENERATED minimal coverage fixture (scripts/gen_scenarios.py).
-# Validated against the real provider schema. Exercised in dry-run by the
-# tests/schema validate sweep; extend with integration assertions as needed.
+variable "log_group_name" {
+  type        = string
+  description = "Name of the ServiceWatch log group."
+  default     = "regr-log-group"
+}
 
+variable "log_group_retention_period" {
+  type        = number
+  description = "Number of days to retain log entries in the group."
+  default     = 30
+}
+
+# Minimal ServiceWatch log-group fixture guarding log_group coverage; both
+# attributes are required so a fresh group must re-plan with no spurious diff.
 resource "samsungcloudplatformv2_servicewatch_log_group" "regr" {
-  name = "regr"
-  retention_period = 100
+  name             = var.log_group_name
+  retention_period = var.log_group_retention_period
 }
