@@ -10,53 +10,75 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-# AUTO-GENERATED minimal coverage fixture (scripts/gen_scenarios.py).
-# Validated against the real provider schema. Exercised in dry-run by the
-# tests/schema validate sweep; extend with integration assertions to promote.
+# Guards the samsungcloudplatformv2_sqlserver_cluster fixture: a single-node
+# SQL Server DBaaS cluster. Unique to SQL Server: the nested databases list
+# (database_name + drive_letter), collation, license, and a backup_option that
+# also carries full_backup_day_of_week.
+
+# Real ids are environment-specific; integration supplies them via
+# TF_VAR_subnet_id / TF_VAR_dbaas_engine_version_id / TF_VAR_server_type_name.
+# Defaults are placeholders so validate works offline.
+variable "subnet_id" {
+  type    = string
+  default = "00000000-0000-0000-0000-000000000000"
+}
+variable "dbaas_engine_version_id" {
+  type    = string
+  default = "00000000-0000-0000-0000-000000000000"
+}
+variable "server_type_name" {
+  type    = string
+  default = "db1v4m8"
+}
 
 resource "samsungcloudplatformv2_sqlserver_cluster" "regr" {
-  allowable_ip_addresses = ["10.0.0.0/24"]
-  dbaas_engine_version_id = "v1.30.1"
-  ha_enabled = false
+  name                    = "regr-mssql"
+  dbaas_engine_version_id = var.dbaas_engine_version_id
+  ha_enabled              = false
+  nat_enabled             = false
+  service_state           = "RUNNING"
+  timezone                = "Asia/Seoul"
+  instance_name_prefix    = "regrmssql"
+  allowable_ip_addresses  = ["10.0.0.0/24"]
+  subnet_id               = var.subnet_id
+
   init_config_option = {
-      audit_enabled = false
-      backup_option = {}
-      database_collation = "regr"
-      database_port = 1
-      database_service_name = "regr"
-      database_user_name = "regr"
-      database_user_password = "regr"
-      databases = [
+    audit_enabled          = false
+    database_service_name  = "regrsvc"
+    database_user_name     = "regradmin"
+    database_user_password = "Regr1234!@"
+    database_port          = 1433
+    database_collation     = "SQL_Latin1_General_CP1_CI_AS"
+    license                = "BYOL"
+    databases = [
       {
-        database_name = "regr"
-        drive_letter = "regr"
-      }
+        database_name = "regrdb"
+        drive_letter  = "D"
+      },
     ]
-      license = "regr"
+    backup_option = {
+      retention_period_day     = "7"
+      starting_time_hour       = "02"
+      archive_frequency_minute = "30"
+      full_backup_day_of_week  = "SUNDAY"
     }
+  }
+
+  maintenance_option = {
+    use_maintenance_option = false
+  }
+
   instance_groups = [
     {
+      role_type        = "ACTIVE"
+      server_type_name = var.server_type_name
       block_storage_groups = [
-      {
-        role_type = "ACTIVE"
-        size_gb = 1
-        volume_type = "SSD"
-      }
-    ]
+        { role_type = "OS", size_gb = 100, volume_type = "SSD" },
+        { role_type = "DATA", size_gb = 200, volume_type = "SSD" },
+      ]
       instances = [
-      {
-        role_type = "ACTIVE"
-      }
-    ]
-      role_type = "ACTIVE"
-      server_type_name = "regr"
-    }
+        { role_type = "ACTIVE" },
+      ]
+    },
   ]
-  instance_name_prefix = "regr"
-  maintenance_option = {}
-  name = "regr"
-  nat_enabled = false
-  service_state = "RUNNING"
-  subnet_id = "00000000-0000-0000-0000-000000000000"
-  timezone = "regr"
 }

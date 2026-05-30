@@ -10,43 +10,62 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-# AUTO-GENERATED minimal coverage fixture (scripts/gen_scenarios.py).
-# Validated against the real provider schema. Exercised in dry-run by the
-# tests/schema validate sweep; extend with integration assertions to promote.
+# Guards the samsungcloudplatformv2_searchengine_cluster fixture: a single-node
+# OpenSearch-style search DBaaS cluster. Unique to searchengine: is_combined
+# flag, optional license, and the MASTER_DATA combined node role.
+
+# Real ids are environment-specific; integration supplies them via
+# TF_VAR_subnet_id / TF_VAR_dbaas_engine_version_id / TF_VAR_server_type_name.
+# Defaults are placeholders so validate works offline.
+variable "subnet_id" {
+  type    = string
+  default = "00000000-0000-0000-0000-000000000000"
+}
+variable "dbaas_engine_version_id" {
+  type    = string
+  default = "00000000-0000-0000-0000-000000000000"
+}
+variable "server_type_name" {
+  type    = string
+  default = "db1v2m4"
+}
 
 resource "samsungcloudplatformv2_searchengine_cluster" "regr" {
-  allowable_ip_addresses = ["10.0.0.0/24"]
-  dbaas_engine_version_id = "v1.30.1"
+  name                    = "regr-search"
+  dbaas_engine_version_id = var.dbaas_engine_version_id
+  nat_enabled             = false
+  service_state           = "RUNNING"
+  timezone                = "Asia/Seoul"
+  instance_name_prefix    = "regrsearch"
+  allowable_ip_addresses  = ["10.0.0.0/24"]
+  subnet_id               = var.subnet_id
+  is_combined             = true
+
   init_config_option = {
-      backup_option = {}
-      database_port = 1
-      database_user_name = "regr"
-      database_user_password = "regr"
+    database_user_name     = "regradmin"
+    database_user_password = "Regr1234!@"
+    database_port          = 9200
+    backup_option = {
+      retention_period_day = "7"
+      starting_time_hour   = "02"
     }
+  }
+
+  maintenance_option = {
+    use_maintenance_option = false
+  }
+
   instance_groups = [
     {
+      role_type        = "MASTER_DATA"
+      server_type_name = var.server_type_name
       block_storage_groups = [
-      {
-        role_type = "MASTER_DATA"
-        size_gb = 1
-        volume_type = "SSD"
-      }
-    ]
+        { role_type = "OS", size_gb = 100, volume_type = "SSD" },
+        { role_type = "DATA", size_gb = 200, volume_type = "SSD" },
+      ]
       instances = [
-      {
-        role_type = "MASTER_DATA"
-      }
-    ]
-      role_type = "MASTER_DATA"
-      server_type_name = "regr"
-    }
+        { role_type = "MASTER_DATA" },
+      ]
+    },
   ]
-  instance_name_prefix = "regr"
-  is_combined = false
-  maintenance_option = {}
-  name = "regr"
-  nat_enabled = false
-  service_state = "RUNNING"
-  subnet_id = "00000000-0000-0000-0000-000000000000"
-  timezone = "regr"
 }
