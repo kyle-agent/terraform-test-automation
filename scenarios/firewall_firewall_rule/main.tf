@@ -10,22 +10,30 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-# AUTO-GENERATED minimal coverage fixture (scripts/gen_scenarios.py).
-# Validated against the real provider schema. Exercised in dry-run by the
-# tests/schema validate sweep; extend with integration assertions to promote.
+variable "firewall_id" {
+  type        = string
+  description = "Existing firewall id to attach the rule to. Integration runs override via TF_VAR_firewall_id."
+  default     = "00000000-0000-0000-0000-000000000000"
+}
 
+# Firewall rule fixture guarding firewall coverage: an inbound ALLOW rule with a
+# single TCP service must re-plan cleanly (no spurious update or replacement).
+# Required: firewall_id and the firewall_rule_create object (action, direction,
+# status, source/destination_address lists, and a service list).
 resource "samsungcloudplatformv2_firewall_firewall_rule" "regr" {
-  firewall_id = "00000000-0000-0000-0000-000000000000"
+  firewall_id = var.firewall_id
   firewall_rule_create = {
-      action = "ALLOW"
-      destination_address = ["10.0.0.0/24"]
-      direction = "INBOUND"
-      service = [
+    action              = "ALLOW"
+    direction           = "INBOUND"
+    status              = "ENABLE"
+    description         = "regr-test"
+    source_address      = ["192.168.1.0/24"]
+    destination_address = ["192.168.2.0/24"]
+    service = [
       {
-        service_type = "TCP"
+        service_type  = "TCP"
+        service_value = "443"
       }
     ]
-      source_address = ["10.0.0.0/24"]
-      status = "ENABLE"
-    }
+  }
 }

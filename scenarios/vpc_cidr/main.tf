@@ -10,11 +10,22 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-# AUTO-GENERATED minimal coverage fixture (scripts/gen_scenarios.py).
-# Validated against the real provider schema. Exercised in dry-run by the
-# tests/schema validate sweep; extend with integration assertions as needed.
+variable "vpc_id" {
+  type        = string
+  description = "Existing VPC id to add the secondary CIDR to. Integration runs override via TF_VAR_vpc_id."
+  default     = "00000000-0000-0000-0000-000000000000"
+}
 
+variable "cidr" {
+  type        = string
+  description = "Secondary CIDR block to associate with the VPC."
+  default     = "192.168.16.0/24"
+}
+
+# VPC secondary-CIDR fixture guarding networking coverage: associating an extra
+# CIDR with an existing VPC must re-plan cleanly with no spurious update or
+# replacement. Required args: cidr, vpc_id.
 resource "samsungcloudplatformv2_vpc_cidr" "regr" {
-  cidr = "10.0.0.0/24"
-  vpc_id = "00000000-0000-0000-0000-000000000000"
+  cidr   = var.cidr
+  vpc_id = var.vpc_id
 }
