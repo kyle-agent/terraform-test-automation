@@ -117,7 +117,7 @@ make coverage     # out/coverage.{json,md}
 1. 시나리오가 카탈로그에 없는 리소스를 참조 → 오타이거나 카탈로그 재동기화 필요.
 2. `COVERAGE_MIN` 설정 시 커버리지가 그 % 미만이면 실패 (점진적 ratchet 용).
 
-`out/coverage.md` 의 *Uncovered* 목록이 곧 "아직 회귀 시나리오가 없는 리소스" 백로그다. 오늘 기준 70/87 (80.5%).
+`out/coverage.md` 의 *Uncovered* 목록이 곧 "아직 회귀 시나리오가 없는 리소스" 백로그다. 오늘 기준 87/87 (100%) — 전 리소스가 최소 dry-run 스키마 가드 시나리오를 가진다. 다음 단계는 자동 생성 픽스처를 손으로 작성한 integration 시나리오로 점진 승격하는 것.
 
 ### 시나리오 자동 생성 (scripts/gen_scenarios.py)
 
