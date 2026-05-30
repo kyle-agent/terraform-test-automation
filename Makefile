@@ -1,4 +1,4 @@
-.PHONY: tools test test-chapter test-one test-deep test-integration discover loop coverage merge clean lint fmt help
+.PHONY: tools test test-chapter test-one test-deep test-integration discover loop coverage matrix merge clean lint fmt help
 
 MODE ?= dry-run
 CH   ?= chapter1_core
@@ -19,6 +19,7 @@ help:
 	@echo "  test-integration  - shorthand for MODE=integration test"
 	@echo "  loop              - iterative regression loop (ITER=$(ITER) [CH=...])"
 	@echo "  coverage          - resource-surface coverage report (out/coverage.md)"
+	@echo "  matrix            - capability matrix: what works/fails per stage (out/capability-matrix.md)"
 	@echo "  merge             - merge per-shard results into out/results.json + junit"
 	@echo "  lint              - go vet"
 	@echo "  fmt               - go fmt ./..."
@@ -72,6 +73,14 @@ loop: $(OUT)
 coverage: $(OUT)
 	OUTPUT_DIR=$(OUTABS)/coverage MODE=$(MODE) $(GO) test ./tests/coverage/... -v -count=1
 	@echo "---"; cat $(OUTABS)/coverage/coverage.md 2>/dev/null | head -20 || true
+
+# Capability matrix: the general "what works / what doesn't" view across every
+# scenario, by stage (validate -> plan -> apply -> replan -> destroy). dry-run
+# fills validate only; MODE=integration exercises the full lifecycle.
+matrix: $(OUT)
+	CAPABILITY_MATRIX=1 OUTPUT_DIR=$(OUTABS) MODE=$(MODE) $(GO) test ./tests/capability/... \
+	  -run TestCapabilityMatrix -count=1 -timeout 120m
+	@echo "---"; sed -n '1,16p' $(OUTABS)/capability-matrix.md 2>/dev/null || true
 
 merge: $(OUT)
 	@scripts/merge_results.sh $(OUTABS)
