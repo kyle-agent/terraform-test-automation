@@ -10,14 +10,49 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-# AUTO-GENERATED minimal coverage fixture (scripts/gen_scenarios.py).
-# Validated against the real provider schema. Exercised in dry-run by the
-# tests/schema validate sweep; extend with integration assertions as needed.
+# Promoted regression fixture: a VPN gateway bound to a VPC and a public IP.
+# UUID inputs default to the zero-UUID, overridable via TF_VAR_*; schema-valid
+# defaults keep `terraform validate` green offline.
+
+variable "gateway_name" {
+  description = "VPN gateway name."
+  type        = string
+  default     = "regr-vpn-gateway"
+}
+
+variable "vpc_id" {
+  description = "VPC UUID the VPN gateway attaches to."
+  type        = string
+  default     = "00000000-0000-0000-0000-000000000000"
+}
+
+variable "ip_id" {
+  description = "Public IP resource UUID assigned to the gateway."
+  type        = string
+  default     = "00000000-0000-0000-0000-000000000000"
+}
+
+variable "ip_address" {
+  description = "Public IP address of the VPN gateway."
+  type        = string
+  default     = "10.0.0.10"
+}
+
+variable "ip_type" {
+  description = "IP allocation type enum (e.g. PUBLIC)."
+  type        = string
+  default     = "PUBLIC"
+}
 
 resource "samsungcloudplatformv2_vpn_vpn_gateway" "regr" {
-  ip_address = "10.0.0.10"
-  ip_id = "00000000-0000-0000-0000-000000000000"
-  ip_type = "10.0.0.10"
-  name = "regr"
-  vpc_id = "00000000-0000-0000-0000-000000000000"
+  name        = var.gateway_name
+  vpc_id      = var.vpc_id
+  ip_id       = var.ip_id
+  ip_address  = var.ip_address
+  ip_type     = var.ip_type
+  description = "Regression VPN gateway fixture"
+
+  tags = {
+    env = "regression"
+  }
 }

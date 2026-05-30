@@ -10,10 +10,39 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-# AUTO-GENERATED minimal coverage fixture (scripts/gen_scenarios.py).
-# Validated against the real provider schema. Exercised in dry-run by the
-# tests/schema validate sweep; extend with integration assertions as needed.
+# Promoted regression fixture: realistic planned-compute contract attributes,
+# overridable via TF_VAR_*. Inputs are optional in the schema; defaults are
+# schema-valid placeholders so the config passes `terraform validate` offline.
+
+variable "account_id" {
+  description = "SCP account UUID that owns the planned compute contract."
+  type        = string
+  default     = "00000000-0000-0000-0000-000000000000"
+}
+
+variable "service_id" {
+  description = "Target compute service (virtual server) UUID."
+  type        = string
+  default     = "00000000-0000-0000-0000-000000000000"
+}
+
+variable "region" {
+  description = "SCP region for the planned compute contract."
+  type        = string
+  default     = "kr-west1"
+}
 
 resource "samsungcloudplatformv2_billing_planned_compute" "regr" {
+  account_id    = var.account_id
+  action        = "CREATE"
+  contract_type = "YEAR_1"
+  os_type       = "LINUX"
+  region        = var.region
+  server_type   = "s1v1m2"
+  service_id    = var.service_id
+  service_name  = "regr-planned-compute"
 
+  tags = {
+    env = "regression"
+  }
 }
