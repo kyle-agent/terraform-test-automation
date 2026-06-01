@@ -1,4 +1,6 @@
 name: Capability Matrix
+# Re-trigger marker: auth_url corrected to the reachable environment (iam.e);
+# this run should pass provider init and exercise the real apply->replan->destroy.
 
 # Runs the general "what works / what fails per stage" matrix across every
 # scenario in integration mode (validate -> plan -> apply -> replan -> destroy),
