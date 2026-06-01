@@ -95,3 +95,12 @@ jobs:
         run: |
           scripts/matrix_to_results.sh out/capability-matrix.json out/results.json
           scripts/report_failures_to_issue.sh out/results.json
+      - name: Post full matrix summary (on-demand probe observability)
+        # On a branch-push probe, post the outcome for every stage (pass/blocked/
+        # fail) so the result is visible from the tracking issue even when there
+        # are zero failures. Scheduled/dispatch full runs keep failure-only filing.
+        if: always() && github.event_name == 'push'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_MARKER: "[capability] matrix failures"
+        run: scripts/post_matrix_summary.sh out/capability-matrix.json
