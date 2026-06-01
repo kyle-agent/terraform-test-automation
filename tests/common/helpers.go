@@ -92,6 +92,10 @@ func Plan(t *testing.T, dir string) PlanResult {
 	out, err := TFRun(t, dir, "plan", "-no-color", "-input=false", "-out="+planPath)
 	res := PlanResult{RawOutput: out}
 	if err != nil {
+		// Plan errored. Record the failing tail so a later assertion failure is
+		// diagnosable from results.json alone (an empty plan otherwise looks
+		// like a silent no-op and the CI log has to be scraped by hand).
+		AttachDetail(t.Name(), "terraform plan failed: "+tail(out, 30))
 		// Still parse diagnostics from text output for error tests
 		return res
 	}
@@ -113,9 +117,26 @@ func Apply(t *testing.T, dir string) string {
 	}
 	out, err := TFRun(t, dir, "apply", "-no-color", "-input=false", "-auto-approve")
 	if err != nil {
+		// Capture the failing tail into the structured result before Fatalf so
+		// the auto-filed regression issue shows *what* failed (an apply error,
+		// e.g. a create/validation failure) instead of an empty "details: —".
+		AttachDetail(t.Name(), "terraform apply failed: "+tail(out, 30))
 		t.Fatalf("terraform apply failed in %s: %v\n%s", dir, err, out)
 	}
 	return out
+}
+
+// tail returns the last n non-empty lines of s, trimmed, for compact inclusion
+// in a structured result (the full log stays in the CI output / RawOutput).
+func tail(s string, n int) string {
+	lines := strings.Split(strings.TrimRight(s, "\n"), "\n")
+	var kept []string
+	for i := len(lines) - 1; i >= 0 && len(kept) < n; i-- {
+		if strings.TrimSpace(lines[i]) != "" {
+			kept = append([]string{strings.TrimSpace(lines[i])}, kept...)
+		}
+	}
+	return strings.Join(kept, " ⏎ ")
 }
 
 // Destroy runs `terraform destroy` (auto-approve). Safe to defer.
