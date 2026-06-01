@@ -14,6 +14,10 @@ on:
         type: choice
         options: [integration, dry-run]
         default: integration
+      scenarios:
+        description: 'Comma-separated scenarios to scope the run (blank = full 87-resource matrix)'
+        required: false
+        default: 'vpc_vpc,vpc_publicip,security_group_basic,virtualserver_keypair'
   # Push to a development branch triggers an on-demand integration matrix run.
   # Restricted to claude/** so normal branches don't spend cloud resources on
   # every push; the run still uses the scp-integration environment + secrets.
@@ -58,10 +62,11 @@ jobs:
         env:
           MODE: ${{ github.event.inputs.mode || 'integration' }}
           OUTPUT_DIR: ${{ github.workspace }}/out
-          # A branch-push run is an on-demand probe: scope it to the resources
-          # under investigation so it finishes in minutes. Scheduled / manual
-          # dispatch runs leave this empty and exercise the full 87-resource matrix.
-          MATRIX_SCENARIOS: ${{ github.event_name == 'push' && 'vpc_vpc,vpc_publicip,security_group_basic,virtualserver_keypair' || '' }}
+          # On-demand probes scope to a few resources so they finish in minutes:
+          # a branch push uses the fixed 4-resource target; a manual dispatch uses
+          # the `scenarios` input (defaults to the same 4). Scheduled runs leave it
+          # empty and exercise the full 87-resource matrix.
+          MATRIX_SCENARIOS: ${{ github.event_name == 'push' && 'vpc_vpc,vpc_publicip,security_group_basic,virtualserver_keypair' || github.event.inputs.scenarios }}
           SCP_TF_ACCESS_KEY: ${{ secrets.SCP_TF_ACCESS_KEY }}
           SCP_TF_SECRET_KEY: ${{ secrets.SCP_TF_SECRET_KEY }}
           SCP_TF_AUTH_URL:   ${{ secrets.SCP_TF_AUTH_URL }}
@@ -99,7 +104,7 @@ jobs:
         # On a branch-push probe, post the outcome for every stage (pass/blocked/
         # fail) so the result is visible from the tracking issue even when there
         # are zero failures. Scheduled/dispatch full runs keep failure-only filing.
-        if: always() && github.event_name == 'push'
+        if: always() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE_MARKER: "[capability] matrix failures"
