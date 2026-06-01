@@ -29,6 +29,12 @@ on:
     # Daily at 06:00 UTC (15:00 KST) — offset from the 6-hourly integration job.
     - cron: '0 6 * * *'
 
+# Only one matrix run per ref at a time; a newer push cancels an in-flight run
+# so we don't stack concurrent integration lifecycles against the same account.
+concurrency:
+  group: capability-matrix-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
   issues: write

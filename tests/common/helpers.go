@@ -12,14 +12,19 @@
 package common
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
+	"sync"
 	"testing"
+	"time"
 )
 
 // Mode returns the test execution mode.
@@ -45,13 +50,45 @@ func SkipUnlessIntegration(t *testing.T, reason string) {
 // TFRun executes terraform in the given scenario directory.
 // Returns combined stdout+stderr and any exec error. The error is non-nil if
 // terraform exits non-zero — callers should inspect both error and output.
+//
+// Every invocation injects TF_VAR_name_suffix=<RunSuffix()> so scenarios that
+// incorporate the suffix into their resource names get a per-run-unique name.
+// Undeclared in a scenario, the var is simply ignored by terraform; declared
+// with a default of "", behavior is unchanged when the suffix is empty.
 func TFRun(t *testing.T, dir string, args ...string) (string, error) {
 	t.Helper()
 	cmd := exec.Command("terraform", args...)
 	cmd.Dir = dir
-	cmd.Env = append(os.Environ(), "TF_IN_AUTOMATION=1", "TF_INPUT=0")
+	cmd.Env = append(os.Environ(),
+		"TF_IN_AUTOMATION=1", "TF_INPUT=0",
+		"TF_VAR_name_suffix="+RunSuffix(),
+	)
 	out, err := cmd.CombinedOutput()
 	return string(out), err
+}
+
+var (
+	runSuffixOnce sync.Once
+	runSuffixVal  string
+)
+
+// RunSuffix returns a short, name-safe ([a-f0-9]) token that is stable for the
+// lifetime of the process but unique across CI runs. Scenarios append it to
+// fixed resource names so a leak from a previous run (a best-effort destroy
+// that failed) can't collide with this run's create — which otherwise surfaces
+// as a perpetual, misattributed "apply failed / already exists" regression.
+func RunSuffix() string {
+	runSuffixOnce.Do(func() {
+		// Prefer CI run identifiers so all scenarios in one workflow run share a
+		// suffix (stable within the run); fall back to a process-start nonce.
+		base := os.Getenv("GITHUB_RUN_ID") + "-" + os.Getenv("GITHUB_RUN_ATTEMPT")
+		if strings.Trim(base, "-") == "" {
+			base = strconv.FormatInt(time.Now().UnixNano(), 36)
+		}
+		h := sha1.Sum([]byte(base))
+		runSuffixVal = hex.EncodeToString(h[:])[:6]
+	})
+	return runSuffixVal
 }
 
 // MustInit runs `terraform init` and fails the test on error.
@@ -155,7 +192,12 @@ func Destroy(t *testing.T, dir string) {
 	}
 	out, err := TFRun(t, dir, "destroy", "-no-color", "-input=false", "-auto-approve")
 	if err != nil {
-		t.Logf("terraform destroy reported error (continuing): %v\n%s", err, out)
+		// A failed destroy leaks a real cloud resource. Don't fail the test (the
+		// assertion already ran), but surface it in the structured result so the
+		// leak is visible and cleanable instead of silently swallowed — a leaked
+		// fixed-name resource is what makes a later run's create collide.
+		AttachDetail(t.Name(), "LEAK: terraform destroy failed (resource not cleaned up): "+tail(out, 20))
+		t.Logf("terraform destroy reported error (continuing; leak surfaced in details): %v\n%s", err, out)
 	}
 }
 
