@@ -60,40 +60,15 @@ jobs:
           terraform_wrapper: false
       - name: Set up provider mirror (works even if the registry is blocked)
         run: scripts/setup_provider_mirror.sh
-      - name: Probe IAM endpoint reachability (diagnose 'Failed to get endpoint list')
-        if: always()
-        env:
-          SCP_TF_AUTH_URL: ${{ secrets.SCP_TF_AUTH_URL }}
-        run: |
-          set +e
-          probe() { # $1=label $2=url
-            local label=$1 url=$2 host
-            host=$(printf '%s' "$url" | sed -E 's#^[a-z]+://([^/]+).*#\1#')
-            printf '[%s] ' "$label"
-            getent hosts "$host" >/dev/null 2>&1 && printf 'dns=OK ' || printf 'dns=FAIL '
-            timeout 10 bash -c "exec 3<>/dev/tcp/$host/443" >/dev/null 2>&1 && printf 'tcp443=OK ' || printf 'tcp443=FAIL '
-            curl -sS -o /dev/null --max-time 20 \
-              -w "http=%{http_code} tls=%{time_appconnect}s total=%{time_total}s\n" "$url" \
-              || printf 'curl_exit=%s\n' "$?"
-          }
-          echo "== IAM reachability probe =="
-          echo "-- configured SCP_TF_AUTH_URL (host masked if secret) --"
-          probe "configured" "$SCP_TF_AUTH_URL"
-          probe "configured/endpoints" "${SCP_TF_AUTH_URL%/}/endpoints"
-          echo "-- known environment hosts (hardcoded, for comparison) --"
-          for h in e s g dev2; do
-            probe "iam.$h" "https://iam.$h.samsungsdscloud.com/v1"
-            probe "iam.$h/endpoints" "https://iam.$h.samsungsdscloud.com/v1/endpoints"
-          done
       - name: Build capability matrix
         env:
           MODE: ${{ github.event.inputs.mode || 'integration' }}
           OUTPUT_DIR: ${{ github.workspace }}/out
-          # On-demand probes scope to a few resources so they finish in minutes:
-          # a branch push uses the fixed 4-resource target; a manual dispatch uses
-          # the `scenarios` input (defaults to the same 4). Scheduled runs leave it
-          # empty and exercise the full 87-resource matrix.
-          MATRIX_SCENARIOS: ${{ github.event_name == 'push' && 'vpc_vpc,vpc_publicip,security_group_basic,virtualserver_keypair' || github.event.inputs.scenarios }}
+          # On-demand probe: a branch push exercises the 28 STANDALONE scenarios
+          # (no external TEST_* prerequisite, so a failure is a real provider
+          # defect, not a missing-dependency artifact). Manual dispatch uses the
+          # `scenarios` input; scheduled runs leave it empty (full 87 matrix).
+          MATRIX_SCENARIOS: ${{ github.event_name == 'push' && 'budget_budget,certificate_manager,certificate_manager_self_sign,cloudmonitoring_event_policy,dns_public_domain_name,eventstreams_basic,filestorage_volume,gslb_gslb,iam_access_key,iam_group,iam_policy,iam_role,iam_user,import_smoke,network_logging_network_logging_storage,resourcemanager_resource_group,security_group_basic,securitygroup_rule_basic,servicewatch_alert,servicewatch_dashboard,servicewatch_log_group,virtualserver_image,virtualserver_keypair,virtualserver_server_group,virtualserver_volume,vpc_publicip,vpc_transit_gateway,vpc_vpc' || github.event.inputs.scenarios }}
           SCP_TF_ACCESS_KEY: ${{ secrets.SCP_TF_ACCESS_KEY }}
           SCP_TF_SECRET_KEY: ${{ secrets.SCP_TF_SECRET_KEY }}
           SCP_TF_AUTH_URL:   ${{ secrets.SCP_TF_AUTH_URL }}
