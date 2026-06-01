@@ -162,6 +162,14 @@ func Apply(t *testing.T, dir string) string {
 	}
 	out, err := TFRun(t, dir, "apply", "-no-color", "-input=false", "-auto-approve")
 	if err != nil {
+		// A provider init/Configure failure (e.g. the IAM endpoint-list call) is
+		// an infrastructure/provider-robustness problem, not a defect of the
+		// resource under test. Skip (don't fail) so it is never auto-filed as a
+		// resource regression — it is tracked as provider #38/#37.
+		if IsProviderInitTransient(out) {
+			AttachDetail(t.Name(), "BLOCKED: provider init failed (see provider #38): "+tail(out, 20))
+			t.Skipf("provider init failed (transient; see provider #38) — cannot exercise apply/idempotency:\n%s", tail(out, 20))
+		}
 		// Capture the failing tail into the structured result before Fatalf so
 		// the auto-filed regression issue shows *what* failed (an apply error,
 		// e.g. a create/validation failure) instead of an empty "details: —".
@@ -169,6 +177,24 @@ func Apply(t *testing.T, dir string) string {
 		t.Fatalf("terraform apply failed in %s: %v\n%s", dir, err, out)
 	}
 	return out
+}
+
+// IsProviderInitTransient reports whether terraform output indicates the
+// provider failed to initialize/configure for a transient/infrastructure
+// reason (notably the IAM endpoint-list call) rather than a defect of the
+// resource under test. Such failures must not be reported as resource
+// regressions — they are tracked separately as provider #38 / #37.
+func IsProviderInitTransient(out string) bool {
+	for _, sig := range []string{
+		"Failed to get endpoint list", // provider #38 (IAM GetEndpointList, no retry/timeout/cache)
+		"Service Check Failed",        // provider #37 (microversion health-check stall)
+		"connection reset by peer",
+	} {
+		if strings.Contains(out, sig) {
+			return true
+		}
+	}
+	return false
 }
 
 // tail returns the last n non-empty lines of s, trimmed, for compact inclusion

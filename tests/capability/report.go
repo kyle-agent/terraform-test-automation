@@ -30,6 +30,8 @@ func glyph(state string) string {
 		return "✅"
 	case "fail":
 		return "❌"
+	case "blocked":
+		return "🚧" // provider-init transient (e.g. #38) — not a resource defect
 	default:
 		return "⊘" // skip / not exercised
 	}

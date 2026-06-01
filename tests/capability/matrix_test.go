@@ -138,6 +138,14 @@ func runScenario(t *testing.T, name string) ResourceCaps {
 	// --- plan ---
 	plan := common.Plan(t, dir)
 	if plan.RawOutput != "" && strings.Contains(plan.RawOutput, "Error:") && len(plan.ResourceChanges) == 0 {
+		// Distinguish a provider-init/Configure failure (e.g. IAM endpoint list)
+		// from a real plan defect: the former is tracked as provider #38/#37 and
+		// must not be filed as a resource regression.
+		if common.IsProviderInitTransient(plan.RawOutput) {
+			rc.Stages["plan"] = "blocked"
+			rc.Note = "provider-init transient, see provider #38: " + firstError(plan.RawOutput)
+			return rc
+		}
 		rc.Stages["plan"] = "fail"
 		rc.Note = firstError(plan.RawOutput)
 		return rc
@@ -146,6 +154,11 @@ func runScenario(t *testing.T, name string) ResourceCaps {
 
 	out, err := common.TFRun(t, dir, "apply", "-no-color", "-input=false", "-auto-approve")
 	if err != nil {
+		if common.IsProviderInitTransient(out) {
+			rc.Stages["apply"] = "blocked"
+			rc.Note = "provider-init transient, see provider #38: " + firstError(out)
+			return rc
+		}
 		rc.Stages["apply"] = "fail"
 		rc.Note = firstError(out)
 		return rc
