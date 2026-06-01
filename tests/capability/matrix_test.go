@@ -46,6 +46,28 @@ func TestCapabilityMatrix(t *testing.T) {
 		t.Fatalf("discover scenarios: %v", err)
 	}
 
+	// MATRIX_SCENARIOS (comma-separated) restricts the run to specific scenarios.
+	// The full integration matrix walks all 87 resources sequentially through the
+	// whole lifecycle, which takes hours and risks timing out / leaking heavyweight
+	// clusters; an on-demand run can scope to just the resources under
+	// investigation while the scheduled run stays full.
+	if sel := strings.TrimSpace(os.Getenv("MATRIX_SCENARIOS")); sel != "" {
+		want := map[string]bool{}
+		for _, s := range strings.Split(sel, ",") {
+			if s = strings.TrimSpace(s); s != "" {
+				want[s] = true
+			}
+		}
+		var filtered []string
+		for _, n := range scenarios {
+			if want[n] {
+				filtered = append(filtered, n)
+			}
+		}
+		scenarios = filtered
+		t.Logf("MATRIX_SCENARIOS set: restricting matrix to %d scenario(s): %v", len(scenarios), scenarios)
+	}
+
 	var caps []ResourceCaps
 	for _, name := range scenarios {
 		name := name

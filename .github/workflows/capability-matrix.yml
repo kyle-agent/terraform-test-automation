@@ -58,6 +58,10 @@ jobs:
         env:
           MODE: ${{ github.event.inputs.mode || 'integration' }}
           OUTPUT_DIR: ${{ github.workspace }}/out
+          # A branch-push run is an on-demand probe: scope it to the resources
+          # under investigation so it finishes in minutes. Scheduled / manual
+          # dispatch runs leave this empty and exercise the full 87-resource matrix.
+          MATRIX_SCENARIOS: ${{ github.event_name == 'push' && 'vpc_vpc,vpc_publicip,security_group_basic,virtualserver_keypair' || '' }}
           SCP_TF_ACCESS_KEY: ${{ secrets.SCP_TF_ACCESS_KEY }}
           SCP_TF_SECRET_KEY: ${{ secrets.SCP_TF_SECRET_KEY }}
           SCP_TF_AUTH_URL:   ${{ secrets.SCP_TF_AUTH_URL }}
