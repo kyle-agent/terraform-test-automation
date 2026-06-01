@@ -162,7 +162,7 @@ func changedSummary(plan common.PlanResult) string {
 			}
 		}
 		if !noop {
-			parts = append(parts, common.FormatActions(c))
+			parts = append(parts, common.FormatChange(c))
 		}
 	}
 	if len(parts) == 0 {

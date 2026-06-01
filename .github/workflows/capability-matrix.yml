@@ -14,6 +14,17 @@ on:
         type: choice
         options: [integration, dry-run]
         default: integration
+  # Push to a development branch triggers an on-demand integration matrix run.
+  # Restricted to claude/** so normal branches don't spend cloud resources on
+  # every push; the run still uses the scp-integration environment + secrets.
+  push:
+    branches:
+      - 'claude/**'
+    paths:
+      - 'tests/**'
+      - 'scenarios/**'
+      - 'scripts/**'
+      - '.github/workflows/capability-matrix.yml'
   schedule:
     # Daily at 06:00 UTC (15:00 KST) — offset from the 6-hourly integration job.
     - cron: '0 6 * * *'

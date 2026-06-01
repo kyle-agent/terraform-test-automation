@@ -17,6 +17,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 	"testing"
 )
@@ -74,6 +75,13 @@ type ResourceChange struct {
 	Address string `json:"address"`
 	Change  struct {
 		Actions []string `json:"actions"` // ["no-op"], ["create"], ["update"], ["delete"], ["delete","create"]
+		// before/after let us name *which* attributes differ on a non-idempotent
+		// re-plan (the root-cause signal), not just that the resource changed.
+		Before map[string]json.RawMessage `json:"before"`
+		After  map[string]json.RawMessage `json:"after"`
+		// replace_paths names the attribute(s) that force a destroy+create — the
+		// precise culprit for `-/+` replacements (e.g. keypair key material).
+		ReplacePaths []json.RawMessage `json:"replace_paths"`
 	} `json:"change"`
 }
 
@@ -178,4 +186,47 @@ func ScenarioPath(name string) string {
 // FormatActions joins resource change actions for log readability.
 func FormatActions(c ResourceChange) string {
 	return fmt.Sprintf("%s -> %s", c.Address, strings.Join(c.Change.Actions, ","))
+}
+
+// ChangedAttrs returns the top-level attribute names whose before != after
+// value in a plan change. For a non-idempotent re-plan this names the offending
+// attribute(s) (e.g. description, tags) so the provider fix is targeted.
+func ChangedAttrs(c ResourceChange) []string {
+	seen := map[string]bool{}
+	var changed []string
+	add := func(k string) {
+		if !seen[k] {
+			seen[k] = true
+			changed = append(changed, k)
+		}
+	}
+	for k, bv := range c.Change.Before {
+		if av, ok := c.Change.After[k]; !ok || string(bv) != string(av) {
+			add(k)
+		}
+	}
+	for k := range c.Change.After {
+		if _, ok := c.Change.Before[k]; !ok {
+			add(k)
+		}
+	}
+	sort.Strings(changed)
+	return changed
+}
+
+// FormatChange is FormatActions enriched with the attribute-level diff and any
+// replace paths, so an idempotency failure is diagnosable from the result alone.
+func FormatChange(c ResourceChange) string {
+	s := FormatActions(c)
+	if attrs := ChangedAttrs(c); len(attrs) > 0 {
+		s += " attrs=[" + strings.Join(attrs, ",") + "]"
+	}
+	if len(c.Change.ReplacePaths) > 0 {
+		var rp []string
+		for _, p := range c.Change.ReplacePaths {
+			rp = append(rp, string(p))
+		}
+		s += " replace=" + strings.Join(rp, ",")
+	}
+	return s
 }
