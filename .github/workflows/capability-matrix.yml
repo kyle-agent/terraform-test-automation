@@ -58,6 +58,24 @@ jobs:
           terraform_wrapper: false
       - name: Set up provider mirror (works even if the registry is blocked)
         run: scripts/setup_provider_mirror.sh
+      - name: Probe IAM endpoint reachability (diagnose 'Failed to get endpoint list')
+        if: always()
+        env:
+          SCP_TF_AUTH_URL: ${{ secrets.SCP_TF_AUTH_URL }}
+        run: |
+          set +e
+          echo "== IAM reachability probe (auth URL host is a secret -> masked) =="
+          host=$(printf '%s' "$SCP_TF_AUTH_URL" | sed -E 's#^[a-z]+://([^/]+).*#\1#')
+          echo "DNS:"; getent hosts "$host" >/dev/null 2>&1 && echo "  resolve OK" || echo "  resolve FAILED"
+          echo "TCP/443:"; timeout 15 bash -c "exec 3<>/dev/tcp/$host/443" >/dev/null 2>&1 && echo "  connect OK" || echo "  connect FAILED"
+          echo "HTTPS GET auth URL:"
+          curl -sS -o /dev/null --max-time 25 \
+            -w "  http_code=%{http_code} dns=%{time_namelookup}s connect=%{time_connect}s tls=%{time_appconnect}s total=%{time_total}s\n" \
+            "$SCP_TF_AUTH_URL" || echo "  curl exit=$?"
+          echo "HTTPS GET auth URL + /endpoints:"
+          curl -sS -o /dev/null --max-time 25 \
+            -w "  http_code=%{http_code} total=%{time_total}s\n" \
+            "${SCP_TF_AUTH_URL%/}/endpoints" || echo "  curl exit=$?"
       - name: Build capability matrix
         env:
           MODE: ${{ github.event.inputs.mode || 'integration' }}
