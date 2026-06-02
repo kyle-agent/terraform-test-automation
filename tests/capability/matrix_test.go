@@ -257,13 +257,27 @@ func firstError(out string) string {
 				if d.Detail != "" {
 					s += ": " + d.Detail
 				}
-				return clip(oneLine(s), 160)
+				return clip(oneLine(s), 600)
 			}
 		}
 	}
-	for _, ln := range strings.Split(out, "\n") {
+	// Plain-text terraform output: capture the "Error:" summary AND the
+	// following diagnostic block (the `│`-prefixed detail / API message),
+	// which is where the actionable cause lives — not just the summary.
+	lines := strings.Split(out, "\n")
+	for i, ln := range lines {
 		if strings.Contains(ln, "Error:") {
-			return clip(oneLine(strings.TrimSpace(ln)), 160)
+			var block []string
+			for _, bl := range lines[i:min(i+12, len(lines))] {
+				if strings.Contains(bl, "╵") {
+					break
+				}
+				t := strings.TrimSpace(strings.Trim(strings.TrimSpace(bl), "│╷╵"))
+				if t != "" {
+					block = append(block, t)
+				}
+			}
+			return clip(oneLine(strings.Join(block, " ")), 600)
 		}
 	}
 	return ""
