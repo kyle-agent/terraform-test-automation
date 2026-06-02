@@ -68,7 +68,7 @@ jobs:
           # (no external TEST_* prerequisite, so a failure is a real provider
           # defect, not a missing-dependency artifact). Manual dispatch uses the
           # `scenarios` input; scheduled runs leave it empty (full 87 matrix).
-          MATRIX_SCENARIOS: ${{ github.event_name == 'push' && 'budget_budget,certificate_manager,certificate_manager_self_sign,cloudmonitoring_event_policy,dns_public_domain_name,eventstreams_basic,filestorage_volume,gslb_gslb,iam_access_key,iam_role,iam_user,network_logging_network_logging_storage,securitygroup_rule_basic,servicewatch_alert,virtualserver_image,virtualserver_volume' || github.event.inputs.scenarios }}
+          MATRIX_SCENARIOS: ${{ github.event_name == 'push' && 'budget_budget,virtualserver_volume,iam_access_key' || github.event.inputs.scenarios }}
           SCP_TF_ACCESS_KEY: ${{ secrets.SCP_TF_ACCESS_KEY }}
           SCP_TF_SECRET_KEY: ${{ secrets.SCP_TF_SECRET_KEY }}
           SCP_TF_AUTH_URL:   ${{ secrets.SCP_TF_AUTH_URL }}

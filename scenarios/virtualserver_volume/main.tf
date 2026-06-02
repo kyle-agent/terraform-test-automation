@@ -30,7 +30,7 @@ resource "samsungcloudplatformv2_virtualserver_volume" "regr" {
   name           = var.volume_name
   size           = var.volume_size
   volume_type    = "SSD"
-  max_iops       = 3000
+  max_iops       = 15000
   max_throughput = 250
 
   tags = {
