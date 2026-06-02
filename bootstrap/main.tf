@@ -11,25 +11,41 @@ terraform {
 provider "samsungcloudplatformv2" {}
 
 # Shared prerequisites created once per dependent-probe run, so the dependent
-# scenarios (subnet, port, nat gateway, vpc endpoint, vpn gateway, ...) can be
-# exercised without TEST_* secrets. The run id keeps names unique across runs;
-# the workflow always destroys this stack afterwards.
+# scenarios can be exercised without TEST_* secrets. The run id keeps names
+# unique across runs; the workflow always destroys this stack afterwards.
+#
+# NOTE: vpc_subnet is intentionally NOT created — subnet create is broken in
+# v3.3.1 (provider bug #59: Value Conversion Error on dns_nameservers). Restore
+# it once #59 is fixed to unlock the subnet-dependent scenarios.
 variable "suffix" {
   type        = string
   description = "Per-run unique suffix (numeric run id)."
   default     = "boot"
 }
 
+# Primary VPC (small /24 so vpc_cidr can add a separate, non-overlapping block).
 resource "samsungcloudplatformv2_vpc_vpc" "prereq" {
   name        = "rpv${var.suffix}"
-  cidr        = "192.168.0.0/16"
+  cidr        = "192.168.0.0/24"
   description = "regr dependent-probe prerequisite vpc"
 }
 
-# NOTE: vpc_subnet is intentionally NOT created here — subnet create is broken
-# in v3.3.1 (provider bug #59: Value Conversion Error on dns_nameservers). Once
-# that is fixed, restore a subnet resource + subnet_id output to unlock the
-# subnet-dependent scenarios.
+# Internet gateway on the primary VPC (some resources, e.g. vpn gateway, require
+# the VPC to have an IGW).
+resource "samsungcloudplatformv2_vpc_internet_gateway" "prereq" {
+  type              = "IGW"
+  vpc_id            = samsungcloudplatformv2_vpc_vpc.prereq.id
+  description       = "regr dependent-probe prerequisite igw"
+  firewall_enabled  = true
+  firewall_loggable = false
+}
+
+# Second VPC for peering scenarios (approver side).
+resource "samsungcloudplatformv2_vpc_vpc" "prereq2" {
+  name        = "rpv2${var.suffix}"
+  cidr        = "192.169.0.0/24"
+  description = "regr dependent-probe prerequisite vpc 2"
+}
 
 resource "samsungcloudplatformv2_security_group_security_group" "prereq" {
   name        = "rpsg${var.suffix}"
@@ -39,6 +55,10 @@ resource "samsungcloudplatformv2_security_group_security_group" "prereq" {
 
 output "vpc_id" {
   value = samsungcloudplatformv2_vpc_vpc.prereq.id
+}
+
+output "approver_vpc_id" {
+  value = samsungcloudplatformv2_vpc_vpc.prereq2.id
 }
 
 output "security_group_id" {
