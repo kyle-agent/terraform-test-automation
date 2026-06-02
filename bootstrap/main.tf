@@ -53,6 +53,12 @@ resource "samsungcloudplatformv2_security_group_security_group" "prereq" {
   loggable    = false
 }
 
+# Public IP (some resources, e.g. vpn gateway, attach to one).
+resource "samsungcloudplatformv2_vpc_publicip" "prereq" {
+  type        = "IGW"
+  description = "regr dependent-probe prerequisite public ip"
+}
+
 output "vpc_id" {
   value = samsungcloudplatformv2_vpc_vpc.prereq.id
 }
@@ -63,4 +69,12 @@ output "approver_vpc_id" {
 
 output "security_group_id" {
   value = samsungcloudplatformv2_security_group_security_group.prereq.id
+}
+
+output "publicip_id" {
+  value = samsungcloudplatformv2_vpc_publicip.prereq.id
+}
+
+output "publicip_address" {
+  value = samsungcloudplatformv2_vpc_publicip.prereq.publicip.ip_address
 }
