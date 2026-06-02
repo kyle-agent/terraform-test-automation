@@ -40,6 +40,19 @@ resource "samsungcloudplatformv2_vpc_internet_gateway" "prereq" {
   firewall_loggable = false
 }
 
+# Subnet — created with dns_nameservers set EXPLICITLY to work around provider
+# bug #59 (omitting the Optional+Computed dns_nameservers makes it unknown, which
+# the []string model can't hold -> create fails). Setting it makes the value
+# known and lets the subnet be created so subnet-dependent scenarios can run.
+resource "samsungcloudplatformv2_vpc_subnet" "prereq" {
+  name            = "rps${var.suffix}"
+  vpc_id          = samsungcloudplatformv2_vpc_vpc.prereq.id
+  type            = "GENERAL"
+  cidr            = "192.168.0.0/28"
+  description     = "regr dependent-probe prerequisite subnet"
+  dns_nameservers = ["8.8.8.8", "8.8.4.4"]
+}
+
 # Second VPC for peering scenarios (approver side).
 resource "samsungcloudplatformv2_vpc_vpc" "prereq2" {
   name        = "rpv2${var.suffix}"
@@ -65,6 +78,10 @@ output "vpc_id" {
 
 output "approver_vpc_id" {
   value = samsungcloudplatformv2_vpc_vpc.prereq2.id
+}
+
+output "subnet_id" {
+  value = samsungcloudplatformv2_vpc_subnet.prereq.id
 }
 
 output "security_group_id" {
