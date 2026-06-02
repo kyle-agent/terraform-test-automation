@@ -1,0 +1,82 @@
+name: Dependent Probe
+
+# Exercises scenarios that need a pre-existing VPC / Subnet / Security Group by
+# creating those prerequisites once (bootstrap/), exporting their ids as TF_VAR_*,
+# running the capability matrix over the dependent set, then always tearing the
+# prerequisites down. This unlocks ~network dependent resources without TEST_*
+# secrets. Triggered by pushing to bootstrap/ or this workflow on a claude/** branch.
+
+on:
+  push:
+    branches:
+      - 'claude/**'
+    paths:
+      - 'bootstrap/**'
+      - '.github/workflows/dependent-probe.yml'
+  workflow_dispatch:
+    inputs:
+      scenarios:
+        description: 'Comma-separated dependent scenarios to run'
+        required: false
+        default: 'vpc_internet_gateway,vpc_port,vpc_subnet_vip,vpc_vpc_endpoint,vpc_nat_gateway,vpc_cidr,vpn_vpn_gateway'
+
+concurrency:
+  group: dependent-probe-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  issues: write
+
+env:
+  TF_VAR_suffix: ${{ github.run_id }}
+  SCP_TF_ACCESS_KEY: ${{ secrets.SCP_TF_ACCESS_KEY }}
+  SCP_TF_SECRET_KEY: ${{ secrets.SCP_TF_SECRET_KEY }}
+  SCP_TF_AUTH_URL: ${{ secrets.SCP_TF_AUTH_URL }}
+  SCP_DEFAULT_REGION: ${{ secrets.SCP_DEFAULT_REGION }}
+  SCP_TF_DEFAULT_REGION: ${{ secrets.SCP_DEFAULT_REGION }}
+  SCP_ACCOUNT_ID: ${{ secrets.SCP_ACCOUNT_ID }}
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    environment: scp-integration
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.6.6'
+          terraform_wrapper: false
+      - name: Set up provider mirror
+        run: scripts/setup_provider_mirror.sh
+      - name: Bootstrap prerequisites (VPC / Subnet / Security Group)
+        run: |
+          terraform -chdir=bootstrap init -no-color -input=false
+          terraform -chdir=bootstrap apply -no-color -input=false -auto-approve
+          {
+            echo "TF_VAR_vpc_id=$(terraform -chdir=bootstrap output -raw vpc_id)"
+            echo "TF_VAR_subnet_id=$(terraform -chdir=bootstrap output -raw subnet_id)"
+            echo "TF_VAR_security_group_id=$(terraform -chdir=bootstrap output -raw security_group_id)"
+          } >> "$GITHUB_ENV"
+      - name: Run dependent capability matrix
+        env:
+          MODE: integration
+          OUTPUT_DIR: ${{ github.workspace }}/out
+          CAPABILITY_MATRIX: '1'
+          MATRIX_SCENARIOS: ${{ github.event.inputs.scenarios || 'vpc_internet_gateway,vpc_port,vpc_subnet_vip,vpc_vpc_endpoint,vpc_nat_gateway,vpc_cidr,vpn_vpn_gateway' }}
+        run: |
+          go test ./tests/capability/... -run TestCapabilityMatrix -count=1 -timeout 120m || true
+          echo "## Dependent Probe" >> "$GITHUB_STEP_SUMMARY"
+          sed -n '1,40p' "$OUTPUT_DIR/capability-matrix.md" >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
+      - name: Post matrix summary to tracking issue
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_MARKER: "[capability] matrix failures"
+        run: scripts/post_matrix_summary.sh out/capability-matrix.json
+      - name: Teardown prerequisites
+        if: always()
+        run: terraform -chdir=bootstrap destroy -no-color -input=false -auto-approve || true
