@@ -1,0 +1,33 @@
+terraform {
+  required_version = ">= 1.6"
+  required_providers {
+    samsungcloudplatformv2 = {
+      source  = "SamsungSDSCloud/samsungcloudplatformv2"
+      version = ">= 0.0.1"
+    }
+  }
+}
+
+provider "samsungcloudplatformv2" {}
+
+# Read-only inventory of VPCs so we can identify leaked test resources
+# (names created by this automation: regr-*, rpv*, rps*, rpsg*) before deleting
+# anything. No resources are created or destroyed by this config.
+data "samsungcloudplatformv2_vpc_vpcs" "all" {
+  size = 50
+}
+
+output "all_vpcs" {
+  value = [for v in data.samsungcloudplatformv2_vpc_vpcs.all.vpcs : {
+    id    = v.id
+    name  = v.name
+    state = v.state
+  }]
+}
+
+output "test_vpcs" {
+  value = [for v in data.samsungcloudplatformv2_vpc_vpcs.all.vpcs :
+    { id = v.id, name = v.name, state = v.state }
+    if startswith(v.name, "regr") || startswith(v.name, "rpv") || startswith(v.name, "rps")
+  ]
+}
