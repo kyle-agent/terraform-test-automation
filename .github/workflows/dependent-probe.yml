@@ -18,7 +18,7 @@ on:
       scenarios:
         description: 'Comma-separated dependent scenarios to run'
         required: false
-        default: 'vpc_internet_gateway,vpc_port,vpc_subnet_vip,vpc_vpc_endpoint,vpc_nat_gateway,vpc_cidr,vpn_vpn_gateway'
+        default: 'vpc_internet_gateway,vpc_cidr,vpn_vpn_gateway'
 
 concurrency:
   group: dependent-probe-${{ github.ref }}
@@ -58,7 +58,6 @@ jobs:
           terraform -chdir=bootstrap apply -no-color -input=false -auto-approve
           {
             echo "TF_VAR_vpc_id=$(terraform -chdir=bootstrap output -raw vpc_id)"
-            echo "TF_VAR_subnet_id=$(terraform -chdir=bootstrap output -raw subnet_id)"
             echo "TF_VAR_security_group_id=$(terraform -chdir=bootstrap output -raw security_group_id)"
           } >> "$GITHUB_ENV"
       - name: Run dependent capability matrix
@@ -66,7 +65,7 @@ jobs:
           MODE: integration
           OUTPUT_DIR: ${{ github.workspace }}/out
           CAPABILITY_MATRIX: '1'
-          MATRIX_SCENARIOS: ${{ github.event.inputs.scenarios || 'vpc_internet_gateway,vpc_port,vpc_subnet_vip,vpc_vpc_endpoint,vpc_nat_gateway,vpc_cidr,vpn_vpn_gateway' }}
+          MATRIX_SCENARIOS: ${{ github.event.inputs.scenarios || 'vpc_internet_gateway,vpc_cidr,vpn_vpn_gateway' }}
         run: |
           go test ./tests/capability/... -run TestCapabilityMatrix -count=1 -timeout 120m || true
           echo "## Dependent Probe" >> "$GITHUB_STEP_SUMMARY"

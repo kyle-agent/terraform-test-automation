@@ -26,13 +26,10 @@ resource "samsungcloudplatformv2_vpc_vpc" "prereq" {
   description = "regr dependent-probe prerequisite vpc"
 }
 
-resource "samsungcloudplatformv2_vpc_subnet" "prereq" {
-  name        = "rps${var.suffix}"
-  vpc_id      = samsungcloudplatformv2_vpc_vpc.prereq.id
-  type        = "GENERAL"
-  cidr        = "192.168.10.0/24"
-  description = "regr dependent-probe prerequisite subnet"
-}
+# NOTE: vpc_subnet is intentionally NOT created here — subnet create is broken
+# in v3.3.1 (provider bug #59: Value Conversion Error on dns_nameservers). Once
+# that is fixed, restore a subnet resource + subnet_id output to unlock the
+# subnet-dependent scenarios.
 
 resource "samsungcloudplatformv2_security_group_security_group" "prereq" {
   name        = "rpsg${var.suffix}"
@@ -42,10 +39,6 @@ resource "samsungcloudplatformv2_security_group_security_group" "prereq" {
 
 output "vpc_id" {
   value = samsungcloudplatformv2_vpc_vpc.prereq.id
-}
-
-output "subnet_id" {
-  value = samsungcloudplatformv2_vpc_subnet.prereq.id
 }
 
 output "security_group_id" {
