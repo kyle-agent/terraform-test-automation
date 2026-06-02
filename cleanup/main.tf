@@ -31,3 +31,19 @@ output "test_vpcs" {
     if startswith(v.name, "regr") || startswith(v.name, "rpv") || startswith(v.name, "rps")
   ]
 }
+
+# VPC peerings — a leaked peering (from the failed vpc_vpc_peering create that
+# still left a server-side object) blocks deleting its requester/approver VPC.
+data "samsungcloudplatformv2_vpc_vpc_peerings" "all" {
+  size = 50
+}
+
+output "peerings" {
+  value = [for p in data.samsungcloudplatformv2_vpc_vpc_peerings.all.vpc_peerings : {
+    id        = p.id
+    name      = p.name
+    requester = p.requester_vpc_id
+    approver  = p.approver_vpc_id
+    state     = p.state
+  }]
+}
