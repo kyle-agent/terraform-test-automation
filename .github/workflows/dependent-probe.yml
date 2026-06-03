@@ -59,10 +59,7 @@ jobs:
           VPC_ID=$(terraform -chdir=bootstrap output -raw vpc_id)
           {
             echo "TF_VAR_vpc_id=$VPC_ID"
-            echo "TF_VAR_requester_vpc_id=$VPC_ID"
-            echo "TF_VAR_approver_vpc_id=$(terraform -chdir=bootstrap output -raw approver_vpc_id)"
             echo "TF_VAR_subnet_id=$(terraform -chdir=bootstrap output -raw subnet_id)"
-            echo "TF_VAR_approver_vpc_account_id=$SCP_ACCOUNT_ID"
             echo "TF_VAR_security_group_id=$(terraform -chdir=bootstrap output -raw security_group_id)"
             echo "TF_VAR_ip_id=$(terraform -chdir=bootstrap output -raw publicip_id)"
             echo "TF_VAR_ip_address=$(terraform -chdir=bootstrap output -raw publicip_address)"

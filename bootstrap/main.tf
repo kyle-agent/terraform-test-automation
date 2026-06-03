@@ -53,13 +53,6 @@ resource "samsungcloudplatformv2_vpc_subnet" "prereq" {
   dns_nameservers = ["8.8.8.8", "8.8.4.4"]
 }
 
-# Second VPC for peering scenarios (approver side).
-resource "samsungcloudplatformv2_vpc_vpc" "prereq2" {
-  name        = "rpv2${var.suffix}"
-  cidr        = "192.169.0.0/24"
-  description = "regr dependent-probe prerequisite vpc 2"
-}
-
 resource "samsungcloudplatformv2_security_group_security_group" "prereq" {
   name        = "rpsg${var.suffix}"
   description = "regr dependent-probe prerequisite security group"
@@ -74,10 +67,6 @@ resource "samsungcloudplatformv2_vpc_publicip" "prereq" {
 
 output "vpc_id" {
   value = samsungcloudplatformv2_vpc_vpc.prereq.id
-}
-
-output "approver_vpc_id" {
-  value = samsungcloudplatformv2_vpc_vpc.prereq2.id
 }
 
 output "subnet_id" {
