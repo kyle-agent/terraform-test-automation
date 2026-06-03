@@ -48,7 +48,7 @@ resource "samsungcloudplatformv2_vpc_subnet" "prereq" {
   name            = "rps${var.suffix}"
   vpc_id          = samsungcloudplatformv2_vpc_vpc.prereq.id
   type            = "GENERAL"
-  cidr            = "192.168.0.0/28"
+  cidr            = "192.168.0.0/27" # /27 (.0-.31) so vpc_subnet_vip's 192.168.0.20 fits
   description     = "regr dependent-probe prerequisite subnet"
   dns_nameservers = ["8.8.8.8"] # API permits up to 1; #59 workaround needs a known value
 }
