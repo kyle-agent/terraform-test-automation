@@ -50,7 +50,7 @@ resource "samsungcloudplatformv2_vpc_subnet" "prereq" {
   type            = "GENERAL"
   cidr            = "192.168.0.0/28"
   description     = "regr dependent-probe prerequisite subnet"
-  dns_nameservers = ["8.8.8.8", "8.8.4.4"]
+  dns_nameservers = ["8.8.8.8"] # API permits up to 1; #59 workaround needs a known value
 }
 
 resource "samsungcloudplatformv2_security_group_security_group" "prereq" {
