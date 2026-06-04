@@ -1,4 +1,6 @@
 name: Coverage Dashboard (GitHub Pages)
+# (re-trigger: verify deploy from the integration branch after the github-pages
+#  environment deployment-branch rule was opened to claude/youthful-albattani-CzhCZ)
 
 # Publishes the capability-coverage dashboard (docs/index.html) to GitHub Pages.
 # One-time setup by a repo admin: Settings → Pages → Source = "GitHub Actions".
