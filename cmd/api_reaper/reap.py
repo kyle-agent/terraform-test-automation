@@ -62,6 +62,34 @@ def wait_gone(c, svc, path, timeout=300, interval=15):
     return False
 
 
+def reap_tgw(c, tgwid, tgwname=None):
+    """Tear down a transit gateway in the REQUIRED order:
+    routing-rules + uplink-routing-rules -> firewalls -> vpc-connections -> TGW.
+    (A TGW won't delete while rules or connections remain — learned the hard way.)"""
+    print(f"  reaping TGW {tgwname} ({tgwid})")
+    for sub in ("routing-rules", "uplink-routing-rules"):
+        _, rules = get(c, "vpc", f"/v1/transit-gateways/{tgwid}/{sub}")
+        for r in rules:
+            if r.get("id"):
+                delete(c, "vpc", f"/v1/transit-gateways/{tgwid}/{sub}/{r['id']}")
+    _, fws = get(c, "vpc", f"/v1/transit-gateways/{tgwid}/firewalls")
+    for fw in fws:
+        if fw.get("id"):
+            delete(c, "vpc", f"/v1/transit-gateways/{tgwid}/firewalls/{fw['id']}")
+    _, conns = get(c, "vpc", f"/v1/transit-gateways/{tgwid}/vpc-connections")
+    for conn in conns:
+        if conn.get("id"):
+            delete(c, "vpc", f"/v1/transit-gateways/{tgwid}/vpc-connections/{conn['id']}")
+            wait_gone(c, "vpc", f"/v1/transit-gateways/{tgwid}/vpc-connections/{conn['id']}", 240, 15)
+    for _ in range(6):
+        st = delete(c, "vpc", f"/v1/transit-gateways/{tgwid}")
+        if st in (200, 202, 204, 404):
+            wait_gone(c, "vpc", f"/v1/transit-gateways/{tgwid}", 240, 15); return
+        if st == 409:
+            time.sleep(15); continue
+        return
+
+
 def reap_vpc(c, vid, vname):
     print(f"== reaping {vname} ({vid}) ==")
 
@@ -88,23 +116,23 @@ def reap_vpc(c, vid, vname):
                     time.sleep(30); continue
                 break
 
-    # 2. transit-gateway vpc-connections referencing this vpc (+ the test TGW)
+    # 2. transit-gateways connected to this vpc. A test TGW gets a FULL teardown
+    # (rules -> connections -> tgw); a non-test TGW only loses this vpc's connection.
     _, tgws = get(c, "vpc", "/v1/transit-gateways")
     for tgw in tgws:
         tgwid = tgw.get("id")
         if not tgwid:
             continue
         _, conns = get(c, "vpc", f"/v1/transit-gateways/{tgwid}/vpc-connections")
-        hit = False
-        for conn in conns:
-            if str(conn.get("vpc_id")) == vid and conn.get("id"):
-                hit = True
-                delete(c, "vpc", f"/v1/transit-gateways/{tgwid}/vpc-connections/{conn['id']}")
-                wait_gone(c, "vpc", f"/v1/transit-gateways/{tgwid}/vpc-connections/{conn['id']}", 240, 15)
-        # delete the TGW too if it's a regression-created one we just disconnected
-        if hit and str(tgw.get("name", "")).startswith("regr"):
-            delete(c, "vpc", f"/v1/transit-gateways/{tgwid}")
-            wait_gone(c, "vpc", f"/v1/transit-gateways/{tgwid}", 240, 15)
+        if not any(str(conn.get("vpc_id")) == vid for conn in conns):
+            continue
+        if str(tgw.get("name", "")).startswith("regr"):
+            reap_tgw(c, tgwid, tgw.get("name"))
+        else:
+            for conn in conns:
+                if str(conn.get("vpc_id")) == vid and conn.get("id"):
+                    delete(c, "vpc", f"/v1/transit-gateways/{tgwid}/vpc-connections/{conn['id']}")
+                    wait_gone(c, "vpc", f"/v1/transit-gateways/{tgwid}/vpc-connections/{conn['id']}", 240, 15)
 
     # 3. ports in this vpc
     _, ports = get(c, "vpc", "/v1/ports")
@@ -156,20 +184,7 @@ def main() -> int:
         _, tgws = get(c, "vpc", "/v1/transit-gateways")
         for tgw in tgws:
             if tgw.get("name") in TARGET_TGW_NAMES and tgw.get("id"):
-                tgwid = tgw["id"]
-                print(f"== reaping TGW {tgw['name']} ({tgwid}) ==")
-                _, conns = get(c, "vpc", f"/v1/transit-gateways/{tgwid}/vpc-connections")
-                for conn in conns:
-                    if conn.get("id"):
-                        delete(c, "vpc", f"/v1/transit-gateways/{tgwid}/vpc-connections/{conn['id']}")
-                        wait_gone(c, "vpc", f"/v1/transit-gateways/{tgwid}/vpc-connections/{conn['id']}", 240, 15)
-                for _ in range(5):
-                    st = delete(c, "vpc", f"/v1/transit-gateways/{tgwid}")
-                    if st in (200, 202, 204, 404):
-                        wait_gone(c, "vpc", f"/v1/transit-gateways/{tgwid}", 240, 15); break
-                    if st == 409:
-                        time.sleep(15); continue
-                    break
+                reap_tgw(c, tgw["id"], tgw.get("name"))
 
     print("api-reaper done")
     return 0

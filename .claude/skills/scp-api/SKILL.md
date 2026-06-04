@@ -52,10 +52,18 @@ python .claude/skills/scp-api/scp_api.py delete vpc /v1/vpcs/<id>          # rem
 
 ## Cleanup dependency order (important)
 A VPC won't delete until its children are gone. Delete in order:
-`ports → subnets → internet-gateways → publicips → transit-gateway vpc-connections →
-transit-gateway → (private-dns / public-domain detached) → vpc`. The reaper waits for
-async (202) deletes and retries VPC 409s. **Only ever target specific ids on a shared
-account** (never broad name-prefix deletes that could hit live resources).
+`ske clusters (nodepools→cluster) → ports → subnets → internet-gateways → publicips →
+transit gateways → (private-dns / public-domain detached) → vpc`.
+
+**Transit Gateway has its OWN required teardown order** (a TGW won't delete while rules
+or connections remain): **routing-rules + uplink-routing-rules → firewalls →
+vpc-connections → the TGW**. (Confirmed live — deleting only the vpc-connection is not
+enough; leftover routing rules block it.)
+
+Public Domain Name has **no DELETE API** (only create/list/get/set/transfer) — it can't
+be reaped via API; release/console only. The reaper waits for async (202) deletes and
+retries VPC 409s. **Only ever target specific ids / vpc_id-scoped children on a shared
+account** — never broad name-prefix deletes that could hit live resources.
 
 ## Common DELETE paths (from api_catalog.json)
 - vpc host: `/v1/vpcs/{id}`, `/v1/subnets/{id}`, `/v1/internet-gateways/{id}`,
