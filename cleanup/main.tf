@@ -49,3 +49,5 @@ output "peerings" {
 }
 
 # inventory re-run 2026-06-04: pre-account-switch verification sweep
+
+# account-switch verification 2026-06-04T09:11:34Z: list VPCs in the new account
