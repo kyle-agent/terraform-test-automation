@@ -18,6 +18,13 @@ RUN_URL="${GITHUB_SERVER_URL:-https://github.com}/${REPO}/actions/runs/${GITHUB_
 if [ ! -f "$IN" ]; then
   echo "no matrix file: $IN"; exit 0
 fi
+# A no-op run (e.g. MATRIX_SCENARIOS matched nothing) marshals an empty slice as
+# `null`; jq '.[]' would then error "Cannot iterate over null". Treat null/empty/
+# non-array as "nothing to summarize" and exit cleanly so the run stays green.
+COUNT=$(jq 'if type=="array" then length else 0 end' "$IN" 2>/dev/null || echo 0)
+if [ "${COUNT:-0}" = "0" ]; then
+  echo "matrix has 0 resources; nothing to post."; exit 0
+fi
 if [ -z "$TOKEN" ] || [ -z "$REPO" ]; then
   echo "GITHUB_TOKEN/REPO not set; skipping matrix summary."; exit 0
 fi
