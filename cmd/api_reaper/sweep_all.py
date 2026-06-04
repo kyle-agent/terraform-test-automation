@@ -136,6 +136,29 @@ def main() -> int:
     for it in lst(c, "vpc", "/v1/transit-gateways"):
         if it.get("id"):
             reap_tgw(c, it["id"], name_of(it)); n += 1
+    # 5b. vpc-peerings (rules->peering), vpc-endpoints, private-nats (+nat-ips) —
+    # these pin a VPC and were the missing child types causing 409 on vpc delete.
+    for it in lst(c, "vpc", "/v1/vpc-peerings"):
+        pid = it.get("id")
+        if not pid:
+            continue
+        for r in items(c.get(f"/v1/vpc-peerings/{pid}/routing-rules", service="vpc").body):
+            if r.get("id"):
+                delete(c, "vpc", f"/v1/vpc-peerings/{pid}/routing-rules/{r['id']}")
+        if delete(c, "vpc", f"/v1/vpc-peerings/{pid}"):
+            n += 1; wait_gone(c, "vpc", f"/v1/vpc-peerings/{pid}", 180, 10)
+    for it in lst(c, "vpc", "/v1/vpc-endpoints"):
+        if it.get("id") and delete(c, "vpc", f"/v1/vpc-endpoints/{it['id']}"):
+            n += 1; wait_gone(c, "vpc", f"/v1/vpc-endpoints/{it['id']}", 180, 10)
+    for it in lst(c, "vpc", "/v1/private-nats"):
+        pid = it.get("id")
+        if not pid:
+            continue
+        for ip in items(c.get(f"/v1/private-nats/{pid}/private-nat-ips", service="vpc").body):
+            if ip.get("id"):
+                delete(c, "vpc", f"/v1/private-nats/{pid}/private-nat-ips/{ip['id']}")
+        if delete(c, "vpc", f"/v1/private-nats/{pid}"):
+            n += 1
     # 6. vpc children that block vpc delete
     for it in lst(c, "vpc", "/v1/nat-gateways"):
         if it.get("id") and delete(c, "vpc", f"/v1/nat-gateways/{it['id']}"):
@@ -170,8 +193,23 @@ def main() -> int:
     # 9. subnets -> internet-gateways -> vpcs
     sids = []
     for it in lst(c, "vpc", "/v1/subnets"):
-        if it.get("id") and delete(c, "vpc", f"/v1/subnets/{it['id']}"):
-            n += 1; sids.append(it["id"])
+        sid = it.get("id")
+        if not sid:
+            continue
+        # subnet VIPs (connected-ports + static-nat-ips -> vip) before the subnet
+        for vip in items(c.get(f"/v1/subnets/{sid}/vips", service="vpc").body):
+            vipid = vip.get("id")
+            if not vipid:
+                continue
+            for cp in items(c.get(f"/v1/subnets/{sid}/vips/{vipid}/connected-ports", service="vpc").body):
+                if cp.get("id"):
+                    delete(c, "vpc", f"/v1/subnets/{sid}/vips/{vipid}/connected-ports/{cp['id']}")
+            for sn in items(c.get(f"/v1/subnets/{sid}/vips/{vipid}/static-nat-ips", service="vpc").body):
+                if sn.get("id"):
+                    delete(c, "vpc", f"/v1/subnets/{sid}/vips/{vipid}/static-nat-ips/{sn['id']}")
+            delete(c, "vpc", f"/v1/subnets/{sid}/vips/{vipid}")
+        if delete(c, "vpc", f"/v1/subnets/{sid}"):
+            n += 1; sids.append(sid)
     for sid in sids:
         wait_gone(c, "vpc", f"/v1/subnets/{sid}")
     for it in lst(c, "vpc", "/v1/internet-gateways"):
