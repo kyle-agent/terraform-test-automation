@@ -49,16 +49,22 @@ jobs:
       TF_VAR_suffix: ${{ github.run_id }}${{ strategy.job-index }}
     strategy:
       fail-fast: false
-      max-parallel: 3
+      # SERIAL: the account has a hard 5-VPC quota. Running shards in parallel
+      # (each bootstraps a VPC, some scenarios create more) exhausts it, so we
+      # serialize to guarantee clean determinations without quota-collisions.
+      max-parallel: 1
       matrix:
-        # Sweep #2: re-run the scenarios whose fixtures were fixed (commit 3b01353)
-        # to confirm they now go create->destroy green. dns_private_dns is excluded
-        # (provider #79 makes its destroy leak the VPC); TGW/LB and external-id
-        # scenarios stay out.
+        # Sweep #3: cover everything still undetermined + the scenarios that were
+        # quota-masked in Sweep #2 + the freshly re-fixed fixtures. dns_private_dns
+        # stays out (provider #79 destroy leak). LB-creating scenarios are recorded
+        # as blocked by #77 (not run — they leak a billed LB on destroy).
         shard:
-          - "vpc_internet_gateway,vpc_vpc_peering,vpc_vpc_peering_approval,vpc_vpc_peering_rule"
-          - "vpn_vpn_gateway,vpn_vpn_tunnel,directconnect_direct_connect,directconnect_routing_rule,gslb_gslb"
-          - "servicewatch_log_stream,servicewatch_alert,loggingaudit_trail,backup_backup,virtualserver_volume,iam_role,iam_group_member,iam_role_policy_bindings,certificate_manager_self_sign"
+          - "vpc_transit_gateway,vpc_subnet_vip,vpc_subnet_vip_port,vpc_subnet_vip_nat_ip,vpc_private_nat,vpc_private_nat_ip"
+          - "vpc_transit_gateway_vpc_connection,vpc_transit_gateway_rule,vpc_transit_gateway_firewall,vpc_transit_gateway_firewall_connection,vpc_transit_gateway_uplink_rule"
+          - "mysql_cluster,postgresql_cluster,mariadb_cluster,sqlserver_cluster,epas_cluster,searchengine_cluster,cachestore_cluster"
+          - "ske_cluster,ske_nodepool"
+          - "dns_hosted_zone,dns_record,servicewatch_log_stream,servicewatch_alert,loggingaudit_trail,backup_backup,virtualserver_volume,iam_role,iam_group_member,iam_role_policy_bindings,certificate_manager_self_sign"
+          - "vpn_vpn_tunnel,directconnect_routing_rule,gslb_gslb,vpc_internet_gateway,vpc_vpc_peering,vpc_vpc_peering_approval,vpc_vpc_peering_rule"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -97,7 +103,7 @@ jobs:
           CAPABILITY_MATRIX: '1'
           MATRIX_SCENARIOS: ${{ matrix.shard }}
         run: |
-          go test ./tests/capability/... -run TestCapabilityMatrix -count=1 -timeout 25m || true
+          go test ./tests/capability/... -run TestCapabilityMatrix -count=1 -timeout 30m || true
           echo "===== capability matrix (this shard) ====="
           cat "$OUTPUT_DIR/capability-matrix.md" 2>/dev/null || echo "(no matrix md produced)"
           {
