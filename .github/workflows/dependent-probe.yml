@@ -80,7 +80,7 @@ jobs:
           MODE: integration
           OUTPUT_DIR: ${{ github.workspace }}/out
           CAPABILITY_MATRIX: '1'
-          MATRIX_SCENARIOS: ${{ github.event.inputs.scenarios || 'ske_cluster' }}
+          MATRIX_SCENARIOS: ${{ github.event.inputs.scenarios || 'ske_nodepool' }}
         run: |
           go test ./tests/capability/... -run TestCapabilityMatrix -count=1 -timeout 120m || true
           echo "## Dependent Probe" >> "$GITHUB_STEP_SUMMARY"
