@@ -28,9 +28,12 @@ env:
   SCP_TF_AUTH_URL: ${{ secrets.SCP_TF_AUTH_URL }}
   SCP_TF_DEFAULT_REGION: ${{ secrets.SCP_DEFAULT_REGION }}
   SCP_ACCOUNT_ID: ${{ secrets.SCP_ACCOUNT_ID }}
-  # Use the default public module proxy (proxy.golang.org); GOPROXY=direct fails
-  # here because direct git fetches need auth that the runner does not provide.
   GOFLAGS: -mod=mod
+  # The SamsungSDSCloud SDK module is not served by the public Go proxy and
+  # anonymous git fetches fail, so fetch it directly with a token (same approach
+  # as the provider's own release workflow).
+  GOPRIVATE: github.com/SamsungSDSCloud/terraform-sdk-samsungcloudplatformv2
+  GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
 
 jobs:
   reap:
@@ -42,6 +45,8 @@ jobs:
         with:
           # The SCP provider module declares go 1.25; match it so the build works.
           go-version: '1.25'
+      - name: Configure access token for private SDK module
+        run: git config --global url.https://$GH_ACCESS_TOKEN@github.com/.insteadOf https://github.com/
       - name: Resolve module deps
         run: go mod tidy
       - name: Run reaper
