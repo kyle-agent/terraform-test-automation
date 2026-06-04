@@ -30,7 +30,9 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/kyle-agent/terraform-test-automation/tests/common"
@@ -68,13 +70,52 @@ func TestCapabilityMatrix(t *testing.T) {
 		t.Logf("MATRIX_SCENARIOS set: restricting matrix to %d scenario(s): %v", len(scenarios), scenarios)
 	}
 
+	// MATRIX_PARALLEL (integer) opts into running scenarios concurrently within a
+	// shared VPC. Unset or <=1 keeps the default, fully sequential behavior. >=2
+	// runs each scenario subtest with t.Parallel(), capping concurrency to that
+	// value via a buffered-channel semaphore. This is safe because every
+	// terraform invocation runs in its own scenario directory (common.TFRun sets
+	// cmd.Dir per-process — no os.Chdir / process-global cwd is mutated), so
+	// concurrent scenarios never corrupt each other's state.
+	parallel := 0
+	if v := strings.TrimSpace(os.Getenv("MATRIX_PARALLEL")); v != "" {
+		if n, err := strconv.Atoi(v); err == nil {
+			parallel = n
+		}
+	}
+
 	var caps []ResourceCaps
-	for _, name := range scenarios {
-		name := name
-		t.Run(name, func(t *testing.T) {
-			rc := runScenario(t, name)
-			caps = append(caps, rc)
+	var capsMu sync.Mutex
+	appendCap := func(rc ResourceCaps) {
+		capsMu.Lock()
+		caps = append(caps, rc)
+		capsMu.Unlock()
+	}
+
+	if parallel >= 2 {
+		// Bounded-concurrency parallel run. The outer "scenarios" subtest returns
+		// only after all its parallel children complete, so writeMatrix below is
+		// guaranteed to see the full result set (and never races the appends).
+		sem := make(chan struct{}, parallel)
+		t.Run("scenarios", func(t *testing.T) {
+			for _, name := range scenarios {
+				name := name
+				t.Run(name, func(t *testing.T) {
+					t.Parallel()
+					sem <- struct{}{}        // acquire
+					defer func() { <-sem }() // release
+					appendCap(runScenario(t, name))
+				})
+			}
 		})
+	} else {
+		// Default: fully sequential, identical to the original behavior.
+		for _, name := range scenarios {
+			name := name
+			t.Run(name, func(t *testing.T) {
+				appendCap(runScenario(t, name))
+			})
+		}
 	}
 
 	sort.Slice(caps, func(i, j int) bool { return caps[i].Scenario < caps[j].Scenario })
