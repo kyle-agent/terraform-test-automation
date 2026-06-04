@@ -57,9 +57,10 @@ resource "samsungcloudplatformv2_iam_role" "regr" {
     version = "2024-10-01"
     statement = [
       {
-        sid    = "regrAssumeRole"
-        effect = "Allow"
-        action = ["sts:AssumeRole"]
+        sid      = "regrAssumeRole"
+        effect   = "Allow"
+        action   = ["sts:AssumeRole"]
+        resource = ["*"]
         principal = {
           principal_map = {
             account = [var.trusted_account_id]

@@ -18,8 +18,8 @@ variable "volume_name" {
 
 variable "volume_size" {
   type        = number
-  description = "Size of the volume in GiB."
-  default     = 100
+  description = "Size of the volume in GiB (documented minimum is 8)."
+  default     = 8
 }
 
 # Virtual server (block) volume fixture.

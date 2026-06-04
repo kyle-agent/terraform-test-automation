@@ -27,9 +27,9 @@ variable "name" {
 }
 
 variable "bandwidth" {
-  description = "Direct Connect bandwidth in Mbps."
+  description = "Direct Connect bandwidth. Must be one of 1, 10, 20, 40."
   type        = number
-  default     = 1000
+  default     = 1
 }
 
 resource "samsungcloudplatformv2_directconnect_direct_connect" "regr" {

@@ -70,6 +70,7 @@ resource "samsungcloudplatformv2_servicewatch_alert" "regr" {
   statistic           = var.alert_statistic
   threshold           = var.alert_threshold
   period              = var.alert_period
+  dimensions          = []
   missing_data_option = "MISSING"
   description         = "Regression fixture: CPU utilization breach alert."
 }

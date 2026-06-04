@@ -10,10 +10,11 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-variable "vpc_id" {
+# Per-run-unique suffix injected by the harness (TF_VAR_name_suffix).
+variable "name_suffix" {
   type        = string
-  description = "Existing VPC id to attach the internet gateway to. Integration runs override via TF_VAR_vpc_id."
-  default     = "00000000-0000-0000-0000-000000000000"
+  description = "Per-run unique suffix appended to resource names."
+  default     = ""
 }
 
 variable "igw_type" {
@@ -22,12 +23,31 @@ variable "igw_type" {
   default     = "IGW"
 }
 
-# Internet gateway fixture guarding networking coverage: an IGW attached to a VPC
-# must re-plan cleanly with no spurious update or replacement.
-# Required args: type, vpc_id. Optional: description, firewall_enabled, tags.
+# Internet gateway fixture guarding networking coverage.
+#
+# SELF-CONTAINED: the shared bootstrap VPC already has an Internet Gateway
+# attached, so attaching another IGW to it fails with "The VPC is already
+# associated with an Internet Gateway". This fixture instead creates its own
+# VPC (+ subnet) and attaches the IGW to that, so it can create -> destroy
+# cleanly without depending on the bootstrap VPC.
+resource "samsungcloudplatformv2_vpc_vpc" "regr" {
+  name        = "regrigwvpc${var.name_suffix}"
+  cidr        = "192.168.0.0/24"
+  description = "regr-test igw vpc"
+}
+
+resource "samsungcloudplatformv2_vpc_subnet" "regr" {
+  name            = "regrigwsub${var.name_suffix}"
+  vpc_id          = samsungcloudplatformv2_vpc_vpc.regr.id
+  type            = "GENERAL"
+  cidr            = "192.168.0.0/27"
+  description     = "regr-test igw subnet"
+  dns_nameservers = ["8.8.8.8"]
+}
+
 resource "samsungcloudplatformv2_vpc_internet_gateway" "regr" {
   type              = var.igw_type
-  vpc_id            = var.vpc_id
+  vpc_id            = samsungcloudplatformv2_vpc_vpc.regr.id
   description       = "regr-test"
   firewall_enabled  = true
   firewall_loggable = false

@@ -13,7 +13,7 @@ provider "samsungcloudplatformv2" {}
 variable "backup_name" {
   type        = string
   description = "Name of the backup policy. Integration overrides via TF_VAR_backup_name."
-  default     = "regr-backup"
+  default     = "regrbackup"
 }
 
 variable "server_uuid" {

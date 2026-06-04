@@ -30,7 +30,7 @@ variable "vpc_id" {
 variable "private_dns_name" {
   type        = string
   description = "Name of the private DNS zone."
-  default     = "regr-private-dns"
+  default     = "regrpdns"
 }
 
 # DNS private DNS regression fixture. The resource takes a single nested object

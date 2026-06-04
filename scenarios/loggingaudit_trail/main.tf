@@ -34,6 +34,12 @@ variable "trail_bucket_name" {
   default     = "regr-audit-bucket"
 }
 
+variable "trail_bucket_region" {
+  type        = string
+  description = "Region of the object storage bucket that receives the audit logs."
+  default     = "kr-west1"
+}
+
 # Minimal LoggingAudit trail fixture guarding loggingaudit_trail coverage.
 # The *_yn attributes are required Y/N flags; account IDs default to zero-UUIDs
 # and should be overridden via TF_VAR_* for a real integration run.
@@ -41,8 +47,10 @@ resource "samsungcloudplatformv2_loggingaudit_trail" "regr" {
   account_id             = var.trail_account_id
   log_archive_account_id = var.trail_log_archive_account_id
   trail_name             = var.trail_name
-  trail_description       = "Regression fixture: organization-wide audit trail."
+  trail_description      = "Regression fixture: organization-wide audit trail."
   bucket_name            = var.trail_bucket_name
+  bucket_region          = var.trail_bucket_region
+  trail_save_type        = "JSON"
 
   log_type_total_yn      = "Y"
   log_verification_yn    = "Y"

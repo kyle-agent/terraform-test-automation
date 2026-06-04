@@ -19,7 +19,7 @@ variable "log_stream_group_id" {
 variable "log_stream_name" {
   type        = string
   description = "Name of the ServiceWatch log stream."
-  default     = "regr-log-stream"
+  default     = "regrlogstream"
 }
 
 # Minimal ServiceWatch log-stream fixture guarding log_stream coverage; both

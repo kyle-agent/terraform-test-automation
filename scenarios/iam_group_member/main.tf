@@ -33,5 +33,5 @@ resource "samsungcloudplatformv2_iam_user" "regr" {
 
 resource "samsungcloudplatformv2_iam_group_member" "regr" {
   group_id = samsungcloudplatformv2_iam_group.regr.id
-  user_id  = samsungcloudplatformv2_iam_user.regr.id
+  user_id  = samsungcloudplatformv2_iam_user.regr.user_id
 }

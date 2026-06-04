@@ -32,9 +32,19 @@ variable "destination_type" {
   default     = "VPC"
 }
 
+# When destination_type is VPC, the API requires the target VPC's resource id.
+# Bound to the bootstrap VPC at apply via TF_VAR_vpc_id; defaults to the
+# zero-UUID so the fixture validates offline.
+variable "vpc_id" {
+  description = "Destination VPC resource id (required when destination_type is VPC)."
+  type        = string
+  default     = "00000000-0000-0000-0000-000000000000"
+}
+
 resource "samsungcloudplatformv2_directconnect_routing_rule" "regr" {
-  direct_connect_id = var.direct_connect_id
-  destination_cidr  = var.destination_cidr
-  destination_type  = var.destination_type
-  description       = "Regression routing rule fixture"
+  direct_connect_id       = var.direct_connect_id
+  destination_cidr        = var.destination_cidr
+  destination_type        = var.destination_type
+  destination_resource_id = var.vpc_id
+  description             = "Regression routing rule fixture"
 }

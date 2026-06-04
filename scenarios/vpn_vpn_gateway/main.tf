@@ -17,7 +17,7 @@ provider "samsungcloudplatformv2" {}
 variable "gateway_name" {
   description = "VPN gateway name."
   type        = string
-  default     = "regr-vpn-gateway"
+  default     = "regrvpngateway"
 }
 
 variable "vpc_id" {

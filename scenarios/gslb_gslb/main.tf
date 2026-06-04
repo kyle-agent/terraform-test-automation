@@ -46,9 +46,11 @@ resource "samsungcloudplatformv2_gslb_gslb" "regr" {
     description = "Regression GSLB fixture"
 
     health_check = {
-      protocol     = "HTTP"
-      service_port = 80
-      send_string  = "GET / HTTP/1.0\r\n\r\n"
+      protocol                   = "HTTP"
+      service_port               = 80
+      send_string                = "GET / HTTP/1.0\r\n\r\n"
+      health_check_interval      = 10
+      health_check_probe_timeout = 6
     }
 
     resources = [
