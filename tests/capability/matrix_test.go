@@ -161,6 +161,13 @@ func runScenario(t *testing.T, name string) ResourceCaps {
 		}
 		rc.Stages["apply"] = "fail"
 		rc.Note = firstError(out)
+		// Best-effort cleanup: a partial apply may have already created some
+		// resources (e.g. a parent created before a dependent child failed).
+		// terraform skips them otherwise, leaking real cloud resources. Destroy
+		// what made it into state; surface a LEAK marker if that also fails.
+		if dout, derr := common.TFRun(t, dir, "destroy", "-no-color", "-input=false", "-auto-approve"); derr != nil {
+			rc.Note += " | LEAK: partial-create cleanup destroy failed: " + firstError(dout)
+		}
 		return rc
 	}
 	rc.Stages["apply"] = "ok"
