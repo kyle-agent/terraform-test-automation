@@ -1,0 +1,201 @@
+#!/usr/bin/env python3
+"""Sweep ALL test-created resources from the SCP account via the Open API.
+
+Deletes every resource whose NAME matches our test prefixes, in dependency order
+(children before parents). terraform bootstrap names: rpv (vpc), rps/rpsg
+(subnet/sg), rpkp (keypair), rpfs (filestorage), IGW_/FW_IGW_ (gateway/firewall);
+scenario names: regr*, rske (ske), rlb (loadbalancer), rtgw (transit gateway).
+
+Scoped strictly to those prefixes so a pre-existing non-test resource is never
+touched. Requires SCP_ALLOW_MUTATIONS=true and SCP_ALLOW_DESTRUCTIVE=true.
+Reuses the kyle-agent/api-test-automation framework (HMAC client) on PYTHONPATH.
+Prints everything it finds (= inventory) and what it deleted (= leak audit).
+"""
+from __future__ import annotations
+
+import time
+
+from framework.client import ApiClient, MutationBlocked
+from framework.config import settings
+
+PREFIXES = ("regr", "rpv", "rps", "rpkp", "rpfs", "rske", "rlb", "rtgw", "igw_", "fw_igw")
+
+
+def is_test(name) -> bool:
+    n = str(name or "").lower()
+    return any(n.startswith(p) for p in PREFIXES)
+
+
+def items(body):
+    if isinstance(body, dict):
+        for v in body.values():
+            if isinstance(v, list) and (not v or isinstance(v[0], dict)):
+                return v
+    return body if isinstance(body, list) else []
+
+
+def name_of(it):
+    for k in ("name", "volume_name", "cluster_name", "registry_name"):
+        if isinstance(it, dict) and it.get(k):
+            return str(it[k])
+    return ""
+
+
+def lst(c, svc, path):
+    try:
+        r = c.get(path, service=svc)
+    except Exception as exc:
+        print(f"  list {svc}{path} error: {exc}"); return []
+    if not getattr(r, "ok", False):
+        print(f"  list {svc}{path} -> {r.status}"); return []
+    return [it for it in items(r.body) if isinstance(it, dict) and is_test(name_of(it))]
+
+
+def delete(c, svc, path, json=None):
+    try:
+        r = c.delete(path, service=svc, json=json)
+        print(f"  DELETE {svc}{path} -> {r.status}")
+        return r.status
+    except MutationBlocked as exc:
+        print(f"  blocked: {exc}"); return None
+    except Exception as exc:
+        print(f"  delete {svc}{path} error: {exc}"); return None
+
+
+def wait_gone(c, svc, path, timeout=300, interval=15):
+    end = time.monotonic() + timeout
+    while time.monotonic() < end:
+        try:
+            if c.get(path, service=svc).status == 404:
+                return True
+        except Exception:
+            return True
+        time.sleep(interval)
+    return False
+
+
+def reap_tgw(c, tgwid, name):
+    print(f"  TGW {name} ({tgwid}) full teardown")
+    for sub in ("routing-rules", "uplink-routing-rules"):
+        for r in items(c.get(f"/v1/transit-gateways/{tgwid}/{sub}", service="vpc").body):
+            if r.get("id"):
+                delete(c, "vpc", f"/v1/transit-gateways/{tgwid}/{sub}/{r['id']}")
+    for fw in items(c.get(f"/v1/transit-gateways/{tgwid}/firewalls", service="vpc").body):
+        if fw.get("id"):
+            delete(c, "vpc", f"/v1/transit-gateways/{tgwid}/firewalls/{fw['id']}")
+    for conn in items(c.get(f"/v1/transit-gateways/{tgwid}/vpc-connections", service="vpc").body):
+        if conn.get("id"):
+            delete(c, "vpc", f"/v1/transit-gateways/{tgwid}/vpc-connections/{conn['id']}")
+            wait_gone(c, "vpc", f"/v1/transit-gateways/{tgwid}/vpc-connections/{conn['id']}", 240, 15)
+    for _ in range(6):
+        st = delete(c, "vpc", f"/v1/transit-gateways/{tgwid}")
+        if st in (200, 202, 204, 404):
+            wait_gone(c, "vpc", f"/v1/transit-gateways/{tgwid}", 240, 15); return
+        if st == 409:
+            time.sleep(15); continue
+        return
+
+
+def vid_field(it):
+    return str(it.get("vpc_id") or "")
+
+
+def main() -> int:
+    settings.require_credentials()
+    c = ApiClient(settings)
+    n = 0
+    print(f"region={settings.region} env={settings.env_code} — sweeping test prefixes {PREFIXES}")
+
+    # 1. virtualserver: servers (free subnet/sg), then keypairs, snapshots, volumes
+    for it in lst(c, "virtualserver", "/v1/servers"):
+        if it.get("id") and delete(c, "virtualserver", f"/v1/servers/{it['id']}"):
+            n += 1; wait_gone(c, "virtualserver", f"/v1/servers/{it['id']}", 300, 15)
+    # 2. ske clusters: nodepools then cluster
+    for it in lst(c, "ske", "/v1/clusters"):
+        cid = it.get("id")
+        for np in items(c.get(f"/v1/clusters/{cid}/nodepools", service="ske").body):
+            if np.get("id"):
+                delete(c, "ske", f"/v1/nodepools/{np['id']}"); wait_gone(c, "ske", f"/v1/nodepools/{np['id']}", 600, 30)
+        for _ in range(8):
+            st = delete(c, "ske", f"/v1/clusters/{cid}")
+            if st in (200, 202, 204, 404):
+                n += 1; wait_gone(c, "ske", f"/v1/clusters/{cid}", 600, 30); break
+            if st in (409, 500):
+                time.sleep(30); continue
+            break
+    # 3. dbaas clusters (per engine host) + searchengine
+    for svc in ("mysql", "postgresql", "mariadb", "sqlserver", "epas", "cachestore", "searchengine"):
+        for it in lst(c, svc, "/v1/clusters"):
+            if it.get("id") and delete(c, svc, f"/v1/clusters/{it['id']}"):
+                n += 1
+    # 4. loadbalancers
+    for it in lst(c, "loadbalancer", "/v1/loadbalancers"):
+        if it.get("id") and delete(c, "loadbalancer", f"/v1/loadbalancers/{it['id']}"):
+            n += 1
+    # 5. transit gateways — full teardown (rules -> connections -> tgw)
+    for it in lst(c, "vpc", "/v1/transit-gateways"):
+        if it.get("id"):
+            reap_tgw(c, it["id"], name_of(it)); n += 1
+    # 6. vpc children that block vpc delete
+    for it in lst(c, "vpc", "/v1/nat-gateways"):
+        if it.get("id") and delete(c, "vpc", f"/v1/nat-gateways/{it['id']}"):
+            n += 1
+    for it in lst(c, "vpc", "/v1/ports"):
+        if it.get("id") and delete(c, "vpc", f"/v1/ports/{it['id']}"):
+            n += 1
+    for it in lst(c, "vpc", "/v1/publicips"):
+        if it.get("id") and delete(c, "vpc", f"/v1/publicips/{it['id']}"):
+            n += 1
+    # 7. independent compute/storage
+    for it in lst(c, "virtualserver", "/v1/keypairs"):
+        if it.get("name") and delete(c, "virtualserver", f"/v1/keypairs/{it['name']}"):
+            n += 1
+    for it in lst(c, "security-group", "/v1/security-groups"):
+        if it.get("id") and delete(c, "security-group", f"/v1/security-groups/{it['id']}"):
+            n += 1
+    for it in lst(c, "filestorage", "/v1/volumes"):
+        vid = it.get("volume_id") or it.get("id")
+        if vid and delete(c, "filestorage", f"/v1/volumes/{vid}"):
+            n += 1
+    # 8. DNS: private-dns (deletable only when ACTIVE), public-domain (NO delete API)
+    for it in lst(c, "dns", "/v1/private-dns"):
+        if it.get("id"):
+            if str(it.get("state", "")).upper() in ("ACTIVE", ""):
+                if delete(c, "dns", f"/v1/private-dns/{it['id']}"):
+                    n += 1; wait_gone(c, "dns", f"/v1/private-dns/{it['id']}", 240, 15)
+            else:
+                print(f"  SKIP private-dns {name_of(it)} ({it['id']}) state={it.get('state')} — not deletable until ACTIVE")
+    for it in lst(c, "dns", "/v1/public-domain-names"):
+        print(f"  MANUAL public-domain {name_of(it)} ({it.get('id')}) — no DELETE API; release via console")
+    # 9. subnets -> internet-gateways -> vpcs
+    sids = []
+    for it in lst(c, "vpc", "/v1/subnets"):
+        if it.get("id") and delete(c, "vpc", f"/v1/subnets/{it['id']}"):
+            n += 1; sids.append(it["id"])
+    for sid in sids:
+        wait_gone(c, "vpc", f"/v1/subnets/{sid}")
+    for it in lst(c, "vpc", "/v1/internet-gateways"):
+        if it.get("id") and delete(c, "vpc", f"/v1/internet-gateways/{it['id']}"):
+            n += 1; wait_gone(c, "vpc", f"/v1/internet-gateways/{it['id']}", 240, 15)
+    for it in lst(c, "vpc", "/v1/vpcs"):
+        vidx = it.get("id")
+        for _ in range(6):
+            st = delete(c, "vpc", f"/v1/vpcs/{vidx}")
+            if st in (200, 202, 204, 404):
+                n += 1; wait_gone(c, "vpc", f"/v1/vpcs/{vidx}"); break
+            if st == 409:
+                time.sleep(15); continue
+            break
+    # 10. resource groups + certs
+    for it in lst(c, "resourcemanager", "/v1/resource-groups"):
+        if it.get("id") and delete(c, "resourcemanager", f"/v1/resource-groups/{it['id']}"):
+            n += 1
+    for it in lst(c, "certificatemanager", "/v1/certificatemanager"):
+        if it.get("id") and delete(c, "certificatemanager", f"/v1/certificatemanager/{it['id']}"):
+            n += 1
+    print(f"sweep_all done: {n} resource(s) deleted")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

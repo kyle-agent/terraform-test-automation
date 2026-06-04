@@ -43,5 +43,5 @@ jobs:
         run: git clone --depth 1 https://github.com/kyle-agent/api-test-automation /tmp/apitest
       - name: Install deps
         run: pip install -r /tmp/apitest/requirements.txt
-      - name: Run API reaper
-        run: PYTHONPATH=/tmp/apitest python cmd/api_reaper/reap.py
+      - name: Run API sweep (delete ALL test-created resources)
+        run: PYTHONPATH=/tmp/apitest python cmd/api_reaper/sweep_all.py
