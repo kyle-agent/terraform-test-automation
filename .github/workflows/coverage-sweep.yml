@@ -51,13 +51,14 @@ jobs:
       fail-fast: false
       max-parallel: 3
       matrix:
+        # Sweep #2: re-run the scenarios whose fixtures were fixed (commit 3b01353)
+        # to confirm they now go create->destroy green. dns_private_dns is excluded
+        # (provider #79 makes its destroy leak the VPC); TGW/LB and external-id
+        # scenarios stay out.
         shard:
-          - "vpc_vpc,vpc_subnet,vpc_cidr,vpc_internet_gateway,vpc_publicip,vpc_port,vpc_nat_gateway,vpc_vpc_endpoint,vpc_vpc_peering,vpc_vpc_peering_approval,vpc_vpc_peering_rule"
-          - "vpc_transit_gateway,vpc_transit_gateway_rule,vpc_transit_gateway_vpc_connection,vpc_transit_gateway_firewall,vpc_transit_gateway_firewall_connection,vpc_transit_gateway_uplink_rule,vpc_private_nat,vpc_private_nat_ip,vpc_subnet_vip,vpc_subnet_vip_port,vpc_subnet_vip_nat_ip"
-          - "security_group_basic,securitygroup_rule_basic,firewall_firewall_rule,dns_hosted_zone,dns_private_dns,dns_public_domain_name,dns_record,certificate_manager,certificate_manager_self_sign,gslb_gslb"
-          - "iam_user,iam_policy,iam_role,iam_access_key,iam_group,iam_group_member,iam_group_policy_bindings,iam_role_policy_bindings,iam_user_policy_bindings,resourcemanager_resource_group,budget_budget,billing_planned_compute"
-          - "virtualserver_keypair,virtualserver_image,virtualserver_server,virtualserver_server_group,virtualserver_volume,filestorage_volume,filestorage_snapshot_schedule,filestorage_replication,backup_backup"
-          - "servicewatch_alert,servicewatch_dashboard,servicewatch_event_rule,servicewatch_log_group,servicewatch_log_stream,loggingaudit_trail,network_logging_network_logging_storage,loadbalancer_lb_health_check,loadbalancer_lb_server_group,vpn_vpn_gateway,vpn_vpn_tunnel,directconnect_direct_connect,directconnect_routing_rule,eventstreams_basic"
+          - "vpc_internet_gateway,vpc_vpc_peering,vpc_vpc_peering_approval,vpc_vpc_peering_rule"
+          - "vpn_vpn_gateway,vpn_vpn_tunnel,directconnect_direct_connect,directconnect_routing_rule,gslb_gslb"
+          - "servicewatch_log_stream,servicewatch_alert,loggingaudit_trail,backup_backup,virtualserver_volume,iam_role,iam_group_member,iam_role_policy_bindings,certificate_manager_self_sign"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
