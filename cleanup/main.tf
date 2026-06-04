@@ -47,3 +47,5 @@ output "peerings" {
     state     = p.state
   }], "vpc_peerings is null/empty — see peering_total_count")
 }
+
+# inventory re-run 2026-06-04: pre-account-switch verification sweep
