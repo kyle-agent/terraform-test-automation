@@ -44,7 +44,9 @@ jobs:
         run: |
           cd cleanup_destroy
           terraform init -no-color -input=false
-          terraform import -no-color samsungcloudplatformv2_vpc_vpc.leak1 51c4583e294f466293eb15f6dee905cb || echo "import leak1 failed (already gone?)"
-          terraform import -no-color samsungcloudplatformv2_vpc_vpc.leak2 16992f536f674ea8ac3e4c92d4c66e87 || echo "import leak2 failed (already gone?)"
-          echo "== destroy =="
-          terraform destroy -no-color -input=false -auto-approve
+          terraform import -no-color samsungcloudplatformv2_vpc_vpc.leak_lb   12fe48eb49d84badbafe07301798e228 || echo "import leak_lb failed (already gone?)"
+          terraform import -no-color samsungcloudplatformv2_vpc_vpc.leak_hung 2ccff235ab6241508394422210e6364d || echo "import leak_hung failed (already gone?)"
+          terraform import -no-color samsungcloudplatformv2_vpc_vpc.leak_iam  aad715dd6171489bbb64527902666c10 || echo "import leak_iam failed (already gone?)"
+          terraform import -no-color samsungcloudplatformv2_vpc_vpc.leak_old  7e718685f29b42648958b4ab0d0abf7e || echo "import leak_old failed (already gone?)"
+          echo "== destroy (best-effort; a VPC with leftover subnets/deps will report the blocker) =="
+          terraform destroy -no-color -input=false -auto-approve || echo "destroy had blockers — see errors above for which VPCs still have dependents"
