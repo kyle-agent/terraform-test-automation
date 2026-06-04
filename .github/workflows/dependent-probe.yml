@@ -68,15 +68,19 @@ jobs:
             echo "TF_VAR_keypair_name=$(terraform -chdir=bootstrap output -raw keypair_name)"
             echo "TF_VAR_image_id=$(terraform -chdir=bootstrap output -raw image_id)"
             echo "TF_VAR_server_type_id=s1v1m2"
+            echo "TF_VAR_volume_id=$(terraform -chdir=bootstrap output -raw filestorage_volume_id)"
+            echo "TF_VAR_kubernetes_version=$(terraform -chdir=bootstrap output -raw kubernetes_version)"
+            echo "TF_VAR_security_group_id_list=[\"$(terraform -chdir=bootstrap output -raw security_group_id)\"]"
           } >> "$GITHUB_ENV"
           echo "bootstrap image_count=$(terraform -chdir=bootstrap output -raw image_count), image_id=$(terraform -chdir=bootstrap output -raw image_id)"
           echo "DIAG image: name=$(terraform -chdir=bootstrap output -raw diag_image_name) type=$(terraform -chdir=bootstrap output -raw diag_image_type) orig_type=$(terraform -chdir=bootstrap output -raw diag_image_original_type) visibility=$(terraform -chdir=bootstrap output -raw diag_image_visibility) os_version=$(terraform -chdir=bootstrap output -raw diag_image_os_version) min_disk=$(terraform -chdir=bootstrap output -raw diag_image_min_disk) id=$(terraform -chdir=bootstrap output -raw diag_image_id)"
+          echo "SKE prereqs: filestorage_volume_id=$(terraform -chdir=bootstrap output -raw filestorage_volume_id) k8s_version=$(terraform -chdir=bootstrap output -raw kubernetes_version) k8s_version_count=$(terraform -chdir=bootstrap output -raw kubernetes_version_count)"
       - name: Run dependent capability matrix
         env:
           MODE: integration
           OUTPUT_DIR: ${{ github.workspace }}/out
           CAPABILITY_MATRIX: '1'
-          MATRIX_SCENARIOS: ${{ github.event.inputs.scenarios || 'virtualserver_server' }}
+          MATRIX_SCENARIOS: ${{ github.event.inputs.scenarios || 'ske_cluster' }}
         run: |
           go test ./tests/capability/... -run TestCapabilityMatrix -count=1 -timeout 120m || true
           echo "## Dependent Probe" >> "$GITHUB_STEP_SUMMARY"

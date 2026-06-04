@@ -70,6 +70,21 @@ resource "samsungcloudplatformv2_virtualserver_keypair" "prereq" {
   name = "rpkp${var.suffix}"
 }
 
+# File storage volume — hypothesis under test: the SKE cluster's Required
+# volume_id (a UUID with no data source; see #66) may accept a filestorage
+# volume id. NFS avoids needing a CIFS password. type_name HDD is the cheapest.
+resource "samsungcloudplatformv2_filestorage_volume" "prereq" {
+  name                       = "rpfs${var.suffix}"
+  protocol                   = "NFS"
+  type_name                  = "HDD"
+  file_unit_recovery_enabled = false
+}
+
+# Valid Kubernetes version for the SKE cluster/nodepool (kubernetes_version is
+# Required with pattern ^v\d\.\d{1,2}\.\d{1,2}$, e.g. v1.29.8). Pick the first
+# one the catalog offers so we never hard-code a version that gets retired.
+data "samsungcloudplatformv2_ske_kubernetes_versions" "all" {}
+
 # Boot image lookup (server_type has no data source — provided via TF_VAR; see #64/#65).
 # scp_image_type="standard" excludes GPU images: without it, ids[0] is a GPU image
 # ("UBUNTU 24.04 GPU", scp_image_type=gpu_standard) that the standard server type
@@ -143,4 +158,15 @@ output "diag_image_min_disk" {
 }
 output "diag_image_id" {
   value = try(data.samsungcloudplatformv2_virtualserver_image.first.image.id, "n/a")
+}
+
+# SKE prerequisites.
+output "filestorage_volume_id" {
+  value = samsungcloudplatformv2_filestorage_volume.prereq.id
+}
+output "kubernetes_version" {
+  value = try(data.samsungcloudplatformv2_ske_kubernetes_versions.all.kubernetes_versions[0].kubernetes_version, "NO_K8S_VERSION")
+}
+output "kubernetes_version_count" {
+  value = length(try(data.samsungcloudplatformv2_ske_kubernetes_versions.all.kubernetes_versions, []))
 }
