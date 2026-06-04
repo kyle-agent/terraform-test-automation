@@ -12,6 +12,7 @@ on:
       - 'claude/**'
     paths:
       - 'bootstrap/**'
+      - 'scenarios/**'
       - '.github/workflows/dependent-probe.yml'
   workflow_dispatch:
     inputs:
