@@ -71,18 +71,23 @@ resource "samsungcloudplatformv2_virtualserver_keypair" "prereq" {
 }
 
 # Boot image lookup (server_type has no data source — provided via TF_VAR; see #64/#65).
+# scp_image_type="standard" excludes GPU images: without it, ids[0] is a GPU image
+# ("UBUNTU 24.04 GPU", scp_image_type=gpu_standard) that the standard server type
+# s1v1m2 rejects with an opaque "Image ID is not valid". The plural data source
+# returns only ids (no name/type), so this trap is invisible to users — see issue
+# filed on the provider repo.
 data "samsungcloudplatformv2_virtualserver_images" "linux" {
-  os_distro = "ubuntu"
-  status    = "active"
+  os_distro      = "ubuntu"
+  status         = "active"
+  scp_image_type = "standard"
 }
 
-# DIAGNOSTIC: the plural data source returns only ids, so we can't tell which is
-# bootable. The singular data source (same filters, no id) resolves to ids[0] and
-# returns full detail — used here to learn name / scp_image_type / visibility of
-# the image that server-create rejected as "not valid".
+# DIAGNOSTIC: singular data source (same filters, no id) resolves to ids[0] and
+# returns full detail — confirms the selected image is non-GPU/standard.
 data "samsungcloudplatformv2_virtualserver_image" "first" {
-  os_distro = "ubuntu"
-  status    = "active"
+  os_distro      = "ubuntu"
+  status         = "active"
+  scp_image_type = "standard"
 }
 
 output "vpc_id" {
