@@ -5,10 +5,12 @@ name: Coverage Dashboard (GitHub Pages)
 # After that this workflow deploys on every push that touches the coverage data,
 # and can be run manually via workflow_dispatch. URL after first deploy:
 #   https://kyle-agent.github.io/terraform-test-automation/
+# Deploys from the integration branch (coverage data was consolidated here from
+# the former claude/cov-dashboard branch).
 on:
   push:
     branches:
-      - 'claude/cov-dashboard'
+      - 'claude/youthful-albattani-CzhCZ'
     paths:
       - 'coverage/**'
       - 'docs/**'

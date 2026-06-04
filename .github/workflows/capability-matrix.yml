@@ -20,17 +20,12 @@ on:
         description: 'Comma-separated scenarios to scope the run (blank = full 87-resource matrix)'
         required: false
         default: 'vpc_vpc,vpc_publicip,security_group_basic,virtualserver_keypair'
-  # Push to a development branch triggers an on-demand integration matrix run.
-  # Restricted to claude/** so normal branches don't spend cloud resources on
-  # every push; the run still uses the scp-integration environment + secrets.
-  push:
-    branches:
-      - 'claude/**'
-    paths:
-      - 'tests/**'
-      - 'scenarios/**'
-      - 'scripts/**'
-      - '.github/workflows/capability-matrix.yml'
+  # NOTE: the per-push trigger was removed to stop this heavyweight full-matrix
+  # run (and its env/quota failures for budget/iam_access_key/virtualserver_volume)
+  # from firing on every claude/** push and spamming the tracking issue. Push-time
+  # signal is now consolidated into the cheap dependent-probe smoke + the nightly
+  # cost-tiered regression lane (regression.yml). This workflow stays on-demand
+  # (workflow_dispatch) plus the daily scheduled full snapshot below.
   schedule:
     # Daily at 06:00 UTC (15:00 KST) — offset from the 6-hourly integration job.
     - cron: '0 6 * * *'
