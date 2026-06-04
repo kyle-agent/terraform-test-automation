@@ -50,6 +50,12 @@ resource "samsungcloudplatformv2_virtualserver_server" "regr" {
   image_id       = var.image_id
   server_type_id = var.server_type_id
 
+  # Workaround for provider bug #67: the Optional+Computed `state` is unknown when
+  # omitted, but the Create guard checks only IsNull() (not IsUnknown()), so an
+  # omitted state fails create with "Server state must be 'ACTIVE'". Setting it
+  # explicitly lets us exercise the rest of the lifecycle. Remove once #67 is fixed.
+  state = "ACTIVE"
+
   boot_volume = {
     size                  = 50
     type                  = "SSD"
