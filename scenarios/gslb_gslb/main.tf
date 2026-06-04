@@ -51,6 +51,7 @@ resource "samsungcloudplatformv2_gslb_gslb" "regr" {
       send_string                = "GET / HTTP/1.0\r\n\r\n"
       health_check_interval      = 10
       health_check_probe_timeout = 6
+      timeout                    = 6
     }
 
     resources = [

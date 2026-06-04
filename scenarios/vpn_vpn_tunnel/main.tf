@@ -11,8 +11,10 @@ terraform {
 provider "samsungcloudplatformv2" {}
 
 # Promoted regression fixture: a VPN tunnel with full IKE phase1/phase2 IPsec
-# parameters. vpn_gateway_id / pre_shared_key default to placeholders and are
-# overridable via TF_VAR_*; schema-valid defaults keep validate green offline.
+# parameters. Self-contained: it creates its own prerequisite VPN gateway (bound
+# to the bootstrap VPC / public IP via TF_VAR_*) and the tunnel terminates on
+# that gateway. pre_shared_key is overridable via TF_VAR_*; schema-valid
+# defaults keep validate green offline.
 
 variable "tunnel_name" {
   description = "VPN tunnel name."
@@ -20,10 +22,34 @@ variable "tunnel_name" {
   default     = "regrvpntunnel"
 }
 
-variable "vpn_gateway_id" {
-  description = "VPN gateway UUID this tunnel terminates on."
+variable "gateway_name" {
+  description = "VPN gateway name (alphanumeric, 3-20 chars)."
+  type        = string
+  default     = "regrvpngateway"
+}
+
+variable "vpc_id" {
+  description = "VPC UUID the VPN gateway attaches to."
   type        = string
   default     = "00000000-0000-0000-0000-000000000000"
+}
+
+variable "ip_id" {
+  description = "Public IP resource UUID assigned to the gateway."
+  type        = string
+  default     = "00000000-0000-0000-0000-000000000000"
+}
+
+variable "ip_address" {
+  description = "Public IP address of the VPN gateway."
+  type        = string
+  default     = "10.0.0.10"
+}
+
+variable "ip_type" {
+  description = "IP allocation type enum (e.g. PUBLIC)."
+  type        = string
+  default     = "PUBLIC"
 }
 
 variable "peer_gateway_ip" {
@@ -45,9 +71,22 @@ variable "remote_subnets" {
   default     = ["10.0.0.0/24"]
 }
 
+resource "samsungcloudplatformv2_vpn_vpn_gateway" "regr" {
+  name        = var.gateway_name
+  vpc_id      = var.vpc_id
+  ip_id       = var.ip_id
+  ip_address  = var.ip_address
+  ip_type     = var.ip_type
+  description = "Regression VPN gateway fixture (tunnel prerequisite)"
+
+  tags = {
+    env = "regression"
+  }
+}
+
 resource "samsungcloudplatformv2_vpn_vpn_tunnel" "regr" {
   name           = var.tunnel_name
-  vpn_gateway_id = var.vpn_gateway_id
+  vpn_gateway_id = samsungcloudplatformv2_vpn_vpn_gateway.regr.id
   description    = "Regression VPN tunnel fixture"
 
   phase1 = {
