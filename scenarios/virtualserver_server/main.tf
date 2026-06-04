@@ -57,7 +57,7 @@ resource "samsungcloudplatformv2_virtualserver_server" "regr" {
   state = "ACTIVE"
 
   boot_volume = {
-    size                  = 50
+    size                  = 48 # must be divisible by 8 (API 400 otherwise; undocumented, no plan-time validator)
     type                  = "SSD"
     delete_on_termination = true
   }
