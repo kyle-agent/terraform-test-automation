@@ -51,3 +51,5 @@ output "peerings" {
 # inventory re-run 2026-06-04: pre-account-switch verification sweep
 
 # account-switch verification 2026-06-04T09:11:34Z: list VPCs in the new account
+
+# post-sweep verification 2026-06-04T10:04:11Z: list leaked VPCs after coverage sweep run 26943090696
