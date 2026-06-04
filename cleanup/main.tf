@@ -290,3 +290,5 @@ output "all_records" {
     status    = r.status
   }], "records null/empty")
 }
+
+# post-reaper verification 2026-06-04T12:01:43Z: confirm 2 VPCs gone, list public-domain leftovers
