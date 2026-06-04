@@ -65,6 +65,17 @@ resource "samsungcloudplatformv2_vpc_publicip" "prereq" {
   description = "regr dependent-probe prerequisite public ip"
 }
 
+# Keypair for compute resources (virtualserver_server / ske_nodepool).
+resource "samsungcloudplatformv2_virtualserver_keypair" "prereq" {
+  name = "rpkp${var.suffix}"
+}
+
+# Boot image lookup (server_type has no data source — provided via TF_VAR; see #64/#65).
+data "samsungcloudplatformv2_virtualserver_images" "linux" {
+  os_distro = "ubuntu"
+  status    = "active"
+}
+
 output "vpc_id" {
   value = samsungcloudplatformv2_vpc_vpc.prereq.id
 }
@@ -83,4 +94,16 @@ output "publicip_id" {
 
 output "publicip_address" {
   value = samsungcloudplatformv2_vpc_publicip.prereq.publicip.ip_address
+}
+
+output "keypair_name" {
+  value = samsungcloudplatformv2_virtualserver_keypair.prereq.name
+}
+
+output "image_id" {
+  value = try(data.samsungcloudplatformv2_virtualserver_images.linux.ids[0], "NO_IMAGE_FOUND")
+}
+
+output "image_count" {
+  value = length(try(data.samsungcloudplatformv2_virtualserver_images.linux.ids, []))
 }

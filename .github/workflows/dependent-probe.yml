@@ -18,7 +18,7 @@ on:
       scenarios:
         description: 'Comma-separated dependent scenarios to run'
         required: false
-        default: 'vpc_port,vpc_subnet_vip,vpc_nat_gateway'
+        default: 'virtualserver_server'
 
 concurrency:
   group: dependent-probe-${{ github.ref }}
@@ -64,13 +64,17 @@ jobs:
             echo "TF_VAR_ip_id=$(terraform -chdir=bootstrap output -raw publicip_id)"
             echo "TF_VAR_publicip_id=$(terraform -chdir=bootstrap output -raw publicip_id)"
             echo "TF_VAR_ip_address=$(terraform -chdir=bootstrap output -raw publicip_address)"
+            echo "TF_VAR_keypair_name=$(terraform -chdir=bootstrap output -raw keypair_name)"
+            echo "TF_VAR_image_id=$(terraform -chdir=bootstrap output -raw image_id)"
+            echo "TF_VAR_server_type_id=s1v1m2"
           } >> "$GITHUB_ENV"
+          echo "bootstrap image_count=$(terraform -chdir=bootstrap output -raw image_count), image_id=$(terraform -chdir=bootstrap output -raw image_id)"
       - name: Run dependent capability matrix
         env:
           MODE: integration
           OUTPUT_DIR: ${{ github.workspace }}/out
           CAPABILITY_MATRIX: '1'
-          MATRIX_SCENARIOS: ${{ github.event.inputs.scenarios || 'vpc_port,vpc_subnet_vip,vpc_nat_gateway' }}
+          MATRIX_SCENARIOS: ${{ github.event.inputs.scenarios || 'virtualserver_server' }}
         run: |
           go test ./tests/capability/... -run TestCapabilityMatrix -count=1 -timeout 120m || true
           echo "## Dependent Probe" >> "$GITHUB_STEP_SUMMARY"
