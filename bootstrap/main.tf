@@ -76,6 +76,15 @@ data "samsungcloudplatformv2_virtualserver_images" "linux" {
   status    = "active"
 }
 
+# DIAGNOSTIC: the plural data source returns only ids, so we can't tell which is
+# bootable. The singular data source (same filters, no id) resolves to ids[0] and
+# returns full detail — used here to learn name / scp_image_type / visibility of
+# the image that server-create rejected as "not valid".
+data "samsungcloudplatformv2_virtualserver_image" "first" {
+  os_distro = "ubuntu"
+  status    = "active"
+}
+
 output "vpc_id" {
   value = samsungcloudplatformv2_vpc_vpc.prereq.id
 }
@@ -106,4 +115,27 @@ output "image_id" {
 
 output "image_count" {
   value = length(try(data.samsungcloudplatformv2_virtualserver_images.linux.ids, []))
+}
+
+# DIAGNOSTIC outputs: full detail of the first ubuntu/active image (= ids[0]).
+output "diag_image_name" {
+  value = try(data.samsungcloudplatformv2_virtualserver_image.first.image.name, "n/a")
+}
+output "diag_image_type" {
+  value = try(data.samsungcloudplatformv2_virtualserver_image.first.image.scp_image_type, "n/a")
+}
+output "diag_image_original_type" {
+  value = try(data.samsungcloudplatformv2_virtualserver_image.first.image.scp_original_image_type, "n/a")
+}
+output "diag_image_visibility" {
+  value = try(data.samsungcloudplatformv2_virtualserver_image.first.image.visibility, "n/a")
+}
+output "diag_image_os_version" {
+  value = try(data.samsungcloudplatformv2_virtualserver_image.first.image.scp_os_version, "n/a")
+}
+output "diag_image_min_disk" {
+  value = try(data.samsungcloudplatformv2_virtualserver_image.first.image.min_disk, -1)
+}
+output "diag_image_id" {
+  value = try(data.samsungcloudplatformv2_virtualserver_image.first.image.id, "n/a")
 }
