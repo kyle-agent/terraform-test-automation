@@ -80,9 +80,10 @@ jobs:
           MODE: integration
           OUTPUT_DIR: ${{ github.workspace }}/out
           CAPABILITY_MATRIX: '1'
-          # TEMP (account-switch write-path verification): run a single cheap
-          # create->replan->destroy scenario. Reverted to '__none__' after the run.
-          MATRIX_SCENARIOS: ${{ github.event.inputs.scenarios || 'security_group_basic' }}
+          # Default is a no-op token (matches no scenario) so a push to this
+          # branch runs only bootstrap->teardown as a cheap smoke test. Use
+          # workflow_dispatch `scenarios` (or the regression lane) to run real sets.
+          MATRIX_SCENARIOS: ${{ github.event.inputs.scenarios || '__none__' }}
         run: |
           go test ./tests/capability/... -run TestCapabilityMatrix -count=1 -timeout 120m || true
           echo "## Dependent Probe" >> "$GITHUB_STEP_SUMMARY"
