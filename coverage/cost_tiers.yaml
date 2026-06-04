@@ -1,0 +1,371 @@
+# cost_tiers.yaml — cost/status classification for every scenario under scenarios/.
+#
+# Schema (one entry per scenario directory):
+#   <scenario>:
+#     cost:   free | cheap | heavy
+#     status: green | broken | untested
+#     issues: [ "#NN", ... ]   # tracking issues for broken scenarios
+#
+# Cost heuristic:
+#   HEAVY = managed DB *_cluster (mysql/postgresql/mariadb/sqlserver/epas/vertica/
+#           cachestore/searchengine), ske_*, baremetal*, billing_planned_compute,
+#           gslb, eventstreams, directconnect*, large loadbalancer_*.
+#   CHEAP = vpc*, security*/securitygroup*, iam*, dns*, servicewatch*,
+#           virtualserver_keypair/image/volume/server_group, filestorage*, budget,
+#           resourcemanager, network_logging, certificate*, firewall*, loggingaudit.
+#   FREE  = pure data-only / no-create scenarios.
+#
+# status/issues seeded from maintainer's known-green and known-broken lists; all
+# others marked untested until a matrix run proves them out.
+#
+# The cost-tiered regression lane (scripts/select_regression.sh + regression.yml)
+# selects status==green AND cost in {free,cheap}.
+
+backup_backup:
+  cost: cheap
+  status: untested
+  issues: []
+baremetal_baremetal:
+  cost: heavy
+  status: untested
+  issues: []
+baremetal_blockstorage_volume:
+  cost: heavy
+  status: untested
+  issues: []
+billing_planned_compute:
+  cost: heavy
+  status: untested
+  issues: []
+budget_budget:
+  cost: cheap
+  status: broken
+  issues: ["#500-quota"]   # budget create blocked by 500-budget account quota
+cachestore_cluster:
+  cost: heavy
+  status: untested
+  issues: []
+certificate_manager:
+  cost: cheap
+  status: untested
+  issues: []
+certificate_manager_self_sign:
+  cost: cheap
+  status: untested
+  issues: []
+cloudmonitoring_event_policy:
+  cost: cheap
+  status: excluded   # cloudmonitoring is being deprecated this year — do NOT test
+  issues: []
+configinspection:
+  cost: cheap
+  status: untested
+  issues: []
+directconnect_direct_connect:
+  cost: heavy
+  status: untested
+  issues: []
+directconnect_routing_rule:
+  cost: heavy
+  status: untested
+  issues: []
+dns_hosted_zone:
+  cost: cheap
+  status: untested
+  issues: []
+dns_private_dns:
+  cost: cheap
+  status: untested
+  issues: []
+dns_public_domain_name:
+  cost: cheap
+  status: untested
+  issues: []
+dns_record:
+  cost: cheap
+  status: untested
+  issues: []
+epas_cluster:
+  cost: heavy
+  status: untested
+  issues: []
+eventstreams_basic:
+  cost: heavy
+  status: untested
+  issues: []
+filestorage_replication:
+  cost: cheap
+  status: untested
+  issues: []
+filestorage_snapshot_schedule:
+  cost: cheap
+  status: untested
+  issues: []
+filestorage_volume:
+  cost: cheap
+  status: green
+  issues: []
+firewall_firewall_rule:
+  cost: cheap
+  status: untested
+  issues: []
+gslb_gslb:
+  cost: heavy
+  status: untested
+  issues: []
+iam_access_key:
+  cost: cheap
+  status: broken
+  issues: ["#58"]   # destroy fails (#58)
+iam_group:
+  cost: cheap
+  status: untested
+  issues: []
+iam_group_member:
+  cost: cheap
+  status: untested
+  issues: []
+iam_group_policy_bindings:
+  cost: cheap
+  status: untested
+  issues: []
+iam_policy:
+  cost: cheap
+  status: untested
+  issues: []
+iam_role:
+  cost: cheap
+  status: broken
+  issues: ["#75"]
+iam_role_policy_bindings:
+  cost: cheap
+  status: untested
+  issues: []
+iam_user:
+  cost: cheap
+  status: green
+  issues: []
+iam_user_policy_bindings:
+  cost: cheap
+  status: untested
+  issues: []
+import_smoke:
+  cost: heavy
+  status: untested
+  issues: []   # exercises multinodegpucluster_gpunode
+loadbalancer_basic:
+  cost: heavy
+  status: untested
+  issues: []
+loadbalancer_lb_health_check:
+  cost: heavy
+  status: untested
+  issues: []
+loadbalancer_lb_listener:
+  cost: heavy
+  status: untested
+  issues: []
+loadbalancer_lb_member:
+  cost: heavy
+  status: untested
+  issues: []
+loadbalancer_lb_server_group:
+  cost: heavy
+  status: untested
+  issues: []
+loadbalancer_loadbalancer_private_nat_ip:
+  cost: heavy
+  status: untested
+  issues: []
+loadbalancer_loadbalancer_public_nat_ip:
+  cost: heavy
+  status: untested
+  issues: []
+loggingaudit_trail:
+  cost: cheap
+  status: untested
+  issues: []
+mariadb_cluster:
+  cost: heavy
+  status: untested
+  issues: []
+mysql_cluster:
+  cost: heavy
+  status: untested
+  issues: []
+network_logging_network_logging_storage:
+  cost: cheap
+  status: untested
+  issues: []
+postgresql_cluster:
+  cost: heavy
+  status: untested
+  issues: []
+resourcemanager_resource_group:
+  cost: cheap
+  status: untested
+  issues: []
+searchengine_cluster:
+  cost: heavy
+  status: untested
+  issues: []
+security_group_basic:
+  cost: cheap
+  status: green
+  issues: []
+securitygroup_rule_basic:
+  cost: cheap
+  status: green
+  issues: []
+servicewatch_alert:
+  cost: cheap
+  status: untested
+  issues: []
+servicewatch_dashboard:
+  cost: cheap
+  status: untested
+  issues: []
+servicewatch_event_rule:
+  cost: cheap
+  status: untested
+  issues: []
+servicewatch_log_group:
+  cost: cheap
+  status: untested
+  issues: []
+servicewatch_log_stream:
+  cost: cheap
+  status: broken
+  issues: ["fixture"]   # broken fixture
+ske_cluster:
+  cost: heavy
+  status: green
+  issues: []
+ske_nodepool:
+  cost: heavy
+  status: green
+  issues: []
+sqlserver_cluster:
+  cost: heavy
+  status: untested
+  issues: []
+vertica_cluster:
+  cost: heavy
+  status: untested
+  issues: []
+virtualserver_image:
+  cost: cheap
+  status: untested
+  issues: []
+virtualserver_keypair:
+  cost: cheap
+  status: green
+  issues: []
+virtualserver_server:
+  cost: cheap
+  status: green
+  issues: []
+virtualserver_server_group:
+  cost: cheap
+  status: untested
+  issues: []
+virtualserver_volume:
+  cost: cheap
+  status: broken
+  issues: ["#69"]   # size>=8 required (#69)
+vpc_cidr:
+  cost: cheap
+  status: broken
+  issues: ["#60"]
+vpc_internet_gateway:
+  cost: cheap
+  status: green
+  issues: []
+vpc_nat_gateway:
+  cost: cheap
+  status: untested
+  issues: []
+vpc_port:
+  cost: cheap
+  status: untested
+  issues: []
+vpc_private_nat:
+  cost: cheap
+  status: untested
+  issues: []
+vpc_private_nat_ip:
+  cost: cheap
+  status: untested
+  issues: []
+vpc_publicip:
+  cost: cheap
+  status: green
+  issues: []
+vpc_subnet:
+  cost: cheap
+  status: broken
+  issues: ["#59"]   # dns workaround (#59)
+vpc_subnet_vip:
+  cost: cheap
+  status: untested
+  issues: []
+vpc_subnet_vip_nat_ip:
+  cost: cheap
+  status: untested
+  issues: []
+vpc_subnet_vip_port:
+  cost: cheap
+  status: untested
+  issues: []
+vpc_transit_gateway:
+  cost: cheap
+  status: untested
+  issues: []
+vpc_transit_gateway_firewall:
+  cost: cheap
+  status: untested
+  issues: []
+vpc_transit_gateway_firewall_connection:
+  cost: cheap
+  status: untested
+  issues: []
+vpc_transit_gateway_rule:
+  cost: cheap
+  status: untested
+  issues: []
+vpc_transit_gateway_uplink_rule:
+  cost: cheap
+  status: untested
+  issues: []
+vpc_transit_gateway_vpc_connection:
+  cost: cheap
+  status: untested
+  issues: []
+vpc_vpc:
+  cost: cheap
+  status: green
+  issues: []
+vpc_vpc_endpoint:
+  cost: cheap
+  status: untested
+  issues: []
+vpc_vpc_peering:
+  cost: cheap
+  status: untested
+  issues: []
+vpc_vpc_peering_approval:
+  cost: cheap
+  status: untested
+  issues: []
+vpc_vpc_peering_rule:
+  cost: cheap
+  status: untested
+  issues: []
+vpn_vpn_gateway:
+  cost: cheap
+  status: untested
+  issues: []
+vpn_vpn_tunnel:
+  cost: cheap
+  status: untested
+  issues: []

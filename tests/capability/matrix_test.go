@@ -181,6 +181,22 @@ func runScenario(t *testing.T, name string) ResourceCaps {
 		rc.Note = "non-idempotent: " + changedSummary(replan)
 	}
 
+	// --- update (OPTIONAL, gated by MATRIX_UPDATE=1) ---
+	// After a clean apply+replan, re-apply with scenarios/<name>/update.tfvars
+	// (which mutates a safe, in-place-updatable attribute) and require the
+	// re-apply to succeed AND a subsequent re-plan to be clean. This catches
+	// in-place Update defects (cf. provider #71/#72) that the create-only
+	// pipeline never exercises. Stays "skip" when the gate is unset or the
+	// scenario has no update.tfvars.
+	runUpdateStage(t, dir, name, &rc)
+
+	// --- import (OPTIONAL, gated by MATRIX_IMPORT=1) ---
+	// Read the primary resource's address+id from `terraform show -json`, then in
+	// a throwaway copy+state run `terraform import <addr> <id>`. A resource that
+	// does not implement ImportState records "unsupported" (NOT "fail") — that is
+	// the #4 gap, surfaced per-resource rather than a defect of this run.
+	runImportStage(t, dir, name, &rc)
+
 	// destroy regardless of replan outcome, and record whether cleanup worked.
 	if dout, derr := common.TFRun(t, dir, "destroy", "-no-color", "-input=false", "-auto-approve"); derr != nil {
 		rc.Stages["destroy"] = "fail"
@@ -288,6 +304,180 @@ func firstError(out string) string {
 		}
 	}
 	return ""
+}
+
+// runUpdateStage implements the optional "update" stage. It is a no-op (stage
+// stays "skip") unless MATRIX_UPDATE=1 AND scenarios/<name>/update.tfvars exists.
+func runUpdateStage(t *testing.T, dir, name string, rc *ResourceCaps) {
+	if os.Getenv("MATRIX_UPDATE") != "1" {
+		return // gate unset → skip (default runs unaffected)
+	}
+	varFile := filepath.Join(dir, "update.tfvars")
+	if _, err := os.Stat(varFile); err != nil {
+		return // no update fixture for this scenario → skip
+	}
+	// Only meaningful once the resource is actually applied.
+	if rc.Stages["apply"] != "ok" {
+		return
+	}
+
+	if out, err := common.TFRun(t, dir, "apply", "-no-color", "-input=false", "-auto-approve", "-var-file=update.tfvars"); err != nil {
+		rc.Stages["update"] = "fail"
+		appendNote(rc, "update apply failed: "+firstError(out))
+		return
+	}
+	// A clean re-plan WITH the same var-file proves the update converged
+	// (no churn / non-idempotent in-place update).
+	replan := common.PlanWithArgs(t, dir, "-var-file=update.tfvars")
+	if idempotent(replan) {
+		rc.Stages["update"] = "ok"
+	} else {
+		rc.Stages["update"] = "fail"
+		appendNote(rc, "update non-idempotent: "+changedSummary(replan))
+	}
+}
+
+// runImportStage implements the optional "import" stage. No-op (stays "skip")
+// unless MATRIX_IMPORT=1. Runs `terraform import` in a throwaway copy of the
+// scenario with its own empty state, so it never disturbs the live state that
+// destroy still needs. A resource lacking ImportState records "unsupported".
+func runImportStage(t *testing.T, dir, name string, rc *ResourceCaps) {
+	if os.Getenv("MATRIX_IMPORT") != "1" {
+		return // gate unset → skip
+	}
+	if rc.Stages["apply"] != "ok" {
+		return
+	}
+
+	addr, id, err := primaryResourceAddrID(t, dir)
+	if err != nil || addr == "" || id == "" {
+		rc.Stages["import"] = "skip"
+		appendNote(rc, "import: could not resolve primary resource addr/id: "+errStr(err))
+		return
+	}
+
+	// Throwaway working dir: copy the scenario's *.tf so the resource block and
+	// provider config exist, but keep a fresh empty state/backend so the import
+	// target is the only thing in state. Runs in a temp dir under the OS tmp.
+	work, derr := copyScenarioForImport(dir)
+	if derr != nil {
+		rc.Stages["import"] = "skip"
+		appendNote(rc, "import: could not stage throwaway copy: "+derr.Error())
+		return
+	}
+	defer os.RemoveAll(work)
+
+	if out, ierr := common.TFRun(t, work, "init", "-backend=false", "-no-color", "-input=false"); ierr != nil {
+		rc.Stages["import"] = "skip"
+		appendNote(rc, "import: throwaway init failed: "+firstError(out))
+		return
+	}
+
+	out, ierr := common.TFRun(t, work, "import", "-no-color", "-input=false", addr, id)
+	if ierr != nil {
+		if importUnsupported(out) {
+			// Resource does not implement ImportState — this is the #4 gap, not a
+			// failure of this run. Surface it without failing the stage.
+			rc.Stages["import"] = "unsupported"
+			appendNote(rc, "import unsupported (no ImportState; see #4): "+addr)
+			return
+		}
+		rc.Stages["import"] = "fail"
+		appendNote(rc, "import failed for "+addr+": "+firstError(out))
+		return
+	}
+	rc.Stages["import"] = "ok"
+}
+
+// importUnsupported reports whether a terraform import error indicates the
+// resource type does not implement ImportState (vs. a genuine import failure).
+func importUnsupported(out string) bool {
+	for _, sig := range []string{
+		"resource import not implemented",
+		"does not support import",
+		"Import is not implemented",
+		"doesn't support import",
+		"Resource Import Not Implemented",
+		"This resource does not support import",
+	} {
+		if strings.Contains(out, sig) {
+			return true
+		}
+	}
+	return false
+}
+
+// primaryResourceAddrID returns the address and id of the scenario's primary
+// (first managed) resource, read from the live state via `terraform show -json`.
+func primaryResourceAddrID(t *testing.T, dir string) (string, string, error) {
+	showOut, err := common.TFRun(t, dir, "show", "-json")
+	if err != nil {
+		return "", "", err
+	}
+	var state struct {
+		Values struct {
+			RootModule struct {
+				Resources []struct {
+					Address string                     `json:"address"`
+					Mode    string                     `json:"mode"`
+					Values  map[string]json.RawMessage `json:"values"`
+				} `json:"resources"`
+			} `json:"root_module"`
+		} `json:"values"`
+	}
+	if err := json.Unmarshal([]byte(showOut), &state); err != nil {
+		return "", "", err
+	}
+	for _, r := range state.Values.RootModule.Resources {
+		if r.Mode != "managed" {
+			continue
+		}
+		var id string
+		if raw, ok := r.Values["id"]; ok {
+			_ = json.Unmarshal([]byte(raw), &id)
+		}
+		return r.Address, id, nil
+	}
+	return "", "", nil
+}
+
+// copyScenarioForImport makes a temp dir containing only the scenario's *.tf
+// files (no state, no .terraform), suitable for a throwaway `terraform import`.
+func copyScenarioForImport(dir string) (string, error) {
+	work, err := os.MkdirTemp("", "matrix-import-")
+	if err != nil {
+		return "", err
+	}
+	files, _ := filepath.Glob(filepath.Join(dir, "*.tf"))
+	for _, f := range files {
+		b, rerr := os.ReadFile(f)
+		if rerr != nil {
+			os.RemoveAll(work)
+			return "", rerr
+		}
+		if werr := os.WriteFile(filepath.Join(work, filepath.Base(f)), b, 0o644); werr != nil {
+			os.RemoveAll(work)
+			return "", werr
+		}
+	}
+	return work, nil
+}
+
+// appendNote joins a new note onto rc.Note with a separator, preserving any
+// earlier note (e.g. a replan non-idempotency) instead of overwriting it.
+func appendNote(rc *ResourceCaps, s string) {
+	if rc.Note == "" {
+		rc.Note = s
+		return
+	}
+	rc.Note += " | " + s
+}
+
+func errStr(err error) string {
+	if err == nil {
+		return ""
+	}
+	return err.Error()
 }
 
 // scenarioResource returns the first provider resource declared by a scenario.

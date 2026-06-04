@@ -28,6 +28,13 @@ variable "endpoint_name" {
   default     = "regr-endpoint"
 }
 
+# Per-run-unique suffix injected by the harness (TF_VAR_name_suffix).
+variable "name_suffix" {
+  type        = string
+  description = "Per-run unique suffix appended to resource names."
+  default     = ""
+}
+
 variable "resource_type" {
   type        = string
   description = "VPC endpoint target resource type. Valid: FS, OBS, SCR, DNS."
@@ -58,7 +65,7 @@ variable "endpoint_ip_address" {
 # resource_type, subnet_id, vpc_id. Optional: description, tags.
 resource "samsungcloudplatformv2_vpc_vpc_endpoint" "regr" {
   endpoint_ip_address = var.endpoint_ip_address
-  name                = var.endpoint_name
+  name                = "${var.endpoint_name}${var.name_suffix}"
   resource_info       = var.resource_info
   resource_key        = var.resource_key
   resource_type       = var.resource_type

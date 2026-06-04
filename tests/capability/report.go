@@ -13,7 +13,13 @@ import (
 var resourceDeclRe = regexp.MustCompile(`(?m)^\s*resource\s+"(samsungcloudplatformv2_[a-z0-9_]+)"`)
 
 // stageNames is the fixed pipeline, in order.
-var stageNames = []string{"validate", "plan", "apply", "replan", "destroy"}
+//
+// "update" and "import" are OPTIONAL extra stages, gated by MATRIX_UPDATE=1 and
+// MATRIX_IMPORT=1 respectively. When their env gate is unset they always record
+// "skip", so default runs are byte-for-byte unaffected. They are placed after
+// "replan" (both run while the applied resource still exists) and before
+// "destroy" so the table reads in execution order.
+var stageNames = []string{"validate", "plan", "apply", "replan", "update", "import", "destroy"}
 
 // ResourceCaps captures the per-stage outcome for one scenario.
 type ResourceCaps struct {
@@ -32,6 +38,8 @@ func glyph(state string) string {
 		return "❌"
 	case "blocked":
 		return "🚧" // provider-init transient (e.g. #38) — not a resource defect
+	case "unsupported":
+		return "🚫" // capability not implemented (e.g. no ImportState, see #4)
 	default:
 		return "⊘" // skip / not exercised
 	}
@@ -69,7 +77,8 @@ func writeMatrix(caps []ResourceCaps) error {
 	var sb strings.Builder
 	sb.WriteString("# Capability Matrix\n\n")
 	sb.WriteString("General view of what works / what doesn't across every scenario, by stage.\n")
-	sb.WriteString("Mode: `" + common.Mode() + "`. Legend: ✅ ok · ❌ fail · ⊘ not exercised.\n\n")
+	sb.WriteString("Mode: `" + common.Mode() + "`. Legend: ✅ ok · ❌ fail · 🚫 unsupported · 🚧 blocked · ⊘ not exercised.\n")
+	sb.WriteString("`update`/`import` are optional stages (gated by MATRIX_UPDATE / MATRIX_IMPORT); ⊘ when off.\n\n")
 
 	sb.WriteString("## Per-stage summary\n\n")
 	sb.WriteString("| stage | ✅ ok | ❌ fail | ⊘ skip |\n|---|---|---|---|\n")

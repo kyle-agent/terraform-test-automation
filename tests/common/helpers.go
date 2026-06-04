@@ -5,10 +5,10 @@
 //
 // Modes:
 //   - dry-run     : terraform init + plan only. No cloud resources are touched.
-//                   Used to detect schema-level regressions (e.g. spurious
-//                   destroy+create plans, missing fields, validator gaps).
+//     Used to detect schema-level regressions (e.g. spurious
+//     destroy+create plans, missing fields, validator gaps).
 //   - integration : terraform init + apply + assertions + destroy. Requires
-//                   real SCP credentials in the environment.
+//     real SCP credentials in the environment.
 package common
 
 import (
@@ -102,9 +102,9 @@ func MustInit(t *testing.T, dir string) {
 
 // PlanResult is the parsed -json output of `terraform plan`.
 type PlanResult struct {
-	RawOutput        string
-	ResourceChanges  []ResourceChange
-	Diagnostics      []Diagnostic
+	RawOutput       string
+	ResourceChanges []ResourceChange
+	Diagnostics     []Diagnostic
 }
 
 // ResourceChange mirrors the relevant subset of terraform's plan json schema.
@@ -132,9 +132,17 @@ type Diagnostic struct {
 // Plan runs `terraform plan` and returns a parsed result. In dry-run mode
 // this is the primary signal for detecting schema regressions.
 func Plan(t *testing.T, dir string) PlanResult {
+	return PlanWithArgs(t, dir)
+}
+
+// PlanWithArgs is Plan with extra `terraform plan` arguments (e.g.
+// "-var-file=update.tfvars"), used by the optional capability-matrix "update"
+// stage to verify an in-place update converges to a clean re-plan.
+func PlanWithArgs(t *testing.T, dir string, extra ...string) PlanResult {
 	t.Helper()
 	planPath := filepath.Join(dir, "out.tfplan")
-	out, err := TFRun(t, dir, "plan", "-no-color", "-input=false", "-out="+planPath)
+	args := append([]string{"plan", "-no-color", "-input=false", "-out=" + planPath}, extra...)
+	out, err := TFRun(t, dir, args...)
 	res := PlanResult{RawOutput: out}
 	if err != nil {
 		// Plan errored. Record the failing tail so a later assertion failure is

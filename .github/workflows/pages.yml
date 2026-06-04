@@ -1,0 +1,58 @@
+name: Coverage Dashboard (GitHub Pages)
+
+# Publishes the capability-coverage dashboard (docs/index.html) to GitHub Pages.
+# One-time setup by a repo admin: Settings → Pages → Source = "GitHub Actions".
+# After that this workflow deploys on every push that touches the coverage data,
+# and can be run manually via workflow_dispatch. URL after first deploy:
+#   https://kyle-agent.github.io/terraform-test-automation/
+on:
+  push:
+    branches:
+      - 'claude/cov-dashboard'
+    paths:
+      - 'coverage/**'
+      - 'docs/**'
+      - 'scripts/build_coverage_html.py'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment; don't cancel an in-progress one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Regenerate dashboard HTML from coverage.json
+        run: python3 scripts/build_coverage_html.py
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+        with:
+          # Auto-enable Pages (source = GitHub Actions) if not already enabled.
+          # Requires the workflow token to have pages:write (set above). If the
+          # org/repo disallows token enablement, a repo admin enables it once via
+          # Settings → Pages → Source = "GitHub Actions".
+          enablement: true
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

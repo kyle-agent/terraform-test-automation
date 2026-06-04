@@ -80,7 +80,10 @@ jobs:
           MODE: integration
           OUTPUT_DIR: ${{ github.workspace }}/out
           CAPABILITY_MATRIX: '1'
-          MATRIX_SCENARIOS: ${{ github.event.inputs.scenarios || 'ske_nodepool' }}
+          # Default is a no-op token (matches no scenario) so a push to this
+          # branch runs only bootstrap->teardown as a cheap smoke test. Use
+          # workflow_dispatch `scenarios` (or the regression lane) to run real sets.
+          MATRIX_SCENARIOS: ${{ github.event.inputs.scenarios || '__none__' }}
         run: |
           go test ./tests/capability/... -run TestCapabilityMatrix -count=1 -timeout 120m || true
           echo "## Dependent Probe" >> "$GITHUB_STEP_SUMMARY"
@@ -91,6 +94,34 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE_MARKER: "[capability] matrix failures"
         run: scripts/post_matrix_summary.sh out/capability-matrix.json
+      - name: Update coverage dashboard
+        if: always()
+        # Merge this run's matrix into the persistent coverage store and
+        # regenerate COVERAGE.md. We deliberately do NOT commit the result back:
+        # this workflow triggers on push to scenarios/** etc., so committing
+        # coverage/** from CI could create a push -> trigger loop. Instead we
+        # surface COVERAGE.md to the step summary and upload coverage.json as an
+        # artifact. The committed coverage/coverage.json is refreshed out-of-band
+        # (the maintainer/seed runs build_coverage.py against downloaded artifacts
+        # on the dashboard branch). Artifact + summary keeps CI side-effect-free.
+        env:
+          RUN_URL: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        run: |
+          python3 scripts/build_coverage.py out/capability-matrix.json || true
+          {
+            echo "## Coverage dashboard"
+            echo
+            sed -n '1,30p' COVERAGE.md
+          } >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ github.run_id }}
+          path: |
+            coverage/coverage.json
+            COVERAGE.md
+          if-no-files-found: ignore
       - name: Teardown prerequisites
         if: always()
         run: terraform -chdir=bootstrap destroy -no-color -input=false -auto-approve || true

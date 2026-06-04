@@ -10,10 +10,14 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-variable "transit_gateway_id" {
+# Self-contained transit-gateway VPC-connection fixture. The connection needs a
+# transit gateway parent (not exported by the bootstrap), so the TGW is created
+# here and the bootstrap VPC (TF_VAR_vpc_id) is attached to it. A transit gateway
+# does not consume the account VPC quota, so this stays within quota.
+variable "name_suffix" {
   type        = string
-  description = "Existing transit gateway id to attach the VPC to. Integration runs override via TF_VAR_transit_gateway_id."
-  default     = "00000000-0000-0000-0000-000000000000"
+  description = "Per-run unique suffix appended to resource names."
+  default     = ""
 }
 
 variable "vpc_id" {
@@ -22,10 +26,14 @@ variable "vpc_id" {
   default     = "00000000-0000-0000-0000-000000000000"
 }
 
-# Transit gateway VPC connection fixture guarding networking coverage: attaching
-# a VPC to a TGW must re-plan cleanly with no spurious update or replacement.
-# Required args: transit_gateway_id, vpc_id.
+resource "samsungcloudplatformv2_vpc_transit_gateway" "regr" {
+  name        = "regr-tgwc${var.name_suffix}"
+  description = "regr-test"
+}
+
+# TGW create waits for ACTIVE before returning, so the connection can attach
+# immediately. The connection in turn waits for its own ACTIVE state.
 resource "samsungcloudplatformv2_vpc_transit_gateway_vpc_connection" "regr" {
-  transit_gateway_id = var.transit_gateway_id
+  transit_gateway_id = samsungcloudplatformv2_vpc_transit_gateway.regr.id
   vpc_id             = var.vpc_id
 }

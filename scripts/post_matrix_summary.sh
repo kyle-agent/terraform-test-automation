@@ -30,12 +30,12 @@ BODY=$(jq -r --arg run "$RUN_URL" '
     "",
     "Run: \($run)",
     "",
-    "Resources: \(length) · ✅ ok: \([$all[]|select(.=="ok")]|length) · ❌ fail: \([$all[]|select(.=="fail")]|length) · 🚧 blocked: \([$all[]|select(.=="blocked")]|length) · ⊘ skip: \([$all[]|select(.=="skip")]|length)",
+    "Resources: \(length) · ✅ ok: \([$all[]|select(.=="ok")]|length) · ❌ fail: \([$all[]|select(.=="fail")]|length) · 🚫 unsupported: \([$all[]|select(.=="unsupported")]|length) · 🚧 blocked: \([$all[]|select(.=="blocked")]|length) · ⊘ skip: \([$all[]|select(.=="skip")]|length)",
     "",
-    "| resource | validate | plan | apply | replan | destroy | note |",
-    "|---|---|---|---|---|---|---|",
+    "| resource | validate | plan | apply | replan | update | import | destroy | note |",
+    "|---|---|---|---|---|---|---|---|---|",
     ( .[]
-      | "| `\(.resource // .scenario)` | \(.stages.validate // "-") | \(.stages.plan // "-") | \(.stages.apply // "-") | \(.stages.replan // "-") | \(.stages.destroy // "-") | \((.note // "")|gsub("\n";" ")|gsub("\\|";"\\\\|")) |" ),
+      | "| `\(.resource // .scenario)` | \(.stages.validate // "-") | \(.stages.plan // "-") | \(.stages.apply // "-") | \(.stages.replan // "-") | \(.stages.update // "-") | \(.stages.import // "-") | \(.stages.destroy // "-") | \((.note // "")|gsub("\n";" ")|gsub("\\|";"\\\\|")) |" ),
     "",
     "_Auto-posted by scripts/post_matrix_summary.sh (every run, not only on failure)._"
 ' "$IN")

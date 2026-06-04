@@ -10,33 +10,39 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-# LB server group regression fixture. The resource takes a single nested object
-# attribute `lb_server_group_create`, modeled here as one object variable so the
-# fixture passes `terraform validate` without credentials. vpc_id/subnet_id/
-# lb_health_check_id default to the zero-UUID; integration supplies real ids via
-# TF_VAR_lb_server_group.
-variable "lb_server_group" {
-  type = object({
-    name               = string
-    description        = string
-    protocol           = string
-    lb_method          = string
-    vpc_id             = string
-    subnet_id          = string
-    lb_health_check_id = string
-  })
-  default = {
-    name               = "regr-test-sg"
-    description        = "regression-test server group"
-    protocol           = "TCP"
-    lb_method          = "ROUND_ROBIN"
-    vpc_id             = "00000000-0000-0000-0000-000000000000"
-    subnet_id          = "00000000-0000-0000-0000-000000000000"
-    lb_health_check_id = "00000000-0000-0000-0000-000000000000"
-  }
-  description = "LB server group create input; vpc_id/subnet_id/lb_health_check_id default to the zero-UUID and are supplied by integration."
+# LB server group integration fixture. A server group binds directly to a
+# vpc/subnet (independent of a load balancer until a listener references it), so
+# this scenario is self-contained: it only needs vpc_id/subnet_id from the
+# dependent-probe bootstrap (TF_VAR_*). The resource takes a single nested object
+# `lb_server_group_create`. lb_health_check_id is optional and omitted to keep the
+# fixture minimal. All inputs have offline-safe defaults so `terraform validate`
+# passes without credentials.
+
+variable "name_suffix" {
+  type        = string
+  default     = ""
+  description = "Per-run unique suffix (injected by the harness as TF_VAR_name_suffix)."
+}
+
+variable "vpc_id" {
+  type        = string
+  default     = "00000000-0000-0000-0000-000000000000"
+  description = "VPC for the server group. Integration supplies a real id via TF_VAR_vpc_id."
+}
+
+variable "subnet_id" {
+  type        = string
+  default     = "00000000-0000-0000-0000-000000000000"
+  description = "Subnet for the server group. Integration supplies a real id via TF_VAR_subnet_id."
 }
 
 resource "samsungcloudplatformv2_loadbalancer_lb_server_group" "regr" {
-  lb_server_group_create = var.lb_server_group
+  lb_server_group_create = {
+    name        = "rsg${var.name_suffix}"
+    description = "regression-test server group"
+    protocol    = "TCP"
+    lb_method   = "ROUND_ROBIN"
+    vpc_id      = var.vpc_id
+    subnet_id   = var.subnet_id
+  }
 }

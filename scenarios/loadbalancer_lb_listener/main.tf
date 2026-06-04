@@ -10,35 +10,63 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-# LB listener regression fixture. The resource takes a single nested object
-# attribute `lb_listener_create`, modeled here as one object variable so the
-# fixture passes `terraform validate` without credentials. loadbalancer_id and
-# server_group_id default to the zero-UUID; integration supplies real ids via
-# TF_VAR_lb_listener.
-variable "lb_listener" {
-  type = object({
-    name            = string
-    description     = string
-    protocol        = string
-    service_port    = number
-    loadbalancer_id = string
-    server_group_id = string
-    persistence     = string
-    routing_action  = string
-  })
-  default = {
-    name            = "regr-test-listener"
-    description     = "regression-test listener"
-    protocol        = "TCP"
-    service_port    = 80
-    loadbalancer_id = "00000000-0000-0000-0000-000000000000"
-    server_group_id = "00000000-0000-0000-0000-000000000000"
-    persistence     = "SOURCE_IP"
-    routing_action  = "ROUNDROBIN"
+# LB listener integration fixture (self-contained, like ske_nodepool builds its
+# own parent cluster). A listener belongs to a load balancer and (for an L4/TCP
+# listener) forwards to a server group, so this scenario provisions the LB + a
+# server group + the listener on top. Only vpc_id/subnet_id come from the
+# dependent-probe bootstrap (TF_VAR_*). All inputs have offline-safe defaults so
+# `terraform validate` passes without credentials.
+
+variable "name_suffix" {
+  type        = string
+  default     = ""
+  description = "Per-run unique suffix (injected by the harness as TF_VAR_name_suffix)."
+}
+
+variable "vpc_id" {
+  type        = string
+  default     = "00000000-0000-0000-0000-000000000000"
+  description = "VPC for the load balancer / server group. Integration supplies a real id via TF_VAR_vpc_id."
+}
+
+variable "subnet_id" {
+  type        = string
+  default     = "00000000-0000-0000-0000-000000000000"
+  description = "Subnet for the load balancer / server group. Integration supplies a real id via TF_VAR_subnet_id."
+}
+
+resource "samsungcloudplatformv2_loadbalancer_loadbalancer" "regr" {
+  loadbalancer_create = {
+    name                     = "rlb${var.name_suffix}"
+    description              = "regression-test-lb"
+    layer_type               = "L4"
+    firewall_enabled         = false
+    firewall_logging_enabled = false
+    vpc_id                   = var.vpc_id
+    subnet_id                = var.subnet_id
   }
-  description = "LB listener create input; loadbalancer_id/server_group_id default to the zero-UUID and are supplied by integration."
+}
+
+resource "samsungcloudplatformv2_loadbalancer_lb_server_group" "regr" {
+  lb_server_group_create = {
+    name        = "rsg${var.name_suffix}"
+    description = "regression-test server group"
+    protocol    = "TCP"
+    lb_method   = "ROUND_ROBIN"
+    vpc_id      = var.vpc_id
+    subnet_id   = var.subnet_id
+  }
 }
 
 resource "samsungcloudplatformv2_loadbalancer_lb_listener" "regr" {
-  lb_listener_create = var.lb_listener
+  lb_listener_create = {
+    name            = "rls${var.name_suffix}"
+    description     = "regression-test listener"
+    protocol        = "TCP"
+    service_port    = 80
+    loadbalancer_id = samsungcloudplatformv2_loadbalancer_loadbalancer.regr.id
+    server_group_id = samsungcloudplatformv2_loadbalancer_lb_server_group.regr.id
+    persistence     = "SOURCE_IP"
+    routing_action  = "ROUNDROBIN"
+  }
 }
