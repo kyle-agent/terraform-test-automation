@@ -28,8 +28,8 @@ env:
   SCP_TF_AUTH_URL: ${{ secrets.SCP_TF_AUTH_URL }}
   SCP_TF_DEFAULT_REGION: ${{ secrets.SCP_DEFAULT_REGION }}
   SCP_ACCOUNT_ID: ${{ secrets.SCP_ACCOUNT_ID }}
-  # The provider module requires a recent Go toolchain; let go fetch deps directly.
-  GOPROXY: direct
+  # Use the default public module proxy (proxy.golang.org); GOPROXY=direct fails
+  # here because direct git fetches need auth that the runner does not provide.
   GOFLAGS: -mod=mod
 
 jobs:
