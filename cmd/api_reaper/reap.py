@@ -1,18 +1,15 @@
 #!/usr/bin/env python3
-"""Targeted leaked-resource reaper using the SCP Open API (HMAC auth).
+"""Reap leaked VPCs (by name) + their dependency tree, via the SCP Open API.
 
-Reuses the kyle-agent/api-test-automation framework (cloned alongside at runtime;
-this file is run with that repo on PYTHONPATH) so we get its proven HMAC signer +
-per-service host resolution. Deletes a FIXED list of leaked resources by id in
-dependency order — never by name/prefix, so it can't touch live resources.
+terraform can't delete these (provider has no ImportState, #81). This deletes the
+target VPCs and everything pinning them, scoped strictly by `vpc_id` match so it
+NEVER touches live resources from other runs. Runs in CI (api-reaper.yml) reusing
+the kyle-agent/api-test-automation framework (HMAC signer) on PYTHONPATH.
 
-terraform can't delete these (the provider implements no ImportState anywhere,
-issue #81); the Open API can, by id. Requires SCP_ALLOW_MUTATIONS=true and
-SCP_ALLOW_DESTRUCTIVE=true (set by the workflow).
-
-Paths verified against framework/api_catalog.json:
-  vpc host: /v1/transit-gateways/{tgw}/vpc-connections/{conn}, /v1/transit-gateways/{tgw}, /v1/vpcs/{id}
-  dns host: /v1/private-dns/{id}, /v1/public-domain-names/{id}
+Set TARGET_VPC_NAMES to the leaked VPC names. Dependency order:
+  ske clusters (nodepools->cluster) -> tgw vpc-connections (+ the test TGW) ->
+  ports -> subnets -> internet-gateways -> the VPC (409-retry).
+Requires SCP_ALLOW_MUTATIONS=true and SCP_ALLOW_DESTRUCTIVE=true.
 """
 from __future__ import annotations
 
@@ -21,77 +18,158 @@ import time
 from framework.client import ApiClient, MutationBlocked
 from framework.config import settings
 
-TGW = "12af6b7e1d634e1aa574975c4090c43f"
-CONN = "39ceadf32552426eb1929507823698cd"
-VPC_A = "02bbf96c66d14dd297d3fe8a5fe1cb72"   # rpv269430906961
-VPC_B = "8df00c61800d4ad9914cffb74d9a2149"   # rpv269430906962
-PDNS = "42339727233a425eba6675d6428c90ff"    # regr-hz-pdnsfaa040
-DOMAIN1 = "0ee424a4d97b4ff3b4a37691f7e245dd"  # regr.example.com
-DOMAIN2 = "70b84eeaf98349d18bbb8d5141e09e07"  # regr.example.com
+TARGET_VPC_NAMES = ["rpv269469061591", "rpv269469061593"]
+# TGWs to delete explicitly by name (orphans whose vpc-connection may already be
+# gone, so they wouldn't be caught by the per-vpc connection sweep below).
+TARGET_TGW_NAMES = ["regr-tgwrb9377e"]
 
 
-def delete(c, svc, path):
+def items(body):
+    if isinstance(body, dict):
+        for v in body.values():
+            if isinstance(v, list) and (not v or isinstance(v[0], dict)):
+                return v
+    return body if isinstance(body, list) else []
+
+
+def get(c, svc, path):
     try:
-        r = c.delete(path, service=svc)
+        r = c.get(path, service=svc)
+        return r.status, (items(r.body) if 200 <= r.status < 300 else [])
+    except Exception as exc:
+        print(f"  GET {svc}{path} error: {exc}")
+        return 0, []
+
+
+def delete(c, svc, path, json=None):
+    try:
+        r = c.delete(path, service=svc, json=json)
         print(f"  DELETE {svc}{path} -> {r.status}")
         return r.status
     except MutationBlocked as exc:
-        print(f"  BLOCKED {svc}{path}: {exc}")
-        return None
+        print(f"  blocked: {exc}"); return None
     except Exception as exc:
-        print(f"  ERROR  {svc}{path}: {exc}")
-        return None
+        print(f"  DELETE {svc}{path} error: {exc}"); return None
 
 
 def wait_gone(c, svc, path, timeout=300, interval=15):
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
-        try:
-            if c.get(path, service=svc).status == 404:
-                print(f"  gone  {svc}{path}")
-                return True
-        except Exception:
+        st, _ = get(c, svc, path)
+        if st == 404:
             return True
         time.sleep(interval)
-    print(f"  still-present after {timeout}s {svc}{path}")
     return False
 
 
-def delete_vpc_with_retry(c, vid, label):
+def reap_vpc(c, vid, vname):
+    print(f"== reaping {vname} ({vid}) ==")
+
+    # subnets of this vpc (used to also match ske clusters by subnet)
+    _, subnets = get(c, "vpc", "/v1/subnets")
+    my_subnets = [s["id"] for s in subnets if str(s.get("vpc_id")) == vid and s.get("id")]
+
+    # 1. ske clusters in this vpc/subnet -> nodepools then cluster
+    _, ske = get(c, "ske", "/v1/clusters")
+    for cl in ske:
+        if str(cl.get("vpc_id")) == vid or str(cl.get("subnet_id")) in my_subnets:
+            cid = cl.get("id")
+            print(f"  ske cluster {cl.get('name')} ({cid}) pins this vpc")
+            _, nps = get(c, "ske", f"/v1/clusters/{cid}/nodepools")
+            for np in nps:
+                if np.get("id"):
+                    delete(c, "ske", f"/v1/nodepools/{np['id']}")
+                    wait_gone(c, "ske", f"/v1/nodepools/{np['id']}", 600, 30)
+            for _ in range(8):
+                st = delete(c, "ske", f"/v1/clusters/{cid}")
+                if st in (200, 202, 204, 404):
+                    wait_gone(c, "ske", f"/v1/clusters/{cid}", 600, 30); break
+                if st in (409, 500):
+                    time.sleep(30); continue
+                break
+
+    # 2. transit-gateway vpc-connections referencing this vpc (+ the test TGW)
+    _, tgws = get(c, "vpc", "/v1/transit-gateways")
+    for tgw in tgws:
+        tgwid = tgw.get("id")
+        if not tgwid:
+            continue
+        _, conns = get(c, "vpc", f"/v1/transit-gateways/{tgwid}/vpc-connections")
+        hit = False
+        for conn in conns:
+            if str(conn.get("vpc_id")) == vid and conn.get("id"):
+                hit = True
+                delete(c, "vpc", f"/v1/transit-gateways/{tgwid}/vpc-connections/{conn['id']}")
+                wait_gone(c, "vpc", f"/v1/transit-gateways/{tgwid}/vpc-connections/{conn['id']}", 240, 15)
+        # delete the TGW too if it's a regression-created one we just disconnected
+        if hit and str(tgw.get("name", "")).startswith("regr"):
+            delete(c, "vpc", f"/v1/transit-gateways/{tgwid}")
+            wait_gone(c, "vpc", f"/v1/transit-gateways/{tgwid}", 240, 15)
+
+    # 3. ports in this vpc
+    _, ports = get(c, "vpc", "/v1/ports")
+    for p in ports:
+        if str(p.get("vpc_id")) == vid and p.get("id"):
+            delete(c, "vpc", f"/v1/ports/{p['id']}")
+
+    # 4. subnets
+    for sid in my_subnets:
+        delete(c, "vpc", f"/v1/subnets/{sid}")
+        wait_gone(c, "vpc", f"/v1/subnets/{sid}")
+
+    # 5. internet gateways in this vpc
+    _, igws = get(c, "vpc", "/v1/internet-gateways")
+    for ig in igws:
+        if str(ig.get("vpc_id")) == vid and ig.get("id"):
+            delete(c, "vpc", f"/v1/internet-gateways/{ig['id']}")
+            wait_gone(c, "vpc", f"/v1/internet-gateways/{ig['id']}", 240, 15)
+
+    # 6. the VPC, retrying 409 while children clear
     for attempt in range(6):
         st = delete(c, "vpc", f"/v1/vpcs/{vid}")
         if st in (200, 202, 204, 404):
             wait_gone(c, "vpc", f"/v1/vpcs/{vid}")
-            return st
+            return
         if st == 409:
-            print(f"  vpc {label} 409 (child remains) — retry {attempt+1}/6 in 15s")
-            time.sleep(15)
-            continue
-        return st
-    return None
+            print(f"  vpc {vname} 409 (child remains) — retry {attempt+1}/6")
+            time.sleep(15); continue
+        return
 
 
 def main() -> int:
     settings.require_credentials()
     c = ApiClient(settings)
-    print(f"region={settings.region} env={settings.env_code} "
-          f"vpc-host={settings.resolve_base_url('vpc')} dns-host={settings.resolve_base_url('dns')}")
+    print(f"region={settings.region} env={settings.env_code}")
+    _, vpcs = get(c, "vpc", "/v1/vpcs")
+    targets = {v["id"]: v.get("name") for v in vpcs
+               if v.get("name") in TARGET_VPC_NAMES and v.get("id")}
+    print(f"all test vpcs present: {[v.get('name') for v in vpcs if str(v.get('name','')).startswith(('rpv','regr'))]}")
+    print(f"targets resolved: {targets}")
+    if not targets:
+        print("no target VPCs found (already gone?)")
+        return 0
+    for vid, vname in targets.items():
+        reap_vpc(c, vid, vname)
 
-    # VPC A: connection -> tgw -> vpc
-    delete(c, "vpc", f"/v1/transit-gateways/{TGW}/vpc-connections/{CONN}")
-    wait_gone(c, "vpc", f"/v1/transit-gateways/{TGW}/vpc-connections/{CONN}", 240, 15)
-    delete(c, "vpc", f"/v1/transit-gateways/{TGW}")
-    wait_gone(c, "vpc", f"/v1/transit-gateways/{TGW}", 240, 15)
-    delete_vpc_with_retry(c, VPC_A, "A/rpv269430906961")
-
-    # VPC B: private-dns -> vpc
-    delete(c, "dns", f"/v1/private-dns/{PDNS}")
-    wait_gone(c, "dns", f"/v1/private-dns/{PDNS}", 240, 15)
-    delete_vpc_with_retry(c, VPC_B, "B/rpv269430906962")
-
-    # standalone public domain names
-    delete(c, "dns", f"/v1/public-domain-names/{DOMAIN1}")
-    delete(c, "dns", f"/v1/public-domain-names/{DOMAIN2}")
+    # explicit TGW-by-name cleanup (orphans / belt-and-suspenders)
+    if TARGET_TGW_NAMES:
+        _, tgws = get(c, "vpc", "/v1/transit-gateways")
+        for tgw in tgws:
+            if tgw.get("name") in TARGET_TGW_NAMES and tgw.get("id"):
+                tgwid = tgw["id"]
+                print(f"== reaping TGW {tgw['name']} ({tgwid}) ==")
+                _, conns = get(c, "vpc", f"/v1/transit-gateways/{tgwid}/vpc-connections")
+                for conn in conns:
+                    if conn.get("id"):
+                        delete(c, "vpc", f"/v1/transit-gateways/{tgwid}/vpc-connections/{conn['id']}")
+                        wait_gone(c, "vpc", f"/v1/transit-gateways/{tgwid}/vpc-connections/{conn['id']}", 240, 15)
+                for _ in range(5):
+                    st = delete(c, "vpc", f"/v1/transit-gateways/{tgwid}")
+                    if st in (200, 202, 204, 404):
+                        wait_gone(c, "vpc", f"/v1/transit-gateways/{tgwid}", 240, 15); break
+                    if st == 409:
+                        time.sleep(15); continue
+                    break
 
     print("api-reaper done")
     return 0
