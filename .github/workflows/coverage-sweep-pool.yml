@@ -1,0 +1,152 @@
+name: Coverage Sweep Pool
+
+# VPC-pool parallel coverage. Two lanes:
+#  - novpc: VPC-independent products (iam/billing/budget/cert/servicewatch/dns/
+#    resourcemanager). No bootstrap VPC at all, so zero VPC-quota pressure; runs
+#    them concurrently (MATRIX_PARALLEL) in a single job.
+#  - pool: VPC-dependent products. Each matrix shard is one job that bootstraps a
+#    single VPC (a "pool member"; max-parallel 3 => 3 VPCs, under the 5-VPC quota)
+#    and runs its shard's scenarios CONCURRENTLY within that one VPC
+#    (MATRIX_PARALLEL). Always tears its prereqs down.
+#
+# Scenarios that create their OWN VPC (peering, self-contained internet_gateway,
+# endpoint) and provider-blocked families (#76 TGW hang, #77 LB leak, #79 dns
+# private destroy) are handled elsewhere / excluded.
+#
+# NOTE: push trigger intentionally omitted for now so committing this file does
+# NOT auto-launch a pool sweep while Sweep #3 / the reaper are using the 5-VPC
+# quota. Re-add a `push:` paths trigger (or dispatch) to launch it deliberately.
+on:
+  workflow_dispatch: {}
+
+concurrency:
+  group: coverage-sweep-pool-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  issues: write
+
+env:
+  SCP_TF_ACCESS_KEY: ${{ secrets.SCP_TF_ACCESS_KEY }}
+  SCP_TF_SECRET_KEY: ${{ secrets.SCP_TF_SECRET_KEY }}
+  SCP_TF_AUTH_URL: ${{ secrets.SCP_TF_AUTH_URL }}
+  SCP_DEFAULT_REGION: ${{ secrets.SCP_DEFAULT_REGION }}
+  SCP_TF_DEFAULT_REGION: ${{ secrets.SCP_DEFAULT_REGION }}
+  SCP_ACCOUNT_ID: ${{ secrets.SCP_ACCOUNT_ID }}
+
+jobs:
+  # ---- Lane 1: VPC-independent products, no bootstrap, high parallelism ----
+  novpc:
+    runs-on: ubuntu-latest
+    environment: scp-integration
+    timeout-minutes: 40
+    env:
+      TF_VAR_suffix: ${{ github.run_id }}9
+      TF_VAR_account_id: ${{ secrets.SCP_ACCOUNT_ID }}
+      TF_VAR_trusted_account_id: ${{ secrets.SCP_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.6.6'
+          terraform_wrapper: false
+      - name: Set up provider mirror
+        run: scripts/setup_provider_mirror.sh
+      - name: Run VPC-independent products in parallel
+        env:
+          MODE: integration
+          OUTPUT_DIR: ${{ github.workspace }}/out
+          CAPABILITY_MATRIX: '1'
+          MATRIX_PARALLEL: '6'
+          MATRIX_SCENARIOS: "iam_policy,iam_group,iam_group_member,iam_group_policy_bindings,iam_role,iam_role_policy_bindings,resourcemanager_resource_group,certificate_manager_self_sign,servicewatch_dashboard,servicewatch_event_rule,servicewatch_log_group,servicewatch_log_stream,servicewatch_alert,loggingaudit_trail,budget_budget,billing_planned_compute,dns_hosted_zone,dns_record,dns_public_domain_name"
+        run: |
+          go test ./tests/capability/... -run TestCapabilityMatrix -count=1 -timeout 35m || true
+          echo "===== capability matrix (novpc) ====="
+          cat "$OUTPUT_DIR/capability-matrix.md" 2>/dev/null || echo "(no matrix md produced)"
+      - name: Upload novpc matrix artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: poolsweep-novpc-${{ github.run_id }}
+          path: |
+            out/capability-matrix.json
+            out/capability-matrix.md
+          if-no-files-found: ignore
+
+  # ---- Lane 2: VPC-dependent products, one bootstrap VPC per shard ----
+  pool:
+    runs-on: ubuntu-latest
+    environment: scp-integration
+    timeout-minutes: 45
+    env:
+      TF_VAR_suffix: ${{ github.run_id }}${{ strategy.job-index }}
+      TF_VAR_account_id: ${{ secrets.SCP_ACCOUNT_ID }}
+      TF_VAR_trusted_account_id: ${{ secrets.SCP_ACCOUNT_ID }}
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        shard:
+          # shared-subnet products (no own subnet/IGW) — safe to run together in one VPC
+          - "vpc_port,vpc_nat_gateway,security_group_basic,securitygroup_rule_basic,virtualserver_server,virtualserver_server_group,virtualserver_volume,filestorage_volume,filestorage_snapshot_schedule,backup_backup,network_logging_network_logging_storage"
+          # network edge products (each mostly self-contained on the shared VPC)
+          - "vpn_vpn_gateway,vpn_vpn_tunnel,directconnect_direct_connect,directconnect_routing_rule,gslb_gslb"
+          # subnet/cidr/vip creators — share a VPC but each makes its own subnet; run with low parallelism to avoid CIDR contention
+          - "vpc_subnet,vpc_cidr,vpc_subnet_vip,vpc_subnet_vip_port,vpc_subnet_vip_nat_ip"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.6.6'
+          terraform_wrapper: false
+      - name: Set up provider mirror
+        run: scripts/setup_provider_mirror.sh
+      - name: Bootstrap pool VPC + prereqs
+        run: |
+          terraform -chdir=bootstrap init -no-color -input=false
+          terraform -chdir=bootstrap apply -no-color -input=false -auto-approve
+          {
+            echo "TF_VAR_vpc_id=$(terraform -chdir=bootstrap output -raw vpc_id)"
+            echo "TF_VAR_subnet_id=$(terraform -chdir=bootstrap output -raw subnet_id)"
+            echo "TF_VAR_security_group_id=$(terraform -chdir=bootstrap output -raw security_group_id)"
+            echo "TF_VAR_ip_id=$(terraform -chdir=bootstrap output -raw publicip_id)"
+            echo "TF_VAR_publicip_id=$(terraform -chdir=bootstrap output -raw publicip_id)"
+            echo "TF_VAR_ip_address=$(terraform -chdir=bootstrap output -raw publicip_address)"
+            echo "TF_VAR_keypair_name=$(terraform -chdir=bootstrap output -raw keypair_name)"
+            echo "TF_VAR_image_id=$(terraform -chdir=bootstrap output -raw image_id)"
+            echo "TF_VAR_server_type_id=s1v1m2"
+            echo "TF_VAR_volume_id=$(terraform -chdir=bootstrap output -raw filestorage_volume_id)"
+            echo "TF_VAR_kubernetes_version=$(terraform -chdir=bootstrap output -raw kubernetes_version)"
+            echo "TF_VAR_security_group_id_list=[\"$(terraform -chdir=bootstrap output -raw security_group_id)\"]"
+          } >> "$GITHUB_ENV"
+      - name: Run shard products in parallel within the pool VPC
+        env:
+          MODE: integration
+          OUTPUT_DIR: ${{ github.workspace }}/out
+          CAPABILITY_MATRIX: '1'
+          # subnet/cidr creators get parallelism 2 to limit CIDR contention; others 4
+          MATRIX_PARALLEL: ${{ contains(matrix.shard, 'vpc_subnet') && '2' || '4' }}
+          MATRIX_SCENARIOS: ${{ matrix.shard }}
+        run: |
+          go test ./tests/capability/... -run TestCapabilityMatrix -count=1 -timeout 35m || true
+          echo "===== capability matrix (pool shard) ====="
+          cat "$OUTPUT_DIR/capability-matrix.md" 2>/dev/null || echo "(no matrix md produced)"
+      - name: Upload pool shard matrix artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: poolsweep-${{ strategy.job-index }}-${{ github.run_id }}
+          path: |
+            out/capability-matrix.json
+            out/capability-matrix.md
+          if-no-files-found: ignore
+      - name: Teardown pool VPC + prereqs
+        if: always()
+        run: terraform -chdir=bootstrap destroy -no-color -input=false -auto-approve || true
