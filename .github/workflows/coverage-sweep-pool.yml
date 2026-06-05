@@ -156,3 +156,5 @@ jobs:
       - name: Teardown pool VPC + prereqs
         if: always()
         run: terraform -chdir=bootstrap destroy -no-color -input=false -auto-approve || true
+
+# re-trigger 2026-06-05T01:02:03Z: SCP_TF_AUTH_URL variable trailing-whitespace removed
