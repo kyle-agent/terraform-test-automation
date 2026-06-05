@@ -101,7 +101,8 @@ jobs:
           # vpc2 — compute / storage / network-edge
           - "virtualserver_keypair,virtualserver_server,virtualserver_server_group,virtualserver_volume,virtualserver_image,filestorage_volume,filestorage_snapshot_schedule,filestorage_replication,backup_backup,vpn_vpn_gateway,vpn_vpn_tunnel,directconnect_direct_connect,directconnect_routing_rule,gslb_gslb"
           # vpc3 — heavy clusters (ske + dbaas + eventstreams); many fail-fast if engine-version-id unset
-          - "ske_cluster,ske_nodepool,mysql_cluster,postgresql_cluster,mariadb_cluster,sqlserver_cluster,epas_cluster,cachestore_cluster,searchengine_cluster,eventstreams_basic"
+          # verify DBaaS size_gb=104 fix cheaply on mysql + eventstreams (avoid 7-cluster timeout-leak); other engines run later in a long-timeout sequential lane
+          - "mysql_cluster,eventstreams_basic"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -141,7 +142,7 @@ jobs:
           MATRIX_PARALLEL: ${{ (contains(matrix.shard, 'vpc_subnet') || contains(matrix.shard, 'cluster') || contains(matrix.shard, 'ske')) && '2' || '4' }}
           MATRIX_SCENARIOS: ${{ matrix.shard }}
         run: |
-          go test ./tests/capability/... -run TestCapabilityMatrix -count=1 -timeout 35m || true
+          go test ./tests/capability/... -run TestCapabilityMatrix -count=1 -timeout 50m || true
           echo "===== capability matrix (pool shard) ====="
           cat "$OUTPUT_DIR/capability-matrix.md" 2>/dev/null || echo "(no matrix md produced)"
       - name: Upload pool shard matrix artifact
