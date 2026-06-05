@@ -303,3 +303,5 @@ if __name__ == "__main__":
 # confirm 2026-06-05T19:07:46Z: post-#14 leak-0 verification sweep (expect "0 deleted")
 
 # confirm 2026-06-05T19:13:55Z: second leak-0 verification pass (expect 0)
+
+# confirm 2026-06-05T19:19:16Z: final leak-0 pass (8->7->5->2, expect 0)
