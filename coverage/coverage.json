@@ -45,18 +45,18 @@
   }
  },
  "samsungcloudplatformv2_cachestore_cluster": {
-  "highest_stage": "plan",
-  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-  "last_seen": "2026-06-05T01:30:00Z",
-  "note": "400 value_error (deep per-engine fixture config)",
+  "highest_stage": "destroy",
+  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27003141386",
+  "last_seen": "2026-06-05T08:51:00Z",
+  "note": "GREEN: terraform create+destroy clean on fresh bootstrap subnet (per-engine pool shard, ~14m round-trip; provider waits for ACTIVE, API auto-assigns service_ip).",
   "stages": {
-   "apply": "fail",
-   "destroy": "skip",
-   "import": "skip",
+   "validate": "ok",
    "plan": "ok",
-   "replan": "skip",
+   "apply": "ok",
    "update": "skip",
-   "validate": "ok"
+   "replan": "skip",
+   "destroy": "ok",
+   "import": "skip"
   }
  },
  "samsungcloudplatformv2_certificate_manager": {
@@ -191,18 +191,18 @@
   }
  },
  "samsungcloudplatformv2_epas_cluster": {
-  "highest_stage": "plan",
-  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-  "last_seen": "2026-06-05T01:30:00Z",
-  "note": "400 value_error (deep per-engine fixture config)",
+  "highest_stage": "destroy",
+  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27003141386",
+  "last_seen": "2026-06-05T08:51:00Z",
+  "note": "GREEN: terraform create+destroy clean on fresh bootstrap subnet (per-engine pool shard, ~14m round-trip; provider waits for ACTIVE, API auto-assigns service_ip).",
   "stages": {
-   "apply": "fail",
-   "destroy": "skip",
-   "import": "skip",
+   "validate": "ok",
    "plan": "ok",
-   "replan": "skip",
+   "apply": "ok",
    "update": "skip",
-   "validate": "ok"
+   "replan": "skip",
+   "destroy": "ok",
+   "import": "skip"
   }
  },
  "samsungcloudplatformv2_eventstreams_cluster": {
@@ -440,18 +440,18 @@
   }
  },
  "samsungcloudplatformv2_mariadb_cluster": {
-  "highest_stage": "plan",
-  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-  "last_seen": "2026-06-05T01:30:00Z",
-  "note": "400 value_error (deep per-engine fixture config)",
+  "highest_stage": "destroy",
+  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27003141386",
+  "last_seen": "2026-06-05T08:51:00Z",
+  "note": "GREEN: terraform create+destroy clean on fresh bootstrap subnet (per-engine pool shard, ~14m round-trip; provider waits for ACTIVE, API auto-assigns service_ip).",
   "stages": {
-   "apply": "fail",
-   "destroy": "skip",
-   "import": "skip",
+   "validate": "ok",
    "plan": "ok",
-   "replan": "skip",
+   "apply": "ok",
    "update": "skip",
-   "validate": "ok"
+   "replan": "skip",
+   "destroy": "ok",
+   "import": "skip"
   }
  },
  "samsungcloudplatformv2_multinodegpucluster_gpunode": {
@@ -468,18 +468,18 @@
   }
  },
  "samsungcloudplatformv2_mysql_cluster": {
-  "highest_stage": "plan",
-  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-  "last_seen": "2026-06-05T01:30:00Z",
-  "note": "400 value_error (deep per-engine fixture config)",
+  "highest_stage": "destroy",
+  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27003141386",
+  "last_seen": "2026-06-05T08:51:00Z",
+  "note": "GREEN: terraform create+destroy clean on fresh bootstrap subnet (per-engine pool shard, ~14m round-trip; provider waits for ACTIVE, API auto-assigns service_ip).",
   "stages": {
-   "apply": "fail",
-   "destroy": "skip",
-   "import": "skip",
+   "validate": "ok",
    "plan": "ok",
-   "replan": "skip",
+   "apply": "ok",
    "update": "skip",
-   "validate": "ok"
+   "replan": "skip",
+   "destroy": "ok",
+   "import": "skip"
   }
  },
  "samsungcloudplatformv2_network_logging_network_logging_storage": {
