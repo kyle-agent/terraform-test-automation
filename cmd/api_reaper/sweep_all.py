@@ -237,3 +237,5 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+# sweep 2026-06-05T02:44:20Z: clean leftover ske cluster rske472910 + verify leak-0 after pool runs
