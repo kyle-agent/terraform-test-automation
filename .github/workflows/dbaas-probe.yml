@@ -46,4 +46,4 @@ jobs:
       - name: Install deps
         run: pip install -r /tmp/apitest/requirements.txt
       - name: Probe DBaaS create values
-        run: PYTHONPATH=/tmp/apitest python cmd/dbaas_probe/probe.py ${{ github.event.inputs.engines || 'mysql' }}
+        run: PYTHONPATH=/tmp/apitest python cmd/dbaas_probe/probe.py ${{ github.event.inputs.engines || 'all' }}
