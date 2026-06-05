@@ -23,6 +23,9 @@ on:
       select_family:
         description: 'optional comma families filter (blank = all)'
         default: ''
+  # Daily green-scope regression (replaces the retired nightly/regression workflows).
+  schedule:
+    - cron: '0 17 * * *'   # 02:00 KST; schedule event -> SELECT_STATUS defaults to green
   push:
     branches:
       - 'claude/**'
@@ -33,7 +36,10 @@ on:
 
 concurrency:
   group: coverage-sweep-pool-${{ github.ref }}
-  cancel-in-progress: true
+  # NOT cancel-in-progress: a cancelled run can be killed mid-bootstrap before its
+  # `if: always()` teardown completes, leaking a bootstrap VPC that then exhausts
+  # the 5-VPC quota for the next run. Let runs queue instead of cancelling.
+  cancel-in-progress: false
 
 permissions:
   contents: read
