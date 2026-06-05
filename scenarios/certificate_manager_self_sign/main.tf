@@ -35,8 +35,8 @@ variable "region" {
 resource "samsungcloudplatformv2_certificate_manager_self_sign" "regr" {
   cn            = var.common_name
   name          = var.cert_name
-  not_before_dt = "20260101"
-  not_after_dt  = "20270101"
+  not_before_dt = "20260701"
+  not_after_dt  = "20270701"
   organization  = "Regression Org"
   region        = var.region
   timezone      = "Asia/Seoul"

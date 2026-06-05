@@ -47,7 +47,7 @@ resource "samsungcloudplatformv2_searchengine_cluster" "regr" {
     database_port          = 9200
     backup_option = {
       retention_period_day = "7"
-      starting_time_hour   = "02"
+      starting_time_hour   = "11"
     }
   }
 

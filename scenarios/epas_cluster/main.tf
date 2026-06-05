@@ -51,7 +51,7 @@ resource "samsungcloudplatformv2_epas_cluster" "regr" {
     database_locale        = "C"
     backup_option = {
       retention_period_day     = "7"
-      starting_time_hour       = "02"
+      starting_time_hour       = "11"
       archive_frequency_minute = "30"
     }
   }

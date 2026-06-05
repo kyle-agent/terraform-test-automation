@@ -50,7 +50,7 @@ resource "samsungcloudplatformv2_mysql_cluster" "regr" {
     database_case_sensitive = false
     backup_option = {
       retention_period_day     = "7"
-      starting_time_hour       = "02"
+      starting_time_hour       = "11"
       archive_frequency_minute = "30"
     }
   }

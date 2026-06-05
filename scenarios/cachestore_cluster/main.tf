@@ -48,7 +48,7 @@ resource "samsungcloudplatformv2_cachestore_cluster" "regr" {
     sentinel_port          = 26379
     backup_option = {
       retention_period_day = "7"
-      starting_time_hour   = "02"
+      starting_time_hour   = "11"
     }
   }
 

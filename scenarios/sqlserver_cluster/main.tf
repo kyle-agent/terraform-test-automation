@@ -58,9 +58,9 @@ resource "samsungcloudplatformv2_sqlserver_cluster" "regr" {
     ]
     backup_option = {
       retention_period_day     = "7"
-      starting_time_hour       = "02"
+      starting_time_hour       = "11"
       archive_frequency_minute = "30"
-      full_backup_day_of_week  = "SUNDAY"
+      full_backup_day_of_week  = "SUN"
     }
   }
 

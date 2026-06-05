@@ -28,8 +28,8 @@ variable "publicip_id" {
 
 variable "vip_address" {
   type        = string
-  description = "Virtual IP reserved in the bootstrap subnet CIDR."
-  default     = "192.168.0.20"
+  description = "Virtual IP reserved in the bootstrap subnet CIDR. Defaults to null so the provider auto-assigns a free VIP and avoids collisions."
+  default     = null
 }
 
 variable "nat_type" {

@@ -77,7 +77,7 @@ resource "samsungcloudplatformv2_vpn_vpn_gateway" "regr" {
   ip_id       = var.ip_id
   ip_address  = var.ip_address
   ip_type     = var.ip_type
-  description = "Regression VPN gateway fixture (tunnel prerequisite)"
+  description = "Regression VPN gw (tunnel prereq)"
 
   tags = {
     env = "regression"

@@ -23,15 +23,14 @@ variable "volume_size" {
 }
 
 # Virtual server (block) volume fixture.
-# Guards an unattached data volume: required size plus an explicit volume_type
-# and QoS ceilings, so the optional/computed volume_type does not drift between
-# plans.
+# Guards an unattached data volume: required size plus an explicit volume_type,
+# so the optional/computed volume_type does not drift between plans. max_iops
+# and max_throughput are omitted because they are only valid for the
+# SSD_Provisioned volume type.
 resource "samsungcloudplatformv2_virtualserver_volume" "regr" {
-  name           = var.volume_name
-  size           = var.volume_size
-  volume_type    = "SSD"
-  max_iops       = 15000
-  max_throughput = 250
+  name        = var.volume_name
+  size        = var.volume_size
+  volume_type = "SSD"
 
   tags = {
     "regr" = "terraform"

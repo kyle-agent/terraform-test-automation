@@ -52,7 +52,7 @@ resource "samsungcloudplatformv2_directconnect_direct_connect" "regr" {
   bandwidth         = var.bandwidth
   name              = var.direct_connect_name
   vpc_id            = var.vpc_id
-  description       = "Regression Direct Connect fixture (routing rule prerequisite)"
+  description       = "Regression DC fixture (routing rule)"
   firewall_enabled  = true
   firewall_loggable = false
 

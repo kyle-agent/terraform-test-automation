@@ -50,7 +50,7 @@ resource "samsungcloudplatformv2_mariadb_cluster" "regr" {
     database_character_set = "utf8mb4"
     backup_option = {
       retention_period_day     = "7"
-      starting_time_hour       = "02"
+      starting_time_hour       = "11"
       archive_frequency_minute = "30"
     }
   }

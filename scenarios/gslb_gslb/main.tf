@@ -49,9 +49,9 @@ resource "samsungcloudplatformv2_gslb_gslb" "regr" {
       protocol                   = "HTTP"
       service_port               = 80
       send_string                = "GET / HTTP/1.0\r\n\r\n"
-      health_check_interval      = 10
+      health_check_interval      = 5
       health_check_probe_timeout = 6
-      timeout                    = 6
+      timeout                    = 10
     }
 
     resources = [
