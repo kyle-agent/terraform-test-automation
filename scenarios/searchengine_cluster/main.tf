@@ -27,7 +27,7 @@ variable "dbaas_engine_version_id" {
 }
 variable "server_type_name" {
   type    = string
-  default = "db1v2m4"
+  default = "ses1v2m4"
 }
 
 resource "samsungcloudplatformv2_searchengine_cluster" "regr" {
@@ -44,7 +44,7 @@ resource "samsungcloudplatformv2_searchengine_cluster" "regr" {
   init_config_option = {
     database_user_name     = "regradmin"
     database_user_password = "Regr1234!@"
-    database_port          = 9200
+    database_port          = 9201
     backup_option = {
       retention_period_day = "7"
       starting_time_hour   = "11"
@@ -65,6 +65,16 @@ resource "samsungcloudplatformv2_searchengine_cluster" "regr" {
       ]
       instances = [
         { role_type = "MASTER_DATA" },
+      ]
+    },
+    {
+      role_type        = "KIBANA"
+      server_type_name = var.server_type_name
+      block_storage_groups = [
+        { role_type = "OS", size_gb = 100, volume_type = "SSD" },
+      ]
+      instances = [
+        { role_type = "KIBANA" },
       ]
     },
   ]

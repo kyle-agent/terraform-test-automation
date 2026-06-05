@@ -47,7 +47,7 @@ resource "samsungcloudplatformv2_epas_cluster" "regr" {
     database_user_name     = "regradmin"
     database_user_password = "Regr1234!@"
     database_port          = 5444
-    database_encoding      = "UTF8"
+    database_encoding      = "UTF-8"
     database_locale        = "C"
     backup_option = {
       retention_period_day     = "7"

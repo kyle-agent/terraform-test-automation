@@ -11,10 +11,12 @@ terraform {
 provider "samsungcloudplatformv2" {}
 
 # Promoted regression fixture: a VPN tunnel with full IKE phase1/phase2 IPsec
-# parameters. Self-contained: it creates its own prerequisite VPN gateway (bound
-# to the bootstrap VPC / public IP via TF_VAR_*) and the tunnel terminates on
-# that gateway. pre_shared_key is overridable via TF_VAR_*; schema-valid
-# defaults keep validate green offline.
+# parameters. Fully SELF-CONTAINED: it creates its OWN VPC + IGW + subnet +
+# public IP + VPN gateway so it does not collide with the sibling
+# vpn_vpn_gateway scenario's gateway in the shared bootstrap VPC (the API
+# enforces a limit of 1 VPN gateway per VPC: "Exceeded the VPN Gateway limit per
+# VPC: 1EA"). The tunnel terminates on the gateway created here. pre_shared_key
+# is overridable via TF_VAR_*; schema-valid defaults keep validate green offline.
 
 variable "tunnel_name" {
   description = "VPN tunnel name."
@@ -28,10 +30,12 @@ variable "gateway_name" {
   default     = "regrvpngateway"
 }
 
-variable "vpc_id" {
-  description = "VPC UUID the VPN gateway attaches to."
+# Per-run-unique suffix injected by the harness (TF_VAR_name_suffix) so a leaked
+# resource from a prior run can't collide with this run's create.
+variable "name_suffix" {
+  description = "Per-run unique suffix appended to resource names."
   type        = string
-  default     = "00000000-0000-0000-0000-000000000000"
+  default     = ""
 }
 
 variable "ip_type" {
@@ -59,9 +63,36 @@ variable "remote_subnets" {
   default     = ["10.0.0.0/24"]
 }
 
-# Create a dedicated public IP for the VPN gateway. Reusing the bootstrap public
-# IP (var.ip_id) fails because that IP is already ATTACHED; a fresh, unattached
-# public IP keeps the gateway create valid.
+# Dedicated VPC for this scenario so the VPN gateway lives in its own VPC and
+# does not hit the per-VPC VPN gateway limit shared with vpn_vpn_gateway.
+resource "samsungcloudplatformv2_vpc_vpc" "regr" {
+  name        = "regrvpnt${var.name_suffix}"
+  cidr        = "192.168.0.0/24"
+  description = "Regression VPN tunnel prereq vpc"
+}
+
+# VPN gateway requires the VPC to have an internet gateway.
+resource "samsungcloudplatformv2_vpc_internet_gateway" "regr" {
+  type              = "IGW"
+  vpc_id            = samsungcloudplatformv2_vpc_vpc.regr.id
+  description       = "Regression VPN tunnel prereq igw"
+  firewall_enabled  = true
+  firewall_loggable = false
+}
+
+# Subnet in the dedicated VPC (dns_nameservers set explicitly to work around
+# provider bug #59).
+resource "samsungcloudplatformv2_vpc_subnet" "regr" {
+  name            = "regrvpnts${var.name_suffix}"
+  vpc_id          = samsungcloudplatformv2_vpc_vpc.regr.id
+  type            = "GENERAL"
+  cidr            = "192.168.0.0/27"
+  description     = "Regression VPN tunnel prereq subnet"
+  dns_nameservers = ["8.8.8.8"]
+}
+
+# Dedicated public IP for the VPN gateway (a fresh, unattached public IP keeps
+# the gateway create valid).
 resource "samsungcloudplatformv2_vpc_publicip" "regr" {
   type        = "IGW"
   description = "Regression VPN gw public IP"
@@ -69,11 +100,17 @@ resource "samsungcloudplatformv2_vpc_publicip" "regr" {
 
 resource "samsungcloudplatformv2_vpn_vpn_gateway" "regr" {
   name        = var.gateway_name
-  vpc_id      = var.vpc_id
+  vpc_id      = samsungcloudplatformv2_vpc_vpc.regr.id
   ip_id       = samsungcloudplatformv2_vpc_publicip.regr.id
   ip_address  = samsungcloudplatformv2_vpc_publicip.regr.publicip.ip_address
   ip_type     = var.ip_type
   description = "Regression VPN gw (tunnel prereq)"
+
+  # Ensure the IGW/subnet exist before the gateway attaches to the VPC.
+  depends_on = [
+    samsungcloudplatformv2_vpc_internet_gateway.regr,
+    samsungcloudplatformv2_vpc_subnet.regr,
+  ]
 
   tags = {
     env = "regression"

@@ -47,7 +47,7 @@ resource "samsungcloudplatformv2_mariadb_cluster" "regr" {
     database_user_name     = "regradmin"
     database_user_password = "Regr1234!@"
     database_port          = 3306
-    database_character_set = "utf8mb4"
+    database_character_set = "utf8"
     backup_option = {
       retention_period_day     = "7"
       starting_time_hour       = "11"

@@ -28,7 +28,7 @@ variable "dbaas_engine_version_id" {
 }
 variable "server_type_name" {
   type    = string
-  default = "db1v4m8"
+  default = "db1v2m8"
 }
 
 resource "samsungcloudplatformv2_sqlserver_cluster" "regr" {
@@ -47,9 +47,9 @@ resource "samsungcloudplatformv2_sqlserver_cluster" "regr" {
     database_service_name  = "Regrsvc"
     database_user_name     = "regradmin"
     database_user_password = "Regr1234!@"
-    database_port          = 1433
+    database_port          = 2866
     database_collation     = "SQL_Latin1_General_CP1_CI_AS"
-    license                = "BYOL"
+    license                = "HMWJ3-KY3J2-NMVD7-KG4JR-X2G8G"
     databases = [
       {
         database_name = "regrdb"

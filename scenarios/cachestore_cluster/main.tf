@@ -27,7 +27,7 @@ variable "dbaas_engine_version_id" {
 }
 variable "server_type_name" {
   type    = string
-  default = "db1v2m4"
+  default = "redis1v1m2"
 }
 
 resource "samsungcloudplatformv2_cachestore_cluster" "regr" {
@@ -40,7 +40,7 @@ resource "samsungcloudplatformv2_cachestore_cluster" "regr" {
   instance_name_prefix    = "regrcache"
   allowable_ip_addresses  = ["10.0.0.0/24"]
   subnet_id               = var.subnet_id
-  replica_count           = 1
+  replica_count           = 0
 
   init_config_option = {
     database_user_password = "Regr1234!@"

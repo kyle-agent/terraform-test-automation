@@ -28,9 +28,9 @@ variable "bandwidth" {
 }
 
 variable "destination_cidr" {
-  description = "Destination CIDR block the rule routes traffic toward. Must be within the bootstrap VPC CIDR 10.0.0.0/24."
+  description = "Destination CIDR block the rule routes traffic toward. Must be within the bootstrap VPC CIDR 192.168.0.0/24."
   type        = string
-  default     = "10.0.0.128/25"
+  default     = "192.168.0.128/25"
 }
 
 variable "destination_type" {

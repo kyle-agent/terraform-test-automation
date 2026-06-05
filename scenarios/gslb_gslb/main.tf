@@ -43,12 +43,13 @@ resource "samsungcloudplatformv2_gslb_gslb" "regr" {
     algorithm   = var.gslb_algorithm
     env_usage   = var.env_usage
     name        = var.gslb_name
-    description = "Regression GSLB fixture 1"
+    description = "regrgslb1"
 
     health_check = {
       protocol                   = "HTTP"
       service_port               = 80
-      send_string                = "GET / HTTP/1.0\r\n\r\n"
+      send_string                = "regrsend1"
+      receive_string             = "regrrecv1"
       health_check_interval      = 5
       health_check_probe_timeout = 6
       timeout                    = 10
@@ -56,9 +57,9 @@ resource "samsungcloudplatformv2_gslb_gslb" "regr" {
 
     resources = [
       {
-        description = "Primary regression backend 1"
+        description = "regrbackend1"
         destination = var.backend_destination
-        region      = "kr-west1"
+        region      = "KR-WEST-1"
         weight      = 100
       }
     ]
