@@ -97,6 +97,8 @@ def fill(body, *, name, engine_version_id, subnet_id, server_type_name, service_
         b["subnet_id"] = subnet_id
     # init_config_option: the canonical template leaves the DB account fields
     # empty; a real create needs non-empty values, so fill them.
+    if b.get("timezone") == "":
+        b["timezone"] = "Asia/Seoul"
     ico = b.get("init_config_option")
     if isinstance(ico, dict):
         if ico.get("database_name") == "":
@@ -107,8 +109,20 @@ def fill(body, *, name, engine_version_id, subnet_id, server_type_name, service_
             ico["database_user_password"] = "Rp1234abcd!@"
         if ico.get("audit_enabled") == "":
             ico["audit_enabled"] = False
+        bo = ico.get("backup_option")
+        if isinstance(bo, dict):
+            if bo.get("retention_period_day") == "":
+                bo["retention_period_day"] = "7"
+            if bo.get("starting_time_hour") == "":
+                bo["starting_time_hour"] = "2"
+        # sqlserver: nested databases[].database_name must be non-empty
+        for db in ico.get("databases", []) or []:
+            if isinstance(db, dict) and db.get("database_name") == "":
+                db["database_name"] = name + "db"
     for ig in b.get("instance_groups", []):
         if isinstance(ig, dict):
+            if ig.get("role_type") == "":  # sqlserver template leaves it blank
+                ig["role_type"] = "ACTIVE"
             if "server_type_name" in ig and server_type_name:
                 ig["server_type_name"] = server_type_name
             # service_ip_address must sit inside the subnet CIDR; the canonical

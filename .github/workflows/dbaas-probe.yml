@@ -46,5 +46,9 @@ jobs:
         run: git clone --depth 1 https://github.com/kyle-agent/api-test-automation /tmp/apitest
       - name: Install deps
         run: pip install -r /tmp/apitest/requirements.txt
-      - name: Probe DBaaS create values
+      # Default to 'cleanup' so a push never accidentally CREATES clusters (creates
+      # take ~20min to become deletable — a CREATING-trap). To probe engines, flip
+      # this to e.g. 'mysql' / 'all' / 'sqlserver searchengine eventstreams' for one
+      # push, then flip back. 'cleanup' is idempotent (GONE ids just report gone).
+      - name: Probe / cleanup DBaaS
         run: PYTHONPATH=/tmp/apitest python cmd/dbaas_probe/probe.py ${{ github.event.inputs.engines || 'cleanup' }}
