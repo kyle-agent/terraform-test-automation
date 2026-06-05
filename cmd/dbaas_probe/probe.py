@@ -85,7 +85,7 @@ def lettername(prefix="rp", n=4):
     return prefix + "".join(random.choice(string.ascii_lowercase) for _ in range(n))
 
 
-def fill(body, *, name, engine_version_id, subnet_id, server_type_name):
+def fill(body, *, name, engine_version_id, subnet_id, server_type_name, service_ip=None):
     b = json.loads(json.dumps(body))  # deep copy
     b["name"] = name
     if "instance_name_prefix" in b:
@@ -95,9 +95,28 @@ def fill(body, *, name, engine_version_id, subnet_id, server_type_name):
         b["dbaas_engine_version_id"] = engine_version_id
     if "subnet_id" in b and subnet_id:
         b["subnet_id"] = subnet_id
+    # init_config_option: the canonical template leaves the DB account fields
+    # empty; a real create needs non-empty values, so fill them.
+    ico = b.get("init_config_option")
+    if isinstance(ico, dict):
+        if ico.get("database_name") == "":
+            ico["database_name"] = name + "db"
+        if ico.get("database_user_name") == "":
+            ico["database_user_name"] = name + "adm"
+        if ico.get("database_user_password") == "":
+            ico["database_user_password"] = "Rp1234abcd!@"
+        if ico.get("audit_enabled") == "":
+            ico["audit_enabled"] = False
     for ig in b.get("instance_groups", []):
-        if isinstance(ig, dict) and "server_type_name" in ig and server_type_name:
-            ig["server_type_name"] = server_type_name
+        if isinstance(ig, dict):
+            if "server_type_name" in ig and server_type_name:
+                ig["server_type_name"] = server_type_name
+            # service_ip_address must sit inside the subnet CIDR; the canonical
+            # 192.168.10.10/32 only works if the subnet happens to be 192.168.x.
+            if service_ip:
+                for inst in ig.get("instances", []):
+                    if isinstance(inst, dict) and "service_ip_address" in inst:
+                        inst["service_ip_address"] = service_ip
     return b
 
 
@@ -126,17 +145,34 @@ def probe(c, engine):
         stype = sts[0].get("name") or sts[0].get("server_type_name") or sts[0].get("id") or ""
     print(f"[{engine}] server-types  -> {st}, picked name={stype!r} ({len(sts)} available)")
 
-    # 3. subnet
+    # 3. subnet (capture its CIDR so the instance service_ip sits inside it)
     subnet_id = os.environ.get("SUBNET_ID", "")
-    if not subnet_id:
-        st, subs, raw = get_items(c, "vpc", "/v1/subnets")
-        if subs:
-            subnet_id = subs[0].get("id", "")
-        print(f"[{engine}] subnets       -> {st}, picked id={subnet_id!r} ({len(subs)} available)")
+    cidr = ""
+    st, subs, raw = get_items(c, "vpc", "/v1/subnets")
+    chosen = None
+    for s in subs:
+        if subnet_id and s.get("id") == subnet_id:
+            chosen = s; break
+    if chosen is None and subs and not subnet_id:
+        chosen = subs[0]
+    if chosen:
+        subnet_id = chosen.get("id", subnet_id)
+        cidr = chosen.get("cidr") or chosen.get("cidr_block") or chosen.get("subnet_cidr") or ""
+    print(f"[{engine}] subnets       -> {st}, picked id={subnet_id!r} cidr={cidr!r} ({len(subs)} available)")
+
+    service_ip = None
+    if cidr:
+        try:
+            import ipaddress
+            net = ipaddress.ip_network(cidr, strict=False)
+            host = list(net.hosts())[9] if net.num_addresses > 12 else net.network_address + 1
+            service_ip = f"{host}/32"
+        except Exception as exc:
+            print(f"[{engine}] cidr parse failed ({exc}); using template service_ip")
 
     name = lettername()
-    payload = fill(template, name=name, engine_version_id=ev_id,
-                   subnet_id=subnet_id, server_type_name=stype)
+    payload = fill(template, name=name, engine_version_id=ev_id, subnet_id=subnet_id,
+                   server_type_name=stype, service_ip=service_ip)
     print(f"[{engine}] POST /v1/clusters name={name}")
     print(f"[{engine}] payload={json.dumps(payload, ensure_ascii=False)}")
     try:
