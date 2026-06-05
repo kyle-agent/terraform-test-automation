@@ -17,9 +17,11 @@ create succeeds (HTTP 202). Confirmed live:
 | mariadb | **202 CREATED** | none |
 | epas | **202 CREATED** | none |
 | cachestore | **202 CREATED** | none |
-| sqlserver | 400 `["value_error","value_error"]` | 2 fields: `databases[].database_name`, `license` (enum), maybe `database_service_name` |
-| searchengine | 400 `["value_error","value_error"]` | backup `retention_period_day`/`starting_time_hour`, `timezone`, `license` |
-| eventstreams | 400 `["value_error"]` | `timezone` + zookeeper/broker SASL/role |
+| sqlserver | 400 `["value_error"]` (was 2) | fill set role_type/databases[].database_name; **1 unnamed value_error remains** — likely `license` and/or `database_service_name` |
+| searchengine | 400 `["value_error"]` (was 2) | fill set timezone/backup; **1 unnamed value_error remains** |
+| eventstreams | 400 `["value_error"]` | **NOT license, NOT role** — ZOOKEEPER_BROKER role + timezone both applied, still 1 unnamed value_error. Likely the cluster **topology**: body has `is_combined:false` with a single instance group, so it probably needs separate ZOOKEEPER + BROKER groups (or `is_combined:true`) and/or SASL fields. Needs the API schema/console. |
+
+The 3 remaining engines each hit a single **bare `value_error` with no field name** — the API itself is opaque here (see #83), so resolving them needs the documented request schema or a console-built example, not more guess-and-check.
 
 So our terraform fixtures for **mysql/postgresql/mariadb/epas/cachestore are correct**
 (they omit `service_ip_address`, use `size_gb=104`, resolve `dbaas_engine_version_id`
