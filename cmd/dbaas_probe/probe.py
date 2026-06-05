@@ -165,8 +165,11 @@ def probe(c, engine):
         try:
             import ipaddress
             net = ipaddress.ip_network(cidr, strict=False)
-            host = list(net.hosts())[9] if net.num_addresses > 12 else net.network_address + 1
-            service_ip = f"{host}/32"
+            hosts = list(net.hosts())
+            # low IPs (.1-.10) are reserved/in-use ("X is not available"); pick a
+            # random host from the upper half to avoid collisions on a shared subnet.
+            pool = hosts[len(hosts) // 2:] or hosts
+            service_ip = f"{random.choice(pool)}/32"
         except Exception as exc:
             print(f"[{engine}] cidr parse failed ({exc}); using template service_ip")
 
