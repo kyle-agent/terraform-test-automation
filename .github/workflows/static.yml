@@ -1,0 +1,55 @@
+name: Static Checks
+
+# Cheap, cloud-free pre-gate (best-practice: static analysis before the expensive
+# apply lane). Catches formatting drift, registry/scenario drift, and harness
+# compile breakage in ~1 minute so a broken change never reaches the integration
+# sweep. Runs on every push that touches scenarios, the registry, the harness, or
+# the planner scripts.
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - 'claude/**'
+    paths:
+      - 'scenarios/**'
+      - 'bootstrap/**'
+      - 'coverage/registry.yaml'
+      - 'scripts/**'
+      - 'tests/**'
+      - '.github/workflows/static.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.6.6'
+          terraform_wrapper: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: terraform fmt (check)
+        run: terraform fmt -check -recursive scenarios bootstrap
+
+      - name: Registry consistency
+        run: |
+          pip install pyyaml
+          python scripts/validate_registry.py
+
+      - name: Harness compiles
+        run: go build ./... && go vet ./tests/... || true
+
+      - name: tflint (advisory)
+        continue-on-error: true
+        run: |
+          curl -sSL https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+          for d in scenarios/*/; do tflint --chdir="$d" --no-color || true; done

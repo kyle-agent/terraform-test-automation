@@ -13,6 +13,8 @@ Prints everything it finds (= inventory) and what it deleted (= leak audit).
 """
 from __future__ import annotations
 
+import datetime as _dt
+import os
 import time
 
 from framework.client import ApiClient, MutationBlocked
@@ -20,10 +22,38 @@ from framework.config import settings
 
 PREFIXES = ("regr", "rpv", "rps", "rpkp", "rpfs", "rske", "rlb", "rtgw", "igw_", "fw_igw")
 
+# TTL safety net: when >0, only reap resources at least this many hours old, so a
+# scheduled sweep can't delete a resource an in-flight run is still using. On-demand
+# sweeps leave this at 0 (reap immediately). Set via SWEEP_MIN_AGE_HOURS.
+MIN_AGE_HOURS = float(os.environ.get("SWEEP_MIN_AGE_HOURS", "0") or "0")
+
 
 def is_test(name) -> bool:
     n = str(name or "").lower()
     return any(n.startswith(p) for p in PREFIXES)
+
+
+def _created_at(it):
+    for k in ("created_at", "created", "create_at", "createdAt"):
+        v = it.get(k) if isinstance(it, dict) else None
+        if v:
+            try:
+                return _dt.datetime.fromisoformat(str(v).replace("Z", "+00:00"))
+            except ValueError:
+                return None
+    return None
+
+
+def old_enough(it) -> bool:
+    if MIN_AGE_HOURS <= 0:
+        return True
+    ts = _created_at(it)
+    if ts is None:
+        return True  # unknown age -> don't block reaping (still prefix-scoped)
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=_dt.timezone.utc)
+    age_h = (_dt.datetime.now(_dt.timezone.utc) - ts).total_seconds() / 3600.0
+    return age_h >= MIN_AGE_HOURS
 
 
 def items(body):
@@ -48,7 +78,8 @@ def lst(c, svc, path):
         print(f"  list {svc}{path} error: {exc}"); return []
     if not getattr(r, "ok", False):
         print(f"  list {svc}{path} -> {r.status}"); return []
-    return [it for it in items(r.body) if isinstance(it, dict) and is_test(name_of(it))]
+    return [it for it in items(r.body)
+            if isinstance(it, dict) and is_test(name_of(it)) and old_enough(it)]
 
 
 def delete(c, svc, path, json=None):
@@ -104,7 +135,8 @@ def main() -> int:
     settings.require_credentials()
     c = ApiClient(settings)
     n = 0
-    print(f"region={settings.region} env={settings.env_code} — sweeping test prefixes {PREFIXES}")
+    print(f"region={settings.region} env={settings.env_code} — sweeping test prefixes {PREFIXES}"
+          + (f" (min age {MIN_AGE_HOURS}h)" if MIN_AGE_HOURS > 0 else ""))
 
     # 1. virtualserver: servers (free subnet/sg), then keypairs, snapshots, volumes
     for it in lst(c, "virtualserver", "/v1/servers"):

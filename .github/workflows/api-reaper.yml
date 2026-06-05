@@ -8,6 +8,11 @@ name: API Reaper
 # reaper script / this workflow.
 on:
   workflow_dispatch: {}
+  # Nightly safety-net sweep (best-practice: scheduled leak cleanup, cf. cloud-nuke).
+  # The scheduled run only reaps resources older than SWEEP_MIN_AGE_HOURS so it can
+  # never delete a resource that a concurrent test run is still using.
+  schedule:
+    - cron: '0 18 * * *'   # 03:00 KST daily
   push:
     branches:
       - 'claude/**'
@@ -34,6 +39,9 @@ jobs:
       SCP_SECRET_KEY: ${{ secrets.SCP_TF_SECRET_KEY }}
       SCP_ALLOW_MUTATIONS: 'true'
       SCP_ALLOW_DESTRUCTIVE: 'true'
+      # On-demand/push sweeps reap immediately (age 0); the nightly schedule only
+      # reaps leaks older than 2h to avoid racing an in-flight run on the shared account.
+      SWEEP_MIN_AGE_HOURS: ${{ github.event_name == 'schedule' && '2' || '0' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
