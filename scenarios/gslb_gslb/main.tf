@@ -14,10 +14,13 @@ provider "samsungcloudplatformv2" {}
 # health check and a weighted backend resource. Inputs overridable via TF_VAR_*;
 # schema-valid defaults keep `terraform validate` green offline.
 
+# The GSLB name must be a fully-qualified domain ending in
+# '.gslb.e.samsungsdscloud.com' (apply rejects anything else with
+# "The domain name is not valid. use '.gslb.e.samsungsdscloud.com' instead.").
 variable "gslb_name" {
-  description = "GSLB display name."
+  description = "GSLB domain name; must end with .gslb.e.samsungsdscloud.com"
   type        = string
-  default     = "regrgslb"
+  default     = "regrgslb1.gslb.e.samsungsdscloud.com"
 }
 
 variable "gslb_algorithm" {

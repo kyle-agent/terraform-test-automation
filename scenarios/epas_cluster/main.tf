@@ -21,18 +21,36 @@ variable "subnet_id" {
   type    = string
   default = "00000000-0000-0000-0000-000000000000"
 }
+# Empty default => look the engine version up at runtime via the data source
+# below. Set TF_VAR_dbaas_engine_version_id to override (e.g. to pin a version).
 variable "dbaas_engine_version_id" {
   type    = string
-  default = "00000000-0000-0000-0000-000000000000"
+  default = ""
 }
 variable "server_type_name" {
   type    = string
   default = "db1v2m4"
 }
 
+# Engine versions are account/region-specific, so resolve a valid id at runtime
+# instead of hardcoding one. Prefer a version that is not end-of-service.
+data "samsungcloudplatformv2_epas_engine_version" "regr" {}
+
+locals {
+  epas_engine_versions_available = [
+    for v in data.samsungcloudplatformv2_epas_engine_version.regr.contents :
+    v if !v.end_of_service
+  ]
+  epas_engine_version_id = var.dbaas_engine_version_id != "" ? var.dbaas_engine_version_id : (
+    length(local.epas_engine_versions_available) > 0 ?
+    local.epas_engine_versions_available[0].id :
+    data.samsungcloudplatformv2_epas_engine_version.regr.contents[0].id
+  )
+}
+
 resource "samsungcloudplatformv2_epas_cluster" "regr" {
   name                    = "regrepas"
-  dbaas_engine_version_id = var.dbaas_engine_version_id
+  dbaas_engine_version_id = local.epas_engine_version_id
   ha_enabled              = false
   nat_enabled             = false
   service_state           = "RUNNING"

@@ -14,10 +14,24 @@ provider "samsungcloudplatformv2" {}
 # UUID inputs default to the zero-UUID, overridable via TF_VAR_*; schema-valid
 # defaults keep `terraform validate` green offline.
 
-variable "gateway_name" {
-  description = "VPN gateway name."
+# The harness exports TF_VAR_suffix (= github.run_id); append it so the gateway
+# name is unique per run and leaked "regr*" gateways from prior runs can't
+# collide. VPN gateway name rule: <= 20 alphanumeric chars, so use a short base
+# ("regrvpngw" = 9) and truncate the suffix to keep total <= 20.
+variable "suffix" {
+  description = "Per-run unique suffix injected by the harness as TF_VAR_suffix (github.run_id)."
   type        = string
-  default     = "regrvpngateway"
+  default     = ""
+}
+
+variable "gateway_name" {
+  description = "VPN gateway name (alphanumeric, <= 20 chars)."
+  type        = string
+  default     = ""
+}
+
+locals {
+  vpn_gateway_name = var.gateway_name != "" ? var.gateway_name : "regrvpngw${substr(var.suffix, 0, 11)}"
 }
 
 variable "vpc_id" {
@@ -45,7 +59,7 @@ variable "ip_type" {
 }
 
 resource "samsungcloudplatformv2_vpn_vpn_gateway" "regr" {
-  name        = var.gateway_name
+  name        = local.vpn_gateway_name
   vpc_id      = var.vpc_id
   ip_id       = var.ip_id
   ip_address  = var.ip_address

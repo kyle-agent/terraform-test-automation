@@ -21,18 +21,36 @@ variable "subnet_id" {
   type    = string
   default = "00000000-0000-0000-0000-000000000000"
 }
+# Empty default => look the engine version up at runtime via the data source
+# below. Set TF_VAR_dbaas_engine_version_id to override (e.g. to pin a version).
 variable "dbaas_engine_version_id" {
   type    = string
-  default = "00000000-0000-0000-0000-000000000000"
+  default = ""
 }
 variable "server_type_name" {
   type    = string
   default = "redis1v1m2"
 }
 
+# Engine versions are account/region-specific, so resolve a valid id at runtime
+# instead of hardcoding one. Prefer a version that is not end-of-service.
+data "samsungcloudplatformv2_cachestore_engine_version" "regr" {}
+
+locals {
+  cachestore_engine_versions_available = [
+    for v in data.samsungcloudplatformv2_cachestore_engine_version.regr.contents :
+    v if !v.end_of_service
+  ]
+  cachestore_engine_version_id = var.dbaas_engine_version_id != "" ? var.dbaas_engine_version_id : (
+    length(local.cachestore_engine_versions_available) > 0 ?
+    local.cachestore_engine_versions_available[0].id :
+    data.samsungcloudplatformv2_cachestore_engine_version.regr.contents[0].id
+  )
+}
+
 resource "samsungcloudplatformv2_cachestore_cluster" "regr" {
   name                    = "regrcache"
-  dbaas_engine_version_id = var.dbaas_engine_version_id
+  dbaas_engine_version_id = local.cachestore_engine_version_id
   ha_enabled              = false
   nat_enabled             = false
   service_state           = "RUNNING"

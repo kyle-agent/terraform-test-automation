@@ -159,6 +159,28 @@ def main() -> int:
                 delete(c, "vpc", f"/v1/private-nats/{pid}/private-nat-ips/{ip['id']}")
         if delete(c, "vpc", f"/v1/private-nats/{pid}"):
             n += 1
+    # 5c. vpn gateways/tunnels — leaked regr* VPN gateways accumulate (1 gateway
+    # per VPC limit) and cause name collisions on re-create. Tunnels terminate on
+    # a gateway, so delete tunnels first, then the gateways. Both also pin a VPC,
+    # so they must go before the vpc teardown below.
+    for it in lst(c, "vpn", "/v1/vpn-tunnels"):
+        if it.get("id") and delete(c, "vpn", f"/v1/vpn-tunnels/{it['id']}"):
+            n += 1
+            wait_gone(c, "vpn", f"/v1/vpn-tunnels/{it['id']}", 240, 15)
+    for it in lst(c, "vpn", "/v1/vpn-gateways"):
+        gid = it.get("id")
+        if not gid:
+            continue
+        for _ in range(6):
+            st = delete(c, "vpn", f"/v1/vpn-gateways/{gid}")
+            if st in (200, 202, 204, 404):
+                n += 1
+                wait_gone(c, "vpn", f"/v1/vpn-gateways/{gid}", 240, 15)
+                break
+            if st == 409:
+                time.sleep(15)
+                continue
+            break
     # 6. vpc children that block vpc delete
     for it in lst(c, "vpc", "/v1/nat-gateways"):
         if it.get("id") and delete(c, "vpc", f"/v1/nat-gateways/{it['id']}"):

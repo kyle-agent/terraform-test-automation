@@ -25,9 +25,9 @@ variable "tunnel_name" {
 }
 
 variable "gateway_name" {
-  description = "VPN gateway name (alphanumeric, 3-20 chars)."
+  description = "VPN gateway name (alphanumeric, <= 20 chars)."
   type        = string
-  default     = "regrvpngateway"
+  default     = ""
 }
 
 # Per-run-unique suffix injected by the harness (TF_VAR_name_suffix) so a leaked
@@ -36,6 +36,22 @@ variable "name_suffix" {
   description = "Per-run unique suffix appended to resource names."
   type        = string
   default     = ""
+}
+
+# The harness actually exports TF_VAR_suffix (= github.run_id); prefer it so the
+# names are genuinely unique per run (name_suffix is not injected). Falls back to
+# name_suffix, then "".
+variable "suffix" {
+  description = "Per-run unique suffix injected by the harness as TF_VAR_suffix (github.run_id)."
+  type        = string
+  default     = ""
+}
+
+locals {
+  vpn_suffix = var.suffix != "" ? var.suffix : var.name_suffix
+  # VPN gateway name rule: <= 20 alphanumeric chars. "regrvpngw" = 9, so cap the
+  # suffix at 11 chars to keep the total within 20.
+  vpn_gateway_name = var.gateway_name != "" ? var.gateway_name : "regrvpngw${substr(local.vpn_suffix, 0, 11)}"
 }
 
 variable "ip_type" {
@@ -66,7 +82,7 @@ variable "remote_subnets" {
 # Dedicated VPC for this scenario so the VPN gateway lives in its own VPC and
 # does not hit the per-VPC VPN gateway limit shared with vpn_vpn_gateway.
 resource "samsungcloudplatformv2_vpc_vpc" "regr" {
-  name        = "regrvpnt${var.name_suffix}"
+  name        = "regrvpnt${local.vpn_suffix}"
   cidr        = "192.168.0.0/24"
   description = "Regression VPN tunnel prereq vpc"
 }
@@ -83,7 +99,7 @@ resource "samsungcloudplatformv2_vpc_internet_gateway" "regr" {
 # Subnet in the dedicated VPC (dns_nameservers set explicitly to work around
 # provider bug #59).
 resource "samsungcloudplatformv2_vpc_subnet" "regr" {
-  name            = "regrvpnts${var.name_suffix}"
+  name            = "regrvpnts${local.vpn_suffix}"
   vpc_id          = samsungcloudplatformv2_vpc_vpc.regr.id
   type            = "GENERAL"
   cidr            = "192.168.0.0/27"
@@ -99,7 +115,7 @@ resource "samsungcloudplatformv2_vpc_publicip" "regr" {
 }
 
 resource "samsungcloudplatformv2_vpn_vpn_gateway" "regr" {
-  name        = var.gateway_name
+  name        = local.vpn_gateway_name
   vpc_id      = samsungcloudplatformv2_vpc_vpc.regr.id
   ip_id       = samsungcloudplatformv2_vpc_publicip.regr.id
   ip_address  = samsungcloudplatformv2_vpc_publicip.regr.publicip.ip_address

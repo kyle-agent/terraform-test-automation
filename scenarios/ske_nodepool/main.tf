@@ -24,6 +24,14 @@ variable "name_suffix" {
   description = "Per-run unique suffix (injected by the harness as TF_VAR_name_suffix)."
 }
 
+# The harness only exports TF_VAR_suffix (= github.run_id); prefer it so the
+# cluster name is actually unique per run. Falls back to name_suffix, then "".
+variable "suffix" {
+  type        = string
+  default     = ""
+  description = "Per-run unique suffix injected by the harness as TF_VAR_suffix (github.run_id)."
+}
+
 variable "kubernetes_version" {
   description = "Kubernetes version (Required pattern ^v\\d\\.\\d{1,2}\\.\\d{1,2}$). Integration overrides via TF_VAR_kubernetes_version from the catalog."
   type        = string
@@ -74,11 +82,14 @@ locals {
   np_image     = try(data.samsungcloudplatformv2_ske_nodepool_images.np.nodepool_images[0], null)
   np_image_os  = try(local.np_image.os, "ubuntu")
   np_image_ver = try(local.np_image.os_version, "22.04")
+  np_suffix    = var.suffix != "" ? var.suffix : var.name_suffix
 }
 
-# Parent cluster (volume_id = filestorage volume id; see provider #66).
+# Parent cluster. The "np" token keeps this name distinct from the ske_cluster
+# scenario's "rske<suffix>" cluster, which runs in the same shard concurrently
+# (name pattern ^[a-z][a-z0-9-]*[a-z0-9]$, 3-30 chars).
 resource "samsungcloudplatformv2_ske_cluster" "regr" {
-  name                          = "rske${var.name_suffix}"
+  name                          = "rskenp${local.np_suffix}"
   kubernetes_version            = var.kubernetes_version
   cloud_logging_enabled         = false
   service_watch_logging_enabled = false
@@ -93,7 +104,7 @@ resource "samsungcloudplatformv2_ske_cluster" "regr" {
 }
 
 resource "samsungcloudplatformv2_ske_nodepool" "regr" {
-  name               = "rnp${var.name_suffix}"
+  name               = "rnp${local.np_suffix}"
   cluster_id         = samsungcloudplatformv2_ske_cluster.regr.id
   server_type_id     = var.server_type_id
   kubernetes_version = var.kubernetes_version
