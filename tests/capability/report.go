@@ -19,7 +19,12 @@ var resourceDeclRe = regexp.MustCompile(`(?m)^\s*resource\s+"(samsungcloudplatfo
 // "skip", so default runs are byte-for-byte unaffected. They are placed after
 // "replan" (both run while the applied resource still exists) and before
 // "destroy" so the table reads in execution order.
-var stageNames = []string{"validate", "plan", "apply", "replan", "update", "import", "destroy"}
+// "destroy_verify" (OPTIONAL, gated by DESTROY_VERIFY=1) runs after destroy and
+// confirms via the Open API that the created resources are actually gone (404) —
+// catching "destroy reported success but the resource lingers" (cf. provider
+// #77/#82). It records ok|leak|skip and, like update/import, stays "skip" when the
+// gate is unset so default runs are unaffected.
+var stageNames = []string{"validate", "plan", "apply", "replan", "update", "import", "destroy", "destroy_verify"}
 
 // ResourceCaps captures the per-stage outcome for one scenario.
 type ResourceCaps struct {

@@ -27,6 +27,7 @@ package capability
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
@@ -238,6 +239,13 @@ func runScenario(t *testing.T, name string) ResourceCaps {
 	// the #4 gap, surfaced per-resource rather than a defect of this run.
 	runImportStage(t, dir, name, &rc)
 
+	// Capture created resources from state BEFORE destroy, so destroy_verify can
+	// confirm they're actually gone afterwards (state is wiped by destroy).
+	var created []managedResource
+	if os.Getenv("DESTROY_VERIFY") == "1" {
+		created = collectManagedResources(t, dir)
+	}
+
 	// destroy regardless of replan outcome, and record whether cleanup worked.
 	if dout, derr := common.TFRun(t, dir, "destroy", "-no-color", "-input=false", "-auto-approve"); derr != nil {
 		rc.Stages["destroy"] = "fail"
@@ -246,8 +254,51 @@ func runScenario(t *testing.T, name string) ResourceCaps {
 		}
 	} else {
 		rc.Stages["destroy"] = "ok"
+		runDestroyVerify(&rc, created)
 	}
 	return rc
+}
+
+// runDestroyVerify (OPTIONAL, gated by DESTROY_VERIFY=1) confirms via the Open API
+// that destroyed resources are actually gone — a CheckDestroy-equivalent that
+// catches "terraform destroy succeeded but the resource lingers" (cf. #77/#82).
+// Records destroy_verify = ok (all mapped resources 404) | leak (one still 2xx) |
+// skip (no mapped resources / no credentials). Only high-confidence endpoint
+// mappings are checked; an ambiguous status (not 2xx and not 404) is ignored.
+func runDestroyVerify(rc *ResourceCaps, created []managedResource) {
+	if os.Getenv("DESTROY_VERIFY") != "1" || !common.APICredsAvailable() {
+		return
+	}
+	var checked int
+	var leaks []string
+	for _, r := range created {
+		ep, ok := resourceEndpoints[r.Type]
+		if !ok {
+			continue
+		}
+		checked++
+		st, err := common.APIStatus(ep.service, fmt.Sprintf(ep.path, r.ID))
+		if err != nil {
+			continue // transport/credential issue -> inconclusive, don't flag
+		}
+		if st >= 200 && st < 300 {
+			leaks = append(leaks, fmt.Sprintf("%s(%s) still present [HTTP %d]", r.Type, r.ID, st))
+		}
+		// 404 (or other non-2xx) => treated as gone/inconclusive, not a leak.
+	}
+	if checked == 0 {
+		rc.Stages["destroy_verify"] = "skip"
+		return
+	}
+	if len(leaks) > 0 {
+		rc.Stages["destroy_verify"] = "leak"
+		if rc.Note != "" {
+			rc.Note += " | "
+		}
+		rc.Note += "DESTROY_VERIFY leak: " + strings.Join(leaks, "; ")
+	} else {
+		rc.Stages["destroy_verify"] = "ok"
+	}
 }
 
 // changedSummary lists the non-noop resource changes in a plan, for the note.

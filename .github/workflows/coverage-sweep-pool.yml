@@ -103,6 +103,7 @@ jobs:
           MODE: integration
           OUTPUT_DIR: ${{ github.workspace }}/out
           CAPABILITY_MATRIX: '1'
+          DESTROY_VERIFY: '1'
           MATRIX_PARALLEL: '6'
           MATRIX_SCENARIOS: ${{ needs.plan.outputs.novpc }}
         run: |
@@ -170,6 +171,7 @@ jobs:
           MODE: integration
           OUTPUT_DIR: ${{ github.workspace }}/out
           CAPABILITY_MATRIX: '1'
+          DESTROY_VERIFY: '1'
           MATRIX_PARALLEL: ${{ matrix.shard.parallel }}
           MATRIX_SCENARIOS: ${{ matrix.shard.scenarios }}
         run: |
@@ -216,6 +218,7 @@ jobs:
           MODE: integration
           OUTPUT_DIR: ${{ github.workspace }}/out
           CAPABILITY_MATRIX: '1'
+          DESTROY_VERIFY: '1'
           MATRIX_PARALLEL: '2'
           MATRIX_SCENARIOS: ${{ needs.plan.outputs.selfvpc }}
         run: |
