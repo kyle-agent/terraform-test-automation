@@ -93,7 +93,7 @@ jobs:
       TF_VAR_trusted_account_id: ${{ vars.SCP_ACCOUNT_ID }}
     strategy:
       fail-fast: false
-      max-parallel: 3
+      max-parallel: 2
       matrix:
         shard:
           # vpc1 — network resources on the shared VPC (subnet/cidr/vip creators -> low parallel)
@@ -110,8 +110,8 @@ jobs:
           # timeout (5-in-one-shard would time out mid-destroy and leak). The probe
           # confirmed these 5 engines' values are valid and the API auto-assigns the
           # service IP on a fresh subnet (which the bootstrap provides).
+          # postgresql_cluster already proven GREEN (run 27001005481) — omitted here.
           - "mysql_cluster"
-          - "postgresql_cluster"
           - "mariadb_cluster"
           - "epas_cluster"
           - "cachestore_cluster"
@@ -229,3 +229,5 @@ jobs:
 # re-run 2026-06-05T04:53:24Z: verify DBaaS engine-version data-source + gslb FQDN + ske/vpn unique names
 
 # re-run 2026-06-05T07:11:21Z: validate 5 DBaaS engines green (mysql/postgresql/mariadb/epas/cachestore), one engine per shard
+
+# re-run 2026-06-05T08:01:48Z: clean quota (leak 0), max-parallel 2; validate mysql/mariadb/epas/cachestore green (postgresql already green)
