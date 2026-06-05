@@ -5,13 +5,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "500 server error (#80)",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "fail",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "ok",
       "replan": "skip",
       "update": "skip",
-      "import": "skip",
-      "destroy": "skip"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_billing_planned_compute": {
@@ -20,13 +20,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "provider #78 YEAR_1 enum",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "fail",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "ok",
       "replan": "skip",
       "update": "skip",
-      "import": "skip",
-      "destroy": "skip"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_budget_budget": {
@@ -35,13 +35,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "500 server error",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "fail",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "ok",
       "replan": "skip",
       "update": "skip",
-      "import": "skip",
-      "destroy": "skip"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_cachestore_cluster": {
@@ -50,13 +50,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "400 value_error (deep per-engine fixture config)",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "fail",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "ok",
       "replan": "skip",
       "update": "skip",
-      "import": "skip",
-      "destroy": "skip"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_certificate_manager": {
@@ -65,13 +65,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "green via certificate_manager_self_sign",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
       "replan": "ok",
       "update": "skip",
-      "import": "skip",
-      "destroy": "ok"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_certificate_manager_self_sign": {
@@ -106,13 +106,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
       "replan": "ok",
       "update": "skip",
-      "import": "skip",
-      "destroy": "ok"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_directconnect_routing_rule": {
@@ -121,13 +121,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "400 destination cidr must be within VPC cidr (fixture)",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "fail",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "ok",
       "replan": "skip",
       "update": "skip",
-      "import": "skip",
-      "destroy": "skip"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_dns_hosted_zone": {
@@ -136,13 +136,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "404 unresolved parent id (fixture)",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "fail",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "ok",
       "replan": "skip",
       "update": "skip",
-      "import": "skip",
-      "destroy": "skip"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_dns_private_dns": {
@@ -151,13 +151,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "blocked: provider #79 destroy 409",
     "stages": {
-      "validate": "ok",
-      "plan": "skip",
       "apply": "skip",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "skip",
       "replan": "skip",
       "update": "skip",
-      "import": "skip",
-      "destroy": "skip"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_dns_public_domain_name": {
@@ -166,13 +166,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "500 create then leak; no DELETE API (#82)",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "fail",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "ok",
       "replan": "skip",
       "update": "skip",
-      "import": "skip",
-      "destroy": "skip"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_dns_record": {
@@ -181,13 +181,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "404 unresolved parent id (fixture)",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "fail",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "ok",
       "replan": "skip",
       "update": "skip",
-      "import": "skip",
-      "destroy": "skip"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_epas_cluster": {
@@ -196,13 +196,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "400 value_error (deep per-engine fixture config)",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "fail",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "ok",
       "replan": "skip",
       "update": "skip",
-      "import": "skip",
-      "destroy": "skip"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_eventstreams_cluster": {
@@ -211,13 +211,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "needs dbaas_engine_version_id var",
     "stages": {
-      "validate": "ok",
-      "plan": "fail",
       "apply": "skip",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "fail",
       "replan": "skip",
       "update": "skip",
-      "import": "skip",
-      "destroy": "skip"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_filestorage_replication": {
@@ -226,13 +226,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "400 replication not available",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "fail",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "ok",
       "replan": "skip",
       "update": "skip",
-      "import": "skip",
-      "destroy": "skip"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_filestorage_snapshot_schedule": {
@@ -241,13 +241,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
       "replan": "ok",
       "update": "skip",
-      "import": "skip",
-      "destroy": "ok"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_filestorage_volume": {
@@ -256,13 +256,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
       "replan": "ok",
       "update": "skip",
-      "import": "skip",
-      "destroy": "ok"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_firewall_firewall_rule": {
@@ -271,28 +271,28 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "404 firewall not found",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "fail",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "ok",
       "replan": "skip",
       "update": "skip",
-      "import": "skip",
-      "destroy": "skip"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_gslb_gslb": {
-    "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-    "last_seen": "2026-06-05T01:30:00Z",
-    "note": "400 name English+numbers (fixture)",
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26996173645",
+    "last_seen": "2026-06-05T05:30:00Z",
+    "note": "green (FQDN domain fix)",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
-      "apply": "fail",
-      "replan": "skip",
-      "update": "skip",
+      "apply": "ok",
+      "destroy": "ok",
       "import": "skip",
-      "destroy": "skip"
+      "plan": "ok",
+      "replan": "ok",
+      "update": "skip",
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_iam_access_key": {
@@ -314,13 +314,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
       "replan": "ok",
       "update": "skip",
-      "import": "skip",
-      "destroy": "ok"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_iam_policy": {
@@ -329,13 +329,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
       "replan": "ok",
       "update": "skip",
-      "import": "skip",
-      "destroy": "ok"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_iam_role": {
@@ -344,13 +344,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "400 Input should be a valid list / 404 no policy id (fixture)",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "fail",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "ok",
       "replan": "skip",
       "update": "skip",
-      "import": "skip",
-      "destroy": "skip"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_iam_user": {
@@ -359,13 +359,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "401 [HMAC] HMAC valid fail \u2014 account/creds",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "fail",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "ok",
       "replan": "skip",
       "update": "skip",
-      "import": "skip",
-      "destroy": "skip"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_iam_user_policy_bindings": {
@@ -374,13 +374,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "403 user not part of project (perms)",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "fail",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "ok",
       "replan": "skip",
       "update": "skip",
-      "import": "skip",
-      "destroy": "skip"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_loadbalancer_lb_health_check": {
@@ -415,13 +415,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "blocked: provider #77 create no-wait \u2192 destroy leak",
     "stages": {
-      "validate": "ok",
-      "plan": "skip",
       "apply": "skip",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "skip",
       "replan": "skip",
       "update": "skip",
-      "import": "skip",
-      "destroy": "skip"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_loggingaudit_trail": {
@@ -430,13 +430,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "403 missing permissions (account)",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "fail",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "ok",
       "replan": "skip",
       "update": "skip",
-      "import": "skip",
-      "destroy": "skip"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_mariadb_cluster": {
@@ -445,13 +445,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "400 value_error (deep per-engine fixture config)",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "fail",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "ok",
       "replan": "skip",
       "update": "skip",
-      "import": "skip",
-      "destroy": "skip"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_multinodegpucluster_gpunode": {
@@ -473,13 +473,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "400 value_error (deep per-engine fixture config)",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "fail",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "ok",
       "replan": "skip",
       "update": "skip",
-      "import": "skip",
-      "destroy": "skip"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_network_logging_network_logging_storage": {
@@ -488,13 +488,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "400 (no reason)",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "fail",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "ok",
       "replan": "skip",
       "update": "skip",
-      "import": "skip",
-      "destroy": "skip"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_postgresql_cluster": {
@@ -503,13 +503,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "400 value_error (deep per-engine fixture config)",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "fail",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "ok",
       "replan": "skip",
       "update": "skip",
-      "import": "skip",
-      "destroy": "skip"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_resourcemanager_resource_group": {
@@ -518,13 +518,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
       "replan": "ok",
       "update": "skip",
-      "import": "skip",
-      "destroy": "ok"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_searchengine_cluster": {
@@ -533,13 +533,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "400 value_error (deep per-engine fixture config)",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "fail",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "ok",
       "replan": "skip",
       "update": "skip",
-      "import": "skip",
-      "destroy": "skip"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_security_group_security_group": {
@@ -548,13 +548,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
       "replan": "ok",
       "update": "skip",
-      "import": "skip",
-      "destroy": "ok"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_security_group_security_group_rule": {
@@ -563,13 +563,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
       "replan": "ok",
       "update": "skip",
-      "import": "skip",
-      "destroy": "ok"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_servicewatch_alert": {
@@ -578,13 +578,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
       "replan": "ok",
       "update": "skip",
-      "import": "skip",
-      "destroy": "ok"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_servicewatch_dashboard": {
@@ -593,13 +593,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
       "replan": "ok",
       "update": "skip",
-      "import": "skip",
-      "destroy": "ok"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_servicewatch_event_rule": {
@@ -608,13 +608,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
       "replan": "ok",
       "update": "skip",
-      "import": "skip",
-      "destroy": "ok"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_servicewatch_log_group": {
@@ -623,13 +623,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
       "replan": "ok",
       "update": "skip",
-      "import": "skip",
-      "destroy": "ok"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_servicewatch_log_stream": {
@@ -638,13 +638,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
       "replan": "ok",
       "update": "skip",
-      "import": "skip",
-      "destroy": "ok"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_ske_cluster": {
@@ -653,13 +653,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
       "replan": "ok",
       "update": "skip",
-      "import": "skip",
-      "destroy": "ok"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_sqlserver_cluster": {
@@ -668,13 +668,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "400 value_error (deep per-engine fixture config)",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "fail",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "ok",
       "replan": "skip",
       "update": "skip",
-      "import": "skip",
-      "destroy": "skip"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_virtualserver_image": {
@@ -683,13 +683,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "400 invalid Object Storage URL (fixture)",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "fail",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "ok",
       "replan": "skip",
       "update": "skip",
-      "import": "skip",
-      "destroy": "skip"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_virtualserver_keypair": {
@@ -698,13 +698,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
       "replan": "ok",
       "update": "skip",
-      "import": "skip",
-      "destroy": "ok"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_virtualserver_server": {
@@ -713,13 +713,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
       "replan": "ok",
       "update": "skip",
-      "import": "skip",
-      "destroy": "ok"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_virtualserver_server_group": {
@@ -728,13 +728,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
       "replan": "ok",
       "update": "skip",
-      "import": "skip",
-      "destroy": "ok"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_virtualserver_volume": {
@@ -743,13 +743,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
       "replan": "ok",
       "update": "skip",
-      "import": "skip",
-      "destroy": "ok"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_vpc_cidr": {
@@ -758,13 +758,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "replan non-idempotent \u2014 provider #60",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
       "replan": "fail",
       "update": "skip",
-      "import": "skip",
-      "destroy": "ok"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_vpc_internet_gateway": {
@@ -786,13 +786,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
       "replan": "ok",
       "update": "skip",
-      "import": "skip",
-      "destroy": "ok"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_vpc_port": {
@@ -801,13 +801,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
       "replan": "ok",
       "update": "skip",
-      "import": "skip",
-      "destroy": "ok"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_vpc_private_nat": {
@@ -816,13 +816,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "blocked: TGW Connectable race / #76",
     "stages": {
-      "validate": "ok",
-      "plan": "skip",
       "apply": "skip",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "skip",
       "replan": "skip",
       "update": "skip",
-      "import": "skip",
-      "destroy": "skip"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_vpc_private_nat_ip": {
@@ -831,13 +831,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "blocked: TGW Connectable race / #76",
     "stages": {
-      "validate": "ok",
-      "plan": "skip",
       "apply": "skip",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "skip",
       "replan": "skip",
       "update": "skip",
-      "import": "skip",
-      "destroy": "skip"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_vpc_publicip": {
@@ -846,13 +846,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
       "replan": "ok",
       "update": "skip",
-      "import": "skip",
-      "destroy": "ok"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_vpc_subnet": {
@@ -861,13 +861,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
       "replan": "ok",
       "update": "skip",
-      "import": "skip",
-      "destroy": "ok"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_vpc_subnet_vip": {
@@ -876,13 +876,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
       "replan": "ok",
       "update": "skip",
-      "import": "skip",
-      "destroy": "ok"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_vpc_transit_gateway": {
@@ -891,13 +891,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
       "replan": "ok",
       "update": "skip",
-      "import": "skip",
-      "destroy": "ok"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_vpc_transit_gateway_firewall": {
@@ -906,13 +906,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "blocked: provider #76 status-waiter hang",
     "stages": {
-      "validate": "ok",
-      "plan": "skip",
       "apply": "skip",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "skip",
       "replan": "skip",
       "update": "skip",
-      "import": "skip",
-      "destroy": "skip"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_vpc_transit_gateway_rule": {
@@ -921,13 +921,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "blocked: provider #76 status-waiter hang",
     "stages": {
-      "validate": "ok",
-      "plan": "skip",
       "apply": "skip",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "skip",
       "replan": "skip",
       "update": "skip",
-      "import": "skip",
-      "destroy": "skip"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_vpc_transit_gateway_vpc_connection": {
@@ -936,13 +936,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "blocked: provider #76 status-waiter hang",
     "stages": {
-      "validate": "ok",
-      "plan": "skip",
       "apply": "skip",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "skip",
       "replan": "skip",
       "update": "skip",
-      "import": "skip",
-      "destroy": "skip"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_vpc_vpc": {
@@ -951,13 +951,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
       "replan": "ok",
       "update": "skip",
-      "import": "skip",
-      "destroy": "ok"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_vpc_vpc_endpoint": {
@@ -992,13 +992,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
       "replan": "ok",
       "update": "skip",
-      "import": "skip",
-      "destroy": "ok"
+      "validate": "ok"
     }
   },
   "samsungcloudplatformv2_vpn_vpn_tunnel": {
@@ -1007,13 +1007,13 @@
     "last_seen": "2026-06-05T01:30:00Z",
     "note": "400 public IP ATTACHED / VPN gw limit 1 per VPC",
     "stages": {
-      "validate": "ok",
-      "plan": "ok",
       "apply": "fail",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "ok",
       "replan": "skip",
       "update": "skip",
-      "import": "skip",
-      "destroy": "skip"
+      "validate": "ok"
     }
   }
 }
