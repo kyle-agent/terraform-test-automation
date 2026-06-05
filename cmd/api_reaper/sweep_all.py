@@ -299,3 +299,5 @@ if __name__ == "__main__":
 # sweep 2026-06-05T07:54:06Z: second pass to clear the 409-blocked leftover VPC (free quota for 4-engine pool re-run)
 
 # sweep 2026-06-05T18:26:09Z: clear bootstrap VPCs leaked by cancelled run #12 (cancel-in-progress now off)
+
+# confirm 2026-06-05T19:07:46Z: post-#14 leak-0 verification sweep (expect "0 deleted")
