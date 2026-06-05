@@ -158,3 +158,5 @@ jobs:
         run: terraform -chdir=bootstrap destroy -no-color -input=false -auto-approve || true
 
 # re-trigger 2026-06-05T01:02:03Z: SCP_TF_AUTH_URL variable trailing-whitespace removed
+
+# re-run 2026-06-05T01:39:13Z: verify 17 fixture fixes (DBaaS starting_time_hour, gslb, volume, cert, iam_role, alert, log_stream, subnet_vip)
