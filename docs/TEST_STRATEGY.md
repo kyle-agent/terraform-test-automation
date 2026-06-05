@@ -129,3 +129,41 @@ API로 직접 만든 클러스터는 즉시 삭제가 안 됨(클린업 시 ACTI
 3. **VPC 쿼터 상향** 가능 여부 — 상향되면 pool `max-parallel`을 올려 sweep 시간 단축.
 4. **dispatch 권한** — workflow_dispatch가 403이라 push로만 트리거 중. 정식 디스패치 토큰이 있으면 운영 편의↑.
 5. 제외 가족(baremetal/monitoring/configinspection/vertica) 중 테스트 포함 원하는 항목 있으면 알려주기.
+
+---
+
+## ⑥ Best-practice 대조 및 개선안
+
+> 참고: HashiCorp `terraform-plugin-testing`(acceptance tests/Sweepers/CheckDestroy/tfversion-checks),
+> Terratest cleanup 가이드, Google/Azure terraform 테스트 가이드, `terraform test`(.tftest.hcl).
+> **전제**: 우리는 third-party published provider를 라이브 클라우드에 **black-box e2e**로 검증한다
+> (provider를 빌드/머지하지 않음). 따라서 "provider 레포 내 TF_ACC 테스트/Go Sweeper 작성"은 우리 lane이
+> 아니며 → 대신 그 *패턴*을 우리 하네스에 이식하거나 provider 팀에 권고(#83)한다.
+
+### 대조표
+| Best practice | 표준 출처 | 현재 우리 상태 | 조치 |
+|---|---|---|---|
+| **CheckDestroy** = destroy 후 API로 실재 404 검증 | plugin-testing | terraform destroy 성공에만 의존, **API 재확인 없음** | **채택(高)** — destroy 후 `scp-api exists`로 404 확인. #77/#82류(‘destroy 성공인데 자원 잔존’) 자동 검출 |
+| **Idempotency** = apply 후 재plan no-diff | testing-patterns | dashboard에 `replan` stage 칸은 있으나 미가동 | **채택(高)** — apply 후 `plan -detailed-exitcode`(2=perma-diff 버그) |
+| **Sweepers**(leaked 자원 정리) | plugin-testing Sweepers | 동등 기능을 **Python reaper**로 자체 구현(prefix+의존성순서) | 유지. provider 팀엔 공식 Sweeper 추가 권고 |
+| **Nightly 안전망 sweep**(cloud-nuke 패턴) | Terratest/Google | reaper는 **on-demand만** | **채택(高)** — `schedule: cron`으로 야간 sweep |
+| **TTL/age 기반 정리**(N시간 초과만 삭제) | Terratest | prefix만 보고 삭제 → 공유계정 **동시 실행 레이스 위험** | **채택(中)** — created_at N시간 초과 자원만 |
+| **Unique naming + tag**(TestRun 태그로 추적) | Terratest/Azure | suffix=run_id ✓, prefix ✓, **태그 없음** | **채택(中)** — 공통 태그(예 `created_by=regr`) 부여 → 태그 기반 sweep |
+| **Static 선행 게이트**(fmt/validate/tflint) | Google/Spacelift | validate/plan은 있으나 fmt/tflint 미적용, 비싼 apply 선행 | **채택(中)** — fmt -check/validate/tflint를 **apply 전 fail-fast** |
+| **테스트 피라미드**(plan/mock 빠른 층) | terraform test | 거의 **apply-only e2e** | 부분채택 — provider API 매핑 검증이 목적이라 e2e 유지하되, 회귀 빠른 확인용 plan층 보강 |
+| **CheckDestroy/timeout 적정화** | plugin-testing | provider가 ACTIVE/삭제 대기(소스 확인), go test 60m/job 75m로 정렬 ✓ | 유지 |
+| **격리(워크스페이스/state)** | 공통 | ephemeral runner + suffix로 분리 ✓ | 유지 |
+| **provider 버전 매트릭스**(tfversion-checks) | plugin-testing | 단일 버전 핀 | 선택 — 릴리스 회귀 필요 시 |
+| **`terraform test`(.tftest.hcl)로 통합** | terraform test | Go capability-matrix 사용 | 선택 — 자동 cleanup+HCL assert 이점 있으나 마이그레이션 비용. 현행 유지 |
+| **CI 산출물**(JSON/JUnit/대시보드) | 공통 | capability-matrix.json + Pages 대시보드 ✓ | 유지(필요시 JUnit 추가) |
+
+### 권장 우선순위 (낮은 노력·높은 효과 순)
+1. **destroy 후 API 존재검증(CheckDestroy 등가)** — 가장 가치 큼. ‘조용한 누수’ 버그를 정량 검출.
+2. **idempotency 재plan(no-diff)** — perma-diff 버그를 무료로 잡음. dashboard `replan` 칸 가동.
+3. **야간 schedule sweep** — 안전망. cron 한 줄.
+4. **fmt/validate/tflint 선행 게이트** — 비싼 apply 낭비 감소.
+5. **TTL/태그 기반 sweep** — 공유계정 동시실행 레이스 방지(중요해질 수 있음).
+
+### 의도적으로 채택 안 함 (이유 명시)
+- **provider 레포 내 TF_ACC 어셉턴스 테스트/Go Sweeper 직접 작성** — third-party provider를 소유/머지하지 않음. 대신 black-box e2e + 이슈화. (provider 팀엔 권고)
+- **mock 기반 terraform test** — 목적이 provider의 실제 API 매핑 검증이라 mock은 무의미. 실제 클라우드 e2e 유지.
