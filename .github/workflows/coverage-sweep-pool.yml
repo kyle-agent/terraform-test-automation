@@ -164,3 +164,5 @@ jobs:
 # re-run 2026-06-05T02:12:51Z: verify fixture round#2 (DBaaS name ^[a-zA-Z]*$, gslb, routing_rule cidr, vpn_tunnel ip, iam_role policy_ids, alert period)
 
 # re-run 2026-06-05T04:11:31Z: verify fixture round#3 (DBaaS examples-aligned, gslb/routing_rule/vpn_tunnel/iam_role)
+
+# re-run 2026-06-05T04:53:24Z: verify DBaaS engine-version data-source + gslb FQDN + ske/vpn unique names
