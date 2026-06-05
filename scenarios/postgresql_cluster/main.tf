@@ -83,7 +83,7 @@ resource "samsungcloudplatformv2_postgresql_cluster" "regr" {
       role_type        = "ACTIVE"
       server_type_name = var.server_type_name
       block_storage_groups = [
-        { role_type = "OS", size_gb = 100, volume_type = "SSD" },
+        { role_type = "OS", size_gb = 104, volume_type = "SSD" },
         { role_type = "DATA", size_gb = 200, volume_type = "SSD" },
       ]
       instances = [

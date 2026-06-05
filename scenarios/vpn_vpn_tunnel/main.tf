@@ -49,9 +49,12 @@ variable "suffix" {
 
 locals {
   vpn_suffix = var.suffix != "" ? var.suffix : var.name_suffix
+  # The suffix (github.run_id) can be >11 digits, which overflows the 3-20 char
+  # name limit. Cap it at 11 so the longest prefix below stays within 20.
+  vpn_suffix_short = substr(local.vpn_suffix, 0, 11)
   # VPN gateway name rule: <= 20 alphanumeric chars. "regrvpngw" = 9, so cap the
   # suffix at 11 chars to keep the total within 20.
-  vpn_gateway_name = var.gateway_name != "" ? var.gateway_name : "regrvpngw${substr(local.vpn_suffix, 0, 11)}"
+  vpn_gateway_name = var.gateway_name != "" ? var.gateway_name : "regrvpngw${local.vpn_suffix_short}"
 }
 
 variable "ip_type" {
@@ -82,7 +85,7 @@ variable "remote_subnets" {
 # Dedicated VPC for this scenario so the VPN gateway lives in its own VPC and
 # does not hit the per-VPC VPN gateway limit shared with vpn_vpn_gateway.
 resource "samsungcloudplatformv2_vpc_vpc" "regr" {
-  name        = "regrvpnt${local.vpn_suffix}"
+  name        = "rvt${local.vpn_suffix_short}"
   cidr        = "192.168.0.0/24"
   description = "Regression VPN tunnel prereq vpc"
 }
@@ -99,7 +102,7 @@ resource "samsungcloudplatformv2_vpc_internet_gateway" "regr" {
 # Subnet in the dedicated VPC (dns_nameservers set explicitly to work around
 # provider bug #59).
 resource "samsungcloudplatformv2_vpc_subnet" "regr" {
-  name            = "regrvpnts${local.vpn_suffix}"
+  name            = "rvts${local.vpn_suffix_short}"
   vpc_id          = samsungcloudplatformv2_vpc_vpc.regr.id
   type            = "GENERAL"
   cidr            = "192.168.0.0/27"

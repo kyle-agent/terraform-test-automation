@@ -78,7 +78,7 @@ resource "samsungcloudplatformv2_searchengine_cluster" "regr" {
       role_type        = "MASTER_DATA"
       server_type_name = var.server_type_name
       block_storage_groups = [
-        { role_type = "OS", size_gb = 100, volume_type = "SSD" },
+        { role_type = "OS", size_gb = 104, volume_type = "SSD" },
         { role_type = "DATA", size_gb = 200, volume_type = "SSD" },
       ]
       instances = [
@@ -89,7 +89,7 @@ resource "samsungcloudplatformv2_searchengine_cluster" "regr" {
       role_type        = "KIBANA"
       server_type_name = var.server_type_name
       block_storage_groups = [
-        { role_type = "OS", size_gb = 100, volume_type = "SSD" },
+        { role_type = "OS", size_gb = 104, volume_type = "SSD" },
       ]
       instances = [
         { role_type = "KIBANA" },

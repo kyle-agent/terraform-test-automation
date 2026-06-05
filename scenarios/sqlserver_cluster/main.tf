@@ -71,7 +71,7 @@ resource "samsungcloudplatformv2_sqlserver_cluster" "regr" {
     databases = [
       {
         database_name = "regrdb"
-        drive_letter  = "D"
+        drive_letter  = "E"
       },
     ]
     backup_option = {
@@ -91,7 +91,7 @@ resource "samsungcloudplatformv2_sqlserver_cluster" "regr" {
       role_type        = "ACTIVE"
       server_type_name = var.server_type_name
       block_storage_groups = [
-        { role_type = "OS", size_gb = 100, volume_type = "SSD" },
+        { role_type = "OS", size_gb = 104, volume_type = "SSD" },
         { role_type = "DATA", size_gb = 200, volume_type = "SSD" },
       ]
       instances = [

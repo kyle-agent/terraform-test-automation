@@ -20,7 +20,8 @@ variable "dbaas_engine_version_id" {
   default = ""
 }
 variable "server_type_name" {
-  type = string
+  type    = string
+  default = "ess1v2m8"
 }
 
 # Engine versions are account/region-specific, so resolve a valid id at runtime
@@ -84,14 +85,14 @@ resource "samsungcloudplatformv2_eventstreams_cluster" "regression" {
 
   instance_groups = [
     {
-      role_type        = "BROKER"
+      role_type        = "ZOOKEEPER_BROKER"
       server_type_name = var.server_type_name
       block_storage_groups = [
-        { role_type = "OS", size_gb = 100, volume_type = "SSD" },
+        { role_type = "OS", size_gb = 104, volume_type = "SSD" },
         { role_type = "DATA", size_gb = 200, volume_type = "SSD" },
       ]
       instances = [
-        { role_type = "BROKER" },
+        { role_type = "ZOOKEEPER_BROKER" },
       ]
     },
   ]
