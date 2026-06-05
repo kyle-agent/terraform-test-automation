@@ -50,6 +50,25 @@ python .claude/skills/scp-api/scp_api.py delete vpc /v1/vpcs/<id>          # rem
 `SCP_TF_ACCESS_KEY/SECRET_KEY` → `SCP_ACCESS_KEY/SECRET_KEY`). Edit the target list in
 `cmd/api_reaper/reap.py` for one-off cleanups, or call `scp_api.py` from a step.
 
+## Confirming DBaaS create values (issue #83)
+DBaaS clusters `plan` fine but `apply` fails with an opaque `400 value_error` that
+names no field (the provider drops the response body). Two ground truths make this
+tractable:
+- **`framework/api_bodies.json`** in `kyle-agent/api-test-automation` holds the
+  *proven-valid* create body for every engine (`database/<engine>/<engine>createcluster`,
+  `data-analytics/{eventstreams,searchengine}/...`). It is the value reference:
+  e.g. mysql wants `database_port: 2866`, `database_character_set: "utf8mb4"`,
+  `block_storage_groups` OS `size_gb: 104`, an instance `service_ip_address`
+  (`192.168.10.10/32`), `maintenance_option {period_hour,starting_day_of_week,
+  starting_time}`, `timezone: "Asia/Seoul"`, and a real `server_type_name`.
+- **`cmd/dbaas_probe/probe.py`** POSTs that body straight to `<engine>/v1/clusters`
+  (looking up live `dbaas_engine_version_id` from `/v1/engine-versions`,
+  `server_type_name` from `/v1/server-types`, and a `subnet_id`) and prints the RAW
+  status+body — so the offending field is visible. Created clusters are DELETEd
+  (leak 0). Run it via `.github/workflows/dbaas-probe.yml` (CI has the creds):
+  dispatch with `engines = "mysql"` / `"all"`, or push to trigger. If the raw API
+  *accepts* a body the provider rejects, that isolates a provider-mapping bug.
+
 ## Cleanup dependency order (important)
 A VPC won't delete until its children are gone. Delete in order:
 `ske clusters (nodepools→cluster) → ports → subnets → internet-gateways → publicips →
