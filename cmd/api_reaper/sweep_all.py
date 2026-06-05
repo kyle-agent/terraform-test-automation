@@ -263,3 +263,5 @@ if __name__ == "__main__":
 # sweep 2026-06-05T02:44:20Z: clean leftover ske cluster rske472910 + verify leak-0 after pool runs
 
 # sweep 2026-06-05T07:39:42Z: clear leftover bootstrap VPCs (pool sweep hit 5-VPC quota: "number(5) of VPCs exceeded")
+
+# sweep 2026-06-05T07:54:06Z: second pass to clear the 409-blocked leftover VPC (free quota for 4-engine pool re-run)
