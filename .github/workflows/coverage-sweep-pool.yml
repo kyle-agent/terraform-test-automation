@@ -86,7 +86,7 @@ jobs:
   pool:
     runs-on: ubuntu-latest
     environment: scp-integration
-    timeout-minutes: 60
+    timeout-minutes: 75
     env:
       TF_VAR_suffix: ${{ github.run_id }}${{ strategy.job-index }}
       TF_VAR_account_id: ${{ vars.SCP_ACCOUNT_ID }}
@@ -104,9 +104,17 @@ jobs:
           # pushed the shard past the 5-VPC quota and starved the bootstrap
           # (DBaaS results got masked by quota-exhaustion, not real failures).
           - "virtualserver_keypair,virtualserver_server,virtualserver_server_group,virtualserver_volume,virtualserver_image,filestorage_volume,filestorage_snapshot_schedule,filestorage_replication,backup_backup,directconnect_direct_connect,directconnect_routing_rule,gslb_gslb"
-          # vpc3 — heavy clusters (ske + dbaas + eventstreams); many fail-fast if engine-version-id unset
-          # verify DBaaS size_gb=104 fix cheaply on mysql + eventstreams (avoid 7-cluster timeout-leak); other engines run later in a long-timeout sequential lane
-          - "mysql_cluster,eventstreams_basic"
+          # DBaaS clusters — ONE engine per shard. The provider waits for ACTIVE on
+          # create (~15-20m) and waits out delete (~10-15m), so a cluster is ~30m
+          # round-trip; isolating one per shard keeps each well under the 50m test
+          # timeout (5-in-one-shard would time out mid-destroy and leak). The probe
+          # confirmed these 5 engines' values are valid and the API auto-assigns the
+          # service IP on a fresh subnet (which the bootstrap provides).
+          - "mysql_cluster"
+          - "postgresql_cluster"
+          - "mariadb_cluster"
+          - "epas_cluster"
+          - "cachestore_cluster"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -146,7 +154,7 @@ jobs:
           MATRIX_PARALLEL: ${{ (contains(matrix.shard, 'vpc_subnet') || contains(matrix.shard, 'cluster') || contains(matrix.shard, 'ske')) && '2' || '4' }}
           MATRIX_SCENARIOS: ${{ matrix.shard }}
         run: |
-          go test ./tests/capability/... -run TestCapabilityMatrix -count=1 -timeout 50m || true
+          go test ./tests/capability/... -run TestCapabilityMatrix -count=1 -timeout 60m || true
           echo "===== capability matrix (pool shard) ====="
           cat "$OUTPUT_DIR/capability-matrix.md" 2>/dev/null || echo "(no matrix md produced)"
       - name: Upload pool shard matrix artifact
@@ -219,3 +227,5 @@ jobs:
 # re-run 2026-06-05T04:11:31Z: verify fixture round#3 (DBaaS examples-aligned, gslb/routing_rule/vpn_tunnel/iam_role)
 
 # re-run 2026-06-05T04:53:24Z: verify DBaaS engine-version data-source + gslb FQDN + ske/vpn unique names
+
+# re-run 2026-06-05T07:11:21Z: validate 5 DBaaS engines green (mysql/postgresql/mariadb/epas/cachestore), one engine per shard
