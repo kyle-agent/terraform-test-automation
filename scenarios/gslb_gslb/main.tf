@@ -17,7 +17,7 @@ provider "samsungcloudplatformv2" {}
 variable "gslb_name" {
   description = "GSLB display name."
   type        = string
-  default     = "regr-gslb"
+  default     = "regrgslb"
 }
 
 variable "gslb_algorithm" {
@@ -43,7 +43,7 @@ resource "samsungcloudplatformv2_gslb_gslb" "regr" {
     algorithm   = var.gslb_algorithm
     env_usage   = var.env_usage
     name        = var.gslb_name
-    description = "Regression GSLB fixture"
+    description = "Regression GSLB fixture 1"
 
     health_check = {
       protocol                   = "HTTP"
@@ -56,7 +56,7 @@ resource "samsungcloudplatformv2_gslb_gslb" "regr" {
 
     resources = [
       {
-        description = "Primary regression backend"
+        description = "Primary regression backend 1"
         destination = var.backend_destination
         region      = "kr-west1"
         weight      = 100

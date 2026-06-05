@@ -31,7 +31,7 @@ variable "server_type_name" {
 }
 
 resource "samsungcloudplatformv2_mariadb_cluster" "regr" {
-  name                    = "regr-mariadb"
+  name                    = "regrmariadb"
   dbaas_engine_version_id = var.dbaas_engine_version_id
   ha_enabled              = false
   nat_enabled             = false

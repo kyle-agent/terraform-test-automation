@@ -31,7 +31,7 @@ variable "server_type_name" {
 }
 
 resource "samsungcloudplatformv2_postgresql_cluster" "regr" {
-  name                    = "regr-pgsql"
+  name                    = "regrpgsql"
   dbaas_engine_version_id = var.dbaas_engine_version_id
   ha_enabled              = false
   nat_enabled             = false

@@ -31,7 +31,7 @@ variable "server_type_name" {
 }
 
 resource "samsungcloudplatformv2_searchengine_cluster" "regr" {
-  name                    = "regr-search"
+  name                    = "regrsearch"
   dbaas_engine_version_id = var.dbaas_engine_version_id
   nat_enabled             = false
   service_state           = "RUNNING"

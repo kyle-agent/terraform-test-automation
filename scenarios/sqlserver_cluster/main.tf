@@ -32,7 +32,7 @@ variable "server_type_name" {
 }
 
 resource "samsungcloudplatformv2_sqlserver_cluster" "regr" {
-  name                    = "regr-mssql"
+  name                    = "regrmssql"
   dbaas_engine_version_id = var.dbaas_engine_version_id
   ha_enabled              = false
   nat_enabled             = false
@@ -44,7 +44,7 @@ resource "samsungcloudplatformv2_sqlserver_cluster" "regr" {
 
   init_config_option = {
     audit_enabled          = false
-    database_service_name  = "regrsvc"
+    database_service_name  = "Regrsvc"
     database_user_name     = "regradmin"
     database_user_password = "Regr1234!@"
     database_port          = 1433

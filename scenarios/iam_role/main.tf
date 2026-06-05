@@ -34,6 +34,12 @@ variable "trusted_account_id" {
   default     = "000000000000"
 }
 
+variable "policy_ids" {
+  type        = list(string)
+  description = "IAM policy ids attached to the role. The API requires this as a JSON list; integration runs override via TF_VAR_policy_ids."
+  default     = ["00000000000000000000000000000000"]
+}
+
 variable "role_tags" {
   type        = map(string)
   description = "Tags applied to the role."
@@ -51,6 +57,7 @@ resource "samsungcloudplatformv2_iam_role" "regr" {
   name                 = var.role_name
   description          = var.role_description
   max_session_duration = var.max_session_duration
+  policy_ids           = var.policy_ids
   tags                 = var.role_tags
 
   assume_role_policy_document = {

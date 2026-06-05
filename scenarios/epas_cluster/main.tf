@@ -31,7 +31,7 @@ variable "server_type_name" {
 }
 
 resource "samsungcloudplatformv2_epas_cluster" "regr" {
-  name                    = "regr-epas"
+  name                    = "regrepas"
   dbaas_engine_version_id = var.dbaas_engine_version_id
   ha_enabled              = false
   nat_enabled             = false

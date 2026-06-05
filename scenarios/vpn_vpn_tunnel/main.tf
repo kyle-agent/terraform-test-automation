@@ -34,18 +34,6 @@ variable "vpc_id" {
   default     = "00000000-0000-0000-0000-000000000000"
 }
 
-variable "ip_id" {
-  description = "Public IP resource UUID assigned to the gateway."
-  type        = string
-  default     = "00000000-0000-0000-0000-000000000000"
-}
-
-variable "ip_address" {
-  description = "Public IP address of the VPN gateway."
-  type        = string
-  default     = "10.0.0.10"
-}
-
 variable "ip_type" {
   description = "IP allocation type enum (e.g. PUBLIC)."
   type        = string
@@ -71,11 +59,19 @@ variable "remote_subnets" {
   default     = ["10.0.0.0/24"]
 }
 
+# Create a dedicated public IP for the VPN gateway. Reusing the bootstrap public
+# IP (var.ip_id) fails because that IP is already ATTACHED; a fresh, unattached
+# public IP keeps the gateway create valid.
+resource "samsungcloudplatformv2_vpc_publicip" "regr" {
+  type        = "IGW"
+  description = "Regression VPN gw public IP"
+}
+
 resource "samsungcloudplatformv2_vpn_vpn_gateway" "regr" {
   name        = var.gateway_name
   vpc_id      = var.vpc_id
-  ip_id       = var.ip_id
-  ip_address  = var.ip_address
+  ip_id       = samsungcloudplatformv2_vpc_publicip.regr.id
+  ip_address  = samsungcloudplatformv2_vpc_publicip.regr.publicip.ip_address
   ip_type     = var.ip_type
   description = "Regression VPN gw (tunnel prereq)"
 

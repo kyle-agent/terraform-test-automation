@@ -66,8 +66,8 @@ variable "alert_threshold" {
 
 variable "alert_period" {
   type        = number
-  description = "Evaluation period in minutes."
-  default     = 5
+  description = "Evaluation period in seconds (60..604800)."
+  default     = 300
 }
 
 # Minimal METRIC_ALERT fixture guarding ServiceWatch alert coverage: a fresh
