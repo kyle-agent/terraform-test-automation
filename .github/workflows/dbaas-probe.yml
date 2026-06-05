@@ -51,4 +51,4 @@ jobs:
       # this to e.g. 'mysql' / 'all' / 'sqlserver searchengine eventstreams' for one
       # push, then flip back. 'cleanup' is idempotent (GONE ids just report gone).
       - name: Probe / cleanup DBaaS
-        run: PYTHONPATH=/tmp/apitest python cmd/dbaas_probe/probe.py ${{ github.event.inputs.engines || 'sqlserver searchengine eventstreams' }}
+        run: PYTHONPATH=/tmp/apitest python cmd/dbaas_probe/probe.py ${{ github.event.inputs.engines || 'eventstreams' }}

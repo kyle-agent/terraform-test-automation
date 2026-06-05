@@ -85,7 +85,7 @@ def lettername(prefix="rp", n=4):
     return prefix + "".join(random.choice(string.ascii_lowercase) for _ in range(n))
 
 
-def fill(body, *, name, engine_version_id, subnet_id, server_type_name, service_ip=None):
+def fill(body, *, name, engine_version_id, subnet_id, server_type_name, service_ip=None, engine=None):
     b = json.loads(json.dumps(body))  # deep copy
     b["name"] = name
     if "instance_name_prefix" in b:
@@ -119,10 +119,18 @@ def fill(body, *, name, engine_version_id, subnet_id, server_type_name, service_
         for db in ico.get("databases", []) or []:
             if isinstance(db, dict) and db.get("database_name") == "":
                 db["database_name"] = name + "db"
+    # eventstreams nodes are Kafka brokers, not a DB "ACTIVE" role: the group and
+    # instances must be role_type ZOOKEEPER_BROKER (no license involved).
+    es_role = "ZOOKEEPER_BROKER" if engine == "eventstreams" else None
     for ig in b.get("instance_groups", []):
         if isinstance(ig, dict):
-            if ig.get("role_type") == "":  # sqlserver template leaves it blank
+            if es_role:
+                ig["role_type"] = es_role
+            elif ig.get("role_type") == "":  # sqlserver template leaves it blank
                 ig["role_type"] = "ACTIVE"
+            for inst in ig.get("instances", []):
+                if isinstance(inst, dict) and es_role:
+                    inst["role_type"] = es_role
             if "server_type_name" in ig and server_type_name:
                 ig["server_type_name"] = server_type_name
             # service_ip_address must sit inside the subnet CIDR; the canonical
@@ -190,7 +198,7 @@ def probe(c, engine):
     def post_once(sip, tag):
         name = lettername()
         payload = fill(template, name=name, engine_version_id=ev_id, subnet_id=subnet_id,
-                       server_type_name=stype, service_ip=sip)
+                       server_type_name=stype, service_ip=sip, engine=engine)
         print(f"[{engine}] POST /v1/clusters name={name} ({tag}) service_ip={sip!r}")
         try:
             r = c.post("/v1/clusters", service=svc, json=payload)
