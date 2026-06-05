@@ -1,28 +1,77 @@
 {
+  "samsungcloudplatformv2_backup_backup": {
+    "highest_stage": "plan",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "500 server error (#80)",
+    "stages": {
+      "validate": "ok",
+      "plan": "ok",
+      "apply": "fail",
+      "replan": "skip",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
+    }
+  },
+  "samsungcloudplatformv2_billing_planned_compute": {
+    "highest_stage": "plan",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "provider #78 YEAR_1 enum",
+    "stages": {
+      "validate": "ok",
+      "plan": "ok",
+      "apply": "fail",
+      "replan": "skip",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
+    }
+  },
   "samsungcloudplatformv2_budget_budget": {
     "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26929023654",
-    "last_seen": "2026-06-04T03:42:11Z",
-    "note": "Error: Error creating budget with samsungcloudplatformv2_budget_budget.regr, on main.tf line 35, in resource \"samsungcloudplatformv2_budget_budget\" \"regr\": 35: resource \"samsungcloudplatformv2_budget_budget\" \"regr\" { Could not create budget, unexpected error: 500 Internal Server Error Reason: There was a problem processing your request. Contact us through Support Center > Contact Us.",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "500 server error",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
+      "validate": "ok",
       "plan": "ok",
+      "apply": "fail",
       "replan": "skip",
-      "validate": "ok"
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
+    }
+  },
+  "samsungcloudplatformv2_cachestore_cluster": {
+    "highest_stage": "plan",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "400 value_error (deep per-engine fixture config)",
+    "stages": {
+      "validate": "ok",
+      "plan": "ok",
+      "apply": "fail",
+      "replan": "skip",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
     }
   },
   "samsungcloudplatformv2_certificate_manager": {
-    "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26790089908",
-    "last_seen": "2026-06-02T00:16:40Z",
-    "note": "Error: Error creating certificate manager with samsungcloudplatformv2_certificate_manager.regr, on main.tf line 42, in resource \"samsungcloudplatformv2_certificate_manager\" \"regr\": 42: resource \"samsungcloudplatformv2_certificate_manager\" \"regr\" { Could not create certificate manager, unexpected error: 500 Internal Server Error Reason: Creating certificate has been failed",
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "green via certificate_manager_self_sign",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
+      "validate": "ok",
       "plan": "ok",
-      "replan": "skip",
-      "validate": "ok"
+      "apply": "ok",
+      "replan": "ok",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "ok"
     }
   },
   "samsungcloudplatformv2_certificate_manager_self_sign": {
@@ -51,56 +100,199 @@
       "validate": "ok"
     }
   },
+  "samsungcloudplatformv2_directconnect_direct_connect": {
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "",
+    "stages": {
+      "validate": "ok",
+      "plan": "ok",
+      "apply": "ok",
+      "replan": "ok",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "ok"
+    }
+  },
+  "samsungcloudplatformv2_directconnect_routing_rule": {
+    "highest_stage": "plan",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "400 destination cidr must be within VPC cidr (fixture)",
+    "stages": {
+      "validate": "ok",
+      "plan": "ok",
+      "apply": "fail",
+      "replan": "skip",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
+    }
+  },
+  "samsungcloudplatformv2_dns_hosted_zone": {
+    "highest_stage": "plan",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "404 unresolved parent id (fixture)",
+    "stages": {
+      "validate": "ok",
+      "plan": "ok",
+      "apply": "fail",
+      "replan": "skip",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
+    }
+  },
+  "samsungcloudplatformv2_dns_private_dns": {
+    "highest_stage": "blocked",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "blocked: provider #79 destroy 409",
+    "stages": {
+      "validate": "ok",
+      "plan": "skip",
+      "apply": "skip",
+      "replan": "skip",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
+    }
+  },
   "samsungcloudplatformv2_dns_public_domain_name": {
     "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26790089908",
-    "last_seen": "2026-06-02T00:16:40Z",
-    "note": "Error: Error creating Public Domain Name with samsungcloudplatformv2_dns_public_domain_name.regr, on main.tf line 42, in resource \"samsungcloudplatformv2_dns_public_domain_name\" \"regr\": 42: resource \"samsungcloudplatformv2_dns_public_domain_name\" \"regr\" { Could not create Public Domain Name, unexpected error: 500 Internal Server Error Reason: Internal server error occurred.",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "500 create then leak; no DELETE API (#82)",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
+      "validate": "ok",
       "plan": "ok",
+      "apply": "fail",
       "replan": "skip",
-      "validate": "ok"
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
+    }
+  },
+  "samsungcloudplatformv2_dns_record": {
+    "highest_stage": "plan",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "404 unresolved parent id (fixture)",
+    "stages": {
+      "validate": "ok",
+      "plan": "ok",
+      "apply": "fail",
+      "replan": "skip",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
+    }
+  },
+  "samsungcloudplatformv2_epas_cluster": {
+    "highest_stage": "plan",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "400 value_error (deep per-engine fixture config)",
+    "stages": {
+      "validate": "ok",
+      "plan": "ok",
+      "apply": "fail",
+      "replan": "skip",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
     }
   },
   "samsungcloudplatformv2_eventstreams_cluster": {
     "highest_stage": "validate",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26790089908",
-    "last_seen": "2026-06-02T00:16:40Z",
-    "note": "Error: No value for required variable on main.tf line 13: 13: variable \"subnet_id\" { The root module input variable \"subnet_id\" is not set, and has no default value. Use a -var or -var-file command line argument to provide a value for this variable. Error: No value for required variable on main.tf line 16:",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "needs dbaas_engine_version_id var",
     "stages": {
-      "apply": "skip",
-      "destroy": "skip",
+      "validate": "ok",
       "plan": "fail",
+      "apply": "skip",
       "replan": "skip",
-      "validate": "ok"
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
+    }
+  },
+  "samsungcloudplatformv2_filestorage_replication": {
+    "highest_stage": "plan",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "400 replication not available",
+    "stages": {
+      "validate": "ok",
+      "plan": "ok",
+      "apply": "fail",
+      "replan": "skip",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
+    }
+  },
+  "samsungcloudplatformv2_filestorage_snapshot_schedule": {
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "",
+    "stages": {
+      "validate": "ok",
+      "plan": "ok",
+      "apply": "ok",
+      "replan": "ok",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "ok"
     }
   },
   "samsungcloudplatformv2_filestorage_volume": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26790089908",
-    "last_seen": "2026-06-02T00:16:40Z",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "apply": "ok",
-      "destroy": "ok",
+      "validate": "ok",
       "plan": "ok",
+      "apply": "ok",
       "replan": "ok",
-      "validate": "ok"
+      "update": "skip",
+      "import": "skip",
+      "destroy": "ok"
+    }
+  },
+  "samsungcloudplatformv2_firewall_firewall_rule": {
+    "highest_stage": "plan",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "404 firewall not found",
+    "stages": {
+      "validate": "ok",
+      "plan": "ok",
+      "apply": "fail",
+      "replan": "skip",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
     }
   },
   "samsungcloudplatformv2_gslb_gslb": {
     "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26790089908",
-    "last_seen": "2026-06-02T00:16:40Z",
-    "note": "Error: Error creating Gslb with samsungcloudplatformv2_gslb_gslb.regr, on main.tf line 41, in resource \"samsungcloudplatformv2_gslb_gslb\" \"regr\": 41: resource \"samsungcloudplatformv2_gslb_gslb\" \"regr\" { Could not create Gslb, unexpected error: 400 Bad Request Reason: health_check_interval is required.",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "400 name English+numbers (fixture)",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
+      "validate": "ok",
       "plan": "ok",
+      "apply": "fail",
       "replan": "skip",
-      "validate": "ok"
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
     }
   },
   "samsungcloudplatformv2_iam_access_key": {
@@ -118,54 +310,77 @@
   },
   "samsungcloudplatformv2_iam_group": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26930664260",
-    "last_seen": "2026-06-04T05:33:00Z",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "apply": "ok",
-      "destroy": "ok",
+      "validate": "ok",
       "plan": "ok",
+      "apply": "ok",
       "replan": "ok",
-      "validate": "ok"
+      "update": "skip",
+      "import": "skip",
+      "destroy": "ok"
     }
   },
   "samsungcloudplatformv2_iam_policy": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26789328030",
-    "last_seen": "2026-06-02T00:06:28Z",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "apply": "ok",
-      "destroy": "ok",
+      "validate": "ok",
       "plan": "ok",
+      "apply": "ok",
       "replan": "ok",
-      "validate": "ok"
+      "update": "skip",
+      "import": "skip",
+      "destroy": "ok"
     }
   },
   "samsungcloudplatformv2_iam_role": {
     "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26929304455",
-    "last_seen": "2026-06-04T03:52:06Z",
-    "note": "Error: Error creating role with samsungcloudplatformv2_iam_role.regr, on main.tf line 58, in resource \"samsungcloudplatformv2_iam_role\" \"regr\": 58: resource \"samsungcloudplatformv2_iam_role\" \"regr\" { Could not create role, unexpected error: 400 Bad Request Reason: Input should be a valid list",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "400 Input should be a valid list / 404 no policy id (fixture)",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
+      "validate": "ok",
       "plan": "ok",
+      "apply": "fail",
       "replan": "skip",
-      "validate": "ok"
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
     }
   },
   "samsungcloudplatformv2_iam_user": {
-    "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26929304455",
-    "last_seen": "2026-06-04T03:52:06Z",
-    "note": "",
+    "highest_stage": "plan",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "401 [HMAC] HMAC valid fail \u2014 account/creds",
     "stages": {
-      "apply": "ok",
-      "destroy": "ok",
+      "validate": "ok",
       "plan": "ok",
-      "replan": "ok",
-      "validate": "ok"
+      "apply": "fail",
+      "replan": "skip",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
+    }
+  },
+  "samsungcloudplatformv2_iam_user_policy_bindings": {
+    "highest_stage": "plan",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "403 user not part of project (perms)",
+    "stages": {
+      "validate": "ok",
+      "plan": "ok",
+      "apply": "fail",
+      "replan": "skip",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
     }
   },
   "samsungcloudplatformv2_loadbalancer_lb_health_check": {
@@ -195,16 +410,48 @@
     }
   },
   "samsungcloudplatformv2_loadbalancer_loadbalancer": {
-    "highest_stage": "replan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26932747382",
-    "last_seen": "2026-06-04T05:33:00Z",
-    "note": "provider #77: Create doesn't wait for ACTIVE; destroy fails on CREATING -> leaked billed LB",
+    "highest_stage": "blocked",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "blocked: provider #77 create no-wait \u2192 destroy leak",
     "stages": {
-      "apply": "ok",
-      "destroy": "fail",
+      "validate": "ok",
+      "plan": "skip",
+      "apply": "skip",
+      "replan": "skip",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
+    }
+  },
+  "samsungcloudplatformv2_loggingaudit_trail": {
+    "highest_stage": "plan",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "403 missing permissions (account)",
+    "stages": {
+      "validate": "ok",
       "plan": "ok",
-      "replan": "ok",
-      "validate": "ok"
+      "apply": "fail",
+      "replan": "skip",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
+    }
+  },
+  "samsungcloudplatformv2_mariadb_cluster": {
+    "highest_stage": "plan",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "400 value_error (deep per-engine fixture config)",
+    "stages": {
+      "validate": "ok",
+      "plan": "ok",
+      "apply": "fail",
+      "replan": "skip",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
     }
   },
   "samsungcloudplatformv2_multinodegpucluster_gpunode": {
@@ -220,186 +467,304 @@
       "validate": "skip"
     }
   },
+  "samsungcloudplatformv2_mysql_cluster": {
+    "highest_stage": "plan",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "400 value_error (deep per-engine fixture config)",
+    "stages": {
+      "validate": "ok",
+      "plan": "ok",
+      "apply": "fail",
+      "replan": "skip",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
+    }
+  },
   "samsungcloudplatformv2_network_logging_network_logging_storage": {
     "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26790089908",
-    "last_seen": "2026-06-02T00:16:40Z",
-    "note": "Error: Error creating network logging storage with samsungcloudplatformv2_network_logging_network_logging_storage.regr, on main.tf line 27, in resource \"samsungcloudplatformv2_network_logging_network_logging_storage\" \"regr\": 27: resource \"samsungcloudplatformv2_network_logging_network_logging_storage\" \"regr\" { Could not create network logging storage, unexpected error: 400 Bad Request",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "400 (no reason)",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
+      "validate": "ok",
       "plan": "ok",
+      "apply": "fail",
       "replan": "skip",
-      "validate": "ok"
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
+    }
+  },
+  "samsungcloudplatformv2_postgresql_cluster": {
+    "highest_stage": "plan",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "400 value_error (deep per-engine fixture config)",
+    "stages": {
+      "validate": "ok",
+      "plan": "ok",
+      "apply": "fail",
+      "replan": "skip",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
     }
   },
   "samsungcloudplatformv2_resourcemanager_resource_group": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26789328030",
-    "last_seen": "2026-06-02T00:06:28Z",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "apply": "ok",
-      "destroy": "ok",
+      "validate": "ok",
       "plan": "ok",
+      "apply": "ok",
       "replan": "ok",
-      "validate": "ok"
+      "update": "skip",
+      "import": "skip",
+      "destroy": "ok"
+    }
+  },
+  "samsungcloudplatformv2_searchengine_cluster": {
+    "highest_stage": "plan",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "400 value_error (deep per-engine fixture config)",
+    "stages": {
+      "validate": "ok",
+      "plan": "ok",
+      "apply": "fail",
+      "replan": "skip",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
     }
   },
   "samsungcloudplatformv2_security_group_security_group": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26789328030",
-    "last_seen": "2026-06-02T00:06:28Z",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "apply": "ok",
-      "destroy": "ok",
+      "validate": "ok",
       "plan": "ok",
+      "apply": "ok",
       "replan": "ok",
-      "validate": "ok"
+      "update": "skip",
+      "import": "skip",
+      "destroy": "ok"
     }
   },
   "samsungcloudplatformv2_security_group_security_group_rule": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26926387984",
-    "last_seen": "2026-06-04T02:31:36Z",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "apply": "ok",
-      "destroy": "ok",
+      "validate": "ok",
       "plan": "ok",
+      "apply": "ok",
       "replan": "ok",
-      "validate": "ok"
+      "update": "skip",
+      "import": "skip",
+      "destroy": "ok"
     }
   },
   "samsungcloudplatformv2_servicewatch_alert": {
-    "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26790089908",
-    "last_seen": "2026-06-02T00:16:40Z",
-    "note": "Error: Error Get Metrics with samsungcloudplatformv2_servicewatch_alert.regr, on main.tf line 63, in resource \"samsungcloudplatformv2_servicewatch_alert\" \"regr\": 63: resource \"samsungcloudplatformv2_servicewatch_alert\" \"regr\" { Could not get Metrics, unexpected error: 400 Bad Request Reason: Input should be a valid list namespace_name: SCP/VirtualServer metricName: CPUUtilization dimensionKeys: [[]]",
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
+      "validate": "ok",
       "plan": "ok",
-      "replan": "skip",
-      "validate": "ok"
+      "apply": "ok",
+      "replan": "ok",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "ok"
     }
   },
   "samsungcloudplatformv2_servicewatch_dashboard": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26789328030",
-    "last_seen": "2026-06-02T00:06:28Z",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "apply": "ok",
-      "destroy": "ok",
+      "validate": "ok",
       "plan": "ok",
+      "apply": "ok",
       "replan": "ok",
-      "validate": "ok"
+      "update": "skip",
+      "import": "skip",
+      "destroy": "ok"
+    }
+  },
+  "samsungcloudplatformv2_servicewatch_event_rule": {
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "",
+    "stages": {
+      "validate": "ok",
+      "plan": "ok",
+      "apply": "ok",
+      "replan": "ok",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "ok"
     }
   },
   "samsungcloudplatformv2_servicewatch_log_group": {
-    "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26926387984",
-    "last_seen": "2026-06-04T02:31:36Z",
-    "note": "Error: Error creating LogStream with samsungcloudplatformv2_servicewatch_log_stream.regr, on main.tf line 50, in resource \"samsungcloudplatformv2_servicewatch_log_stream\" \"regr\": 50: resource \"samsungcloudplatformv2_servicewatch_log_stream\" \"regr\" { Could not create LogStream, unexpected error: 400 Bad Request Reason: Log stream name contains forbidden character: regr-log-streamd7fd98",
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
+      "validate": "ok",
       "plan": "ok",
-      "replan": "skip",
-      "validate": "ok"
+      "apply": "ok",
+      "replan": "ok",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "ok"
+    }
+  },
+  "samsungcloudplatformv2_servicewatch_log_stream": {
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "",
+    "stages": {
+      "validate": "ok",
+      "plan": "ok",
+      "apply": "ok",
+      "replan": "ok",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "ok"
     }
   },
   "samsungcloudplatformv2_ske_cluster": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26924890602",
-    "last_seen": "2026-06-04T02:04:11Z",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "apply": "ok",
-      "destroy": "ok",
+      "validate": "ok",
       "plan": "ok",
+      "apply": "ok",
       "replan": "ok",
-      "validate": "ok"
+      "update": "skip",
+      "import": "skip",
+      "destroy": "ok"
+    }
+  },
+  "samsungcloudplatformv2_sqlserver_cluster": {
+    "highest_stage": "plan",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "400 value_error (deep per-engine fixture config)",
+    "stages": {
+      "validate": "ok",
+      "plan": "ok",
+      "apply": "fail",
+      "replan": "skip",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
     }
   },
   "samsungcloudplatformv2_virtualserver_image": {
     "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26790089908",
-    "last_seen": "2026-06-02T00:16:40Z",
-    "note": "Error: Error creating image with samsungcloudplatformv2_virtualserver_image.regr, on main.tf line 29, in resource \"samsungcloudplatformv2_virtualserver_image\" \"regr\": 29: resource \"samsungcloudplatformv2_virtualserver_image\" \"regr\" { Could not create image, unexpected error: 400 Bad Request Reason: Object Storage URL for the Image file is invalid.",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "400 invalid Object Storage URL (fixture)",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
+      "validate": "ok",
       "plan": "ok",
+      "apply": "fail",
       "replan": "skip",
-      "validate": "ok"
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
     }
   },
   "samsungcloudplatformv2_virtualserver_keypair": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26789328030",
-    "last_seen": "2026-06-02T00:06:28Z",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "apply": "ok",
-      "destroy": "ok",
+      "validate": "ok",
       "plan": "ok",
+      "apply": "ok",
       "replan": "ok",
-      "validate": "ok"
+      "update": "skip",
+      "import": "skip",
+      "destroy": "ok"
     }
   },
   "samsungcloudplatformv2_virtualserver_server": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26922083801",
-    "last_seen": "2026-06-04T00:37:59Z",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "apply": "ok",
-      "destroy": "ok",
+      "validate": "ok",
       "plan": "ok",
+      "apply": "ok",
       "replan": "ok",
-      "validate": "ok"
+      "update": "skip",
+      "import": "skip",
+      "destroy": "ok"
     }
   },
   "samsungcloudplatformv2_virtualserver_server_group": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26789328030",
-    "last_seen": "2026-06-02T00:06:28Z",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "apply": "ok",
-      "destroy": "ok",
+      "validate": "ok",
       "plan": "ok",
+      "apply": "ok",
       "replan": "ok",
-      "validate": "ok"
+      "update": "skip",
+      "import": "skip",
+      "destroy": "ok"
     }
   },
   "samsungcloudplatformv2_virtualserver_volume": {
-    "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26929023654",
-    "last_seen": "2026-06-04T03:42:11Z",
-    "note": "Error: Error creating volume with samsungcloudplatformv2_virtualserver_volume.regr, on main.tf line 29, in resource \"samsungcloudplatformv2_virtualserver_volume\" \"regr\": 29: resource \"samsungcloudplatformv2_virtualserver_volume\" \"regr\" { Could not create volume, unexpected error: 400 Bad Request Reason: Field \"size\" is invalid. The value should be 8 or greater. Example: \"104\"",
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
+      "validate": "ok",
       "plan": "ok",
-      "replan": "skip",
-      "validate": "ok"
+      "apply": "ok",
+      "replan": "ok",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "ok"
     }
   },
   "samsungcloudplatformv2_vpc_cidr": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26797061130",
-    "last_seen": "2026-06-02T03:47:45Z",
-    "note": "non-idempotent: samsungcloudplatformv2_vpc_cidr.regr -> create attrs=[cidr,vpc_id]",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "replan non-idempotent \u2014 provider #60",
     "stages": {
-      "apply": "ok",
-      "destroy": "ok",
+      "validate": "ok",
       "plan": "ok",
+      "apply": "ok",
       "replan": "fail",
-      "validate": "ok"
+      "update": "skip",
+      "import": "skip",
+      "destroy": "ok"
     }
   },
   "samsungcloudplatformv2_vpc_internet_gateway": {
@@ -417,80 +782,182 @@
   },
   "samsungcloudplatformv2_vpc_nat_gateway": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26932268567",
-    "last_seen": "2026-06-04T05:33:00Z",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "apply": "ok",
-      "destroy": "ok",
+      "validate": "ok",
       "plan": "ok",
+      "apply": "ok",
       "replan": "ok",
-      "validate": "ok"
+      "update": "skip",
+      "import": "skip",
+      "destroy": "ok"
     }
   },
   "samsungcloudplatformv2_vpc_port": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26932268567",
-    "last_seen": "2026-06-04T05:33:00Z",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "apply": "ok",
-      "destroy": "ok",
+      "validate": "ok",
       "plan": "ok",
+      "apply": "ok",
       "replan": "ok",
-      "validate": "ok"
+      "update": "skip",
+      "import": "skip",
+      "destroy": "ok"
+    }
+  },
+  "samsungcloudplatformv2_vpc_private_nat": {
+    "highest_stage": "blocked",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "blocked: TGW Connectable race / #76",
+    "stages": {
+      "validate": "ok",
+      "plan": "skip",
+      "apply": "skip",
+      "replan": "skip",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
+    }
+  },
+  "samsungcloudplatformv2_vpc_private_nat_ip": {
+    "highest_stage": "blocked",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "blocked: TGW Connectable race / #76",
+    "stages": {
+      "validate": "ok",
+      "plan": "skip",
+      "apply": "skip",
+      "replan": "skip",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
     }
   },
   "samsungcloudplatformv2_vpc_publicip": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26789328030",
-    "last_seen": "2026-06-02T00:06:28Z",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "apply": "ok",
-      "destroy": "ok",
+      "validate": "ok",
       "plan": "ok",
+      "apply": "ok",
       "replan": "ok",
-      "validate": "ok"
+      "update": "skip",
+      "import": "skip",
+      "destroy": "ok"
+    }
+  },
+  "samsungcloudplatformv2_vpc_subnet": {
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "",
+    "stages": {
+      "validate": "ok",
+      "plan": "ok",
+      "apply": "ok",
+      "replan": "ok",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "ok"
     }
   },
   "samsungcloudplatformv2_vpc_subnet_vip": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26932268567",
-    "last_seen": "2026-06-04T05:33:00Z",
-    "note": "self-contained vip + port + nat_ip all green",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "",
     "stages": {
-      "apply": "ok",
-      "destroy": "ok",
+      "validate": "ok",
       "plan": "ok",
+      "apply": "ok",
       "replan": "ok",
-      "validate": "ok"
+      "update": "skip",
+      "import": "skip",
+      "destroy": "ok"
     }
   },
   "samsungcloudplatformv2_vpc_transit_gateway": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26789328030",
-    "last_seen": "2026-06-02T00:06:28Z",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "apply": "ok",
-      "destroy": "ok",
+      "validate": "ok",
       "plan": "ok",
+      "apply": "ok",
       "replan": "ok",
-      "validate": "ok"
+      "update": "skip",
+      "import": "skip",
+      "destroy": "ok"
+    }
+  },
+  "samsungcloudplatformv2_vpc_transit_gateway_firewall": {
+    "highest_stage": "blocked",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "blocked: provider #76 status-waiter hang",
+    "stages": {
+      "validate": "ok",
+      "plan": "skip",
+      "apply": "skip",
+      "replan": "skip",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
+    }
+  },
+  "samsungcloudplatformv2_vpc_transit_gateway_rule": {
+    "highest_stage": "blocked",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "blocked: provider #76 status-waiter hang",
+    "stages": {
+      "validate": "ok",
+      "plan": "skip",
+      "apply": "skip",
+      "replan": "skip",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
+    }
+  },
+  "samsungcloudplatformv2_vpc_transit_gateway_vpc_connection": {
+    "highest_stage": "blocked",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "blocked: provider #76 status-waiter hang",
+    "stages": {
+      "validate": "ok",
+      "plan": "skip",
+      "apply": "skip",
+      "replan": "skip",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
     }
   },
   "samsungcloudplatformv2_vpc_vpc": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26789328030",
-    "last_seen": "2026-06-02T00:06:28Z",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
     "note": "",
     "stages": {
-      "apply": "ok",
-      "destroy": "ok",
+      "validate": "ok",
       "plan": "ok",
+      "apply": "ok",
       "replan": "ok",
-      "validate": "ok"
+      "update": "skip",
+      "import": "skip",
+      "destroy": "ok"
     }
   },
   "samsungcloudplatformv2_vpc_vpc_endpoint": {
@@ -520,16 +987,33 @@
     }
   },
   "samsungcloudplatformv2_vpn_vpn_gateway": {
-    "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26797575313",
-    "last_seen": "2026-06-02T04:02:45Z",
-    "note": "Error: Error creating vpn gateway with samsungcloudplatformv2_vpn_vpn_gateway.regr, on main.tf line 47, in resource \"samsungcloudplatformv2_vpn_vpn_gateway\" \"regr\": 47: resource \"samsungcloudplatformv2_vpn_vpn_gateway\" \"regr\" { Could not create vpn gateway, unexpected error: 400 Bad Request Reason: The VPN Gateway name(regr-vpn-gateway) is invalid. Only alphabets and numbers between 3 and 20 characters are allowed.",
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
+      "validate": "ok",
       "plan": "ok",
+      "apply": "ok",
+      "replan": "ok",
+      "update": "skip",
+      "import": "skip",
+      "destroy": "ok"
+    }
+  },
+  "samsungcloudplatformv2_vpn_vpn_tunnel": {
+    "highest_stage": "plan",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
+    "last_seen": "2026-06-05T01:30:00Z",
+    "note": "400 public IP ATTACHED / VPN gw limit 1 per VPC",
+    "stages": {
+      "validate": "ok",
+      "plan": "ok",
+      "apply": "fail",
       "replan": "skip",
-      "validate": "ok"
+      "update": "skip",
+      "import": "skip",
+      "destroy": "skip"
     }
   }
 }
