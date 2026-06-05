@@ -1,28 +1,35 @@
 name: Coverage Sweep Pool
 
-# VPC-pool parallel coverage. Two lanes:
-#  - novpc: VPC-independent products (iam/billing/budget/cert/servicewatch/dns/
-#    resourcemanager). No bootstrap VPC at all, so zero VPC-quota pressure; runs
-#    them concurrently (MATRIX_PARALLEL) in a single job.
-#  - pool: VPC-dependent products. Each matrix shard is one job that bootstraps a
-#    single VPC (a "pool member"; max-parallel 3 => 3 VPCs, under the 5-VPC quota)
-#    and runs its shard's scenarios CONCURRENTLY within that one VPC
-#    (MATRIX_PARALLEL). Always tears its prereqs down.
-#
-# Scenarios that create their OWN VPC (peering, self-contained internet_gateway,
-# endpoint) and provider-blocked families (#76 TGW hang, #77 LB leak, #79 dns
-# private destroy) are handled elsewhere / excluded.
-#
-# NOTE: push trigger intentionally omitted for now so committing this file does
-# NOT auto-launch a pool sweep while Sweep #3 / the reaper are using the 5-VPC
-# quota. Re-add a `push:` paths trigger (or dispatch) to launch it deliberately.
+# VPC-pool parallel coverage, DATA-DRIVEN from coverage/registry.yaml.
+# A `plan` job runs scripts/plan_matrix.py to derive the lanes/shards (no more
+# hand-maintained comma-strings); the three lanes consume its output:
+#   - novpc : registry vpc==none  -> one high-parallel job, no bootstrap VPC.
+#   - pool  : registry vpc==pool  -> one bootstrap VPC per shard (max-parallel caps
+#             concurrent VPCs under the 5-VPC quota). slow(cluster) scenarios get
+#             their own shard; CIDR-mutators get a low-parallel shard.
+#   - selfvpc: registry vpc==self -> scenarios that make their own VPC; runs AFTER
+#             pool (quota) at low parallelism.
+# Selection is controlled by SELECT_STATUS / SELECT_VPC / SELECT_FAMILY (workflow
+# inputs); push defaults to green+untested (skips known-broken and excluded).
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      select_status:
+        description: 'comma statuses to run (green,broken,untested)'
+        default: 'green,untested'
+      select_vpc:
+        description: 'comma lanes to include (none,pool,self)'
+        default: 'none,pool,self'
+      select_family:
+        description: 'optional comma families filter (blank = all)'
+        default: ''
   push:
     branches:
       - 'claude/**'
     paths:
       - '.github/workflows/coverage-sweep-pool.yml'
+      - 'coverage/registry.yaml'
+      - 'scripts/plan_matrix.py'
 
 concurrency:
   group: coverage-sweep-pool-${{ github.ref }}
@@ -41,8 +48,38 @@ env:
   SCP_ACCOUNT_ID: ${{ vars.SCP_ACCOUNT_ID }}
 
 jobs:
+  # ---- Derive the execution plan from registry.yaml ----
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      novpc: ${{ steps.plan.outputs.novpc }}
+      selfvpc: ${{ steps.plan.outputs.selfvpc }}
+      pool: ${{ steps.plan.outputs.pool }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install pyyaml
+      - name: Validate registry
+        run: python scripts/validate_registry.py
+      - name: Derive matrix from registry
+        id: plan
+        env:
+          # push (file edits) runs the cheap green regression; dispatch defaults to
+          # the broader green+untested discovery sweep (override via the input).
+          SELECT_STATUS: ${{ github.event.inputs.select_status || (github.event_name == 'workflow_dispatch' && 'green,untested' || 'green') }}
+          SELECT_VPC: ${{ github.event.inputs.select_vpc || 'none,pool,self' }}
+          SELECT_FAMILY: ${{ github.event.inputs.select_family || '' }}
+        run: |
+          python scripts/plan_matrix.py --github
+          echo "----- derived plan -----"
+          python scripts/plan_matrix.py
+
   # ---- Lane 1: VPC-independent products, no bootstrap, high parallelism ----
   novpc:
+    needs: plan
+    if: ${{ needs.plan.outputs.novpc != '' }}
     runs-on: ubuntu-latest
     environment: scp-integration
     timeout-minutes: 40
@@ -67,7 +104,7 @@ jobs:
           OUTPUT_DIR: ${{ github.workspace }}/out
           CAPABILITY_MATRIX: '1'
           MATRIX_PARALLEL: '6'
-          MATRIX_SCENARIOS: "iam_policy,iam_group,iam_group_member,iam_group_policy_bindings,iam_role,iam_role_policy_bindings,iam_user,iam_user_policy_bindings,resourcemanager_resource_group,certificate_manager,certificate_manager_self_sign,servicewatch_dashboard,servicewatch_event_rule,servicewatch_log_group,servicewatch_log_stream,servicewatch_alert,loggingaudit_trail,budget_budget,billing_planned_compute,dns_hosted_zone,dns_record"
+          MATRIX_SCENARIOS: ${{ needs.plan.outputs.novpc }}
         run: |
           go test ./tests/capability/... -run TestCapabilityMatrix -count=1 -timeout 35m || true
           echo "===== capability matrix (novpc) ====="
@@ -84,9 +121,12 @@ jobs:
 
   # ---- Lane 2: VPC-dependent products, one bootstrap VPC per shard ----
   pool:
+    needs: plan
+    if: ${{ needs.plan.outputs.pool != '[]' }}
     runs-on: ubuntu-latest
     environment: scp-integration
     timeout-minutes: 75
+    name: pool (${{ matrix.shard.label }})
     env:
       TF_VAR_suffix: ${{ github.run_id }}${{ strategy.job-index }}
       TF_VAR_account_id: ${{ vars.SCP_ACCOUNT_ID }}
@@ -95,26 +135,7 @@ jobs:
       fail-fast: false
       max-parallel: 2
       matrix:
-        shard:
-          # vpc1 — network resources on the shared VPC (subnet/cidr/vip creators -> low parallel)
-          - "vpc_port,vpc_nat_gateway,security_group_basic,securitygroup_rule_basic,firewall_firewall_rule,network_logging_network_logging_storage,vpc_subnet,vpc_cidr,vpc_subnet_vip,vpc_subnet_vip_port,vpc_subnet_vip_nat_ip"
-          # vpc2 — compute / storage / network-edge
-          # NOTE: self-contained-VPC scenarios (vpn_*) were MOVED OUT to the
-          # `selfvpc` lane below — each makes its own VPC, so running them here
-          # pushed the shard past the 5-VPC quota and starved the bootstrap
-          # (DBaaS results got masked by quota-exhaustion, not real failures).
-          - "virtualserver_keypair,virtualserver_server,virtualserver_server_group,virtualserver_volume,virtualserver_image,filestorage_volume,filestorage_snapshot_schedule,filestorage_replication,backup_backup,directconnect_direct_connect,directconnect_routing_rule,gslb_gslb"
-          # DBaaS clusters — ONE engine per shard. The provider waits for ACTIVE on
-          # create (~15-20m) and waits out delete (~10-15m), so a cluster is ~30m
-          # round-trip; isolating one per shard keeps each well under the 50m test
-          # timeout (5-in-one-shard would time out mid-destroy and leak). The probe
-          # confirmed these 5 engines' values are valid and the API auto-assigns the
-          # service IP on a fresh subnet (which the bootstrap provides).
-          # postgresql_cluster already proven GREEN (run 27001005481) — omitted here.
-          - "mysql_cluster"
-          - "mariadb_cluster"
-          - "epas_cluster"
-          - "cachestore_cluster"
+        shard: ${{ fromJson(needs.plan.outputs.pool) }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -144,24 +165,22 @@ jobs:
             echo "TF_VAR_kubernetes_version=$(terraform -chdir=bootstrap output -raw kubernetes_version)"
             echo "TF_VAR_security_group_id_list=[\"$(terraform -chdir=bootstrap output -raw security_group_id)\"]"
           } >> "$GITHUB_ENV"
-      - name: Run shard products in parallel within the pool VPC
+      - name: Run shard products within the pool VPC
         env:
           MODE: integration
           OUTPUT_DIR: ${{ github.workspace }}/out
           CAPABILITY_MATRIX: '1'
-          # subnet/cidr creators + heavy clusters get parallelism 2 (CIDR contention /
-          # slow async creates); the rest run at 4.
-          MATRIX_PARALLEL: ${{ (contains(matrix.shard, 'vpc_subnet') || contains(matrix.shard, 'cluster') || contains(matrix.shard, 'ske')) && '2' || '4' }}
-          MATRIX_SCENARIOS: ${{ matrix.shard }}
+          MATRIX_PARALLEL: ${{ matrix.shard.parallel }}
+          MATRIX_SCENARIOS: ${{ matrix.shard.scenarios }}
         run: |
           go test ./tests/capability/... -run TestCapabilityMatrix -count=1 -timeout 60m || true
-          echo "===== capability matrix (pool shard) ====="
+          echo "===== capability matrix (pool: ${{ matrix.shard.label }}) ====="
           cat "$OUTPUT_DIR/capability-matrix.md" 2>/dev/null || echo "(no matrix md produced)"
       - name: Upload pool shard matrix artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: poolsweep-${{ strategy.job-index }}-${{ github.run_id }}
+          name: poolsweep-${{ matrix.shard.label }}-${{ github.run_id }}
           path: |
             out/capability-matrix.json
             out/capability-matrix.md
@@ -171,13 +190,9 @@ jobs:
         run: terraform -chdir=bootstrap destroy -no-color -input=false -auto-approve || true
 
   # ---- Lane 3: scenarios that create their OWN VPC, run AFTER the pool ----
-  # Each of these bootstraps its own VPC inside the fixture (vpn gateway/tunnel,
-  # self-contained internet gateway, endpoint, peering). Running them concurrently
-  # with the 3 pool VPCs blew the 5-VPC quota, so this lane `needs: pool` (the
-  # pool's 3 VPCs are torn down first) and runs at low parallelism. No bootstrap
-  # step here — the fixtures own their VPC lifecycle and tear it down themselves.
   selfvpc:
-    needs: pool
+    needs: [plan, pool]
+    if: ${{ !cancelled() && needs.plan.outputs.selfvpc != '' }}
     runs-on: ubuntu-latest
     environment: scp-integration
     timeout-minutes: 50
@@ -201,9 +216,8 @@ jobs:
           MODE: integration
           OUTPUT_DIR: ${{ github.workspace }}/out
           CAPABILITY_MATRIX: '1'
-          # each makes >=1 VPC; cap at 2 concurrent to stay under the 5-VPC quota
           MATRIX_PARALLEL: '2'
-          MATRIX_SCENARIOS: "vpn_vpn_gateway,vpn_vpn_tunnel,vpc_internet_gateway,vpc_vpc_endpoint,vpc_vpc_peering"
+          MATRIX_SCENARIOS: ${{ needs.plan.outputs.selfvpc }}
         run: |
           go test ./tests/capability/... -run TestCapabilityMatrix -count=1 -timeout 45m || true
           echo "===== capability matrix (selfvpc) ====="
@@ -217,17 +231,3 @@ jobs:
             out/capability-matrix.json
             out/capability-matrix.md
           if-no-files-found: ignore
-
-# re-trigger 2026-06-05T01:02:03Z: SCP_TF_AUTH_URL variable trailing-whitespace removed
-
-# re-run 2026-06-05T01:39:13Z: verify 17 fixture fixes (DBaaS starting_time_hour, gslb, volume, cert, iam_role, alert, log_stream, subnet_vip)
-
-# re-run 2026-06-05T02:12:51Z: verify fixture round#2 (DBaaS name ^[a-zA-Z]*$, gslb, routing_rule cidr, vpn_tunnel ip, iam_role policy_ids, alert period)
-
-# re-run 2026-06-05T04:11:31Z: verify fixture round#3 (DBaaS examples-aligned, gslb/routing_rule/vpn_tunnel/iam_role)
-
-# re-run 2026-06-05T04:53:24Z: verify DBaaS engine-version data-source + gslb FQDN + ske/vpn unique names
-
-# re-run 2026-06-05T07:11:21Z: validate 5 DBaaS engines green (mysql/postgresql/mariadb/epas/cachestore), one engine per shard
-
-# re-run 2026-06-05T08:01:48Z: clean quota (leak 0), max-parallel 2; validate mysql/mariadb/epas/cachestore green (postgresql already green)
