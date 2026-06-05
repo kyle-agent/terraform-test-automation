@@ -162,3 +162,5 @@ jobs:
 # re-run 2026-06-05T01:39:13Z: verify 17 fixture fixes (DBaaS starting_time_hour, gslb, volume, cert, iam_role, alert, log_stream, subnet_vip)
 
 # re-run 2026-06-05T02:12:51Z: verify fixture round#2 (DBaaS name ^[a-zA-Z]*$, gslb, routing_rule cidr, vpn_tunnel ip, iam_role policy_ids, alert period)
+
+# re-run 2026-06-05T04:11:31Z: verify fixture round#3 (DBaaS examples-aligned, gslb/routing_rule/vpn_tunnel/iam_role)
