@@ -113,7 +113,7 @@ def fill(body, *, name, engine_version_id, subnet_id, server_type_name, service_
                 ig["server_type_name"] = server_type_name
             # service_ip_address must sit inside the subnet CIDR; the canonical
             # 192.168.10.10/32 only works if the subnet happens to be 192.168.x.
-            if service_ip:
+            if service_ip is not None:  # "" => blank it (test API auto-assign)
                 for inst in ig.get("instances", []):
                     if isinstance(inst, dict) and "service_ip_address" in inst:
                         inst["service_ip_address"] = service_ip
@@ -173,31 +173,39 @@ def probe(c, engine):
         except Exception as exc:
             print(f"[{engine}] cidr parse failed ({exc}); using template service_ip")
 
-    name = lettername()
-    payload = fill(template, name=name, engine_version_id=ev_id, subnet_id=subnet_id,
-                   server_type_name=stype, service_ip=service_ip)
-    print(f"[{engine}] POST /v1/clusters name={name}")
-    print(f"[{engine}] payload={json.dumps(payload, ensure_ascii=False)}")
-    try:
-        r = c.post("/v1/clusters", service=svc, json=payload)
-        print(f"[{engine}] >>> STATUS {r.status}")
-        print(f"[{engine}] >>> BODY   {json.dumps(r.body, ensure_ascii=False) if not isinstance(r.body, str) else r.body}")
-        # cleanup if it actually created something
-        cid = None
-        if isinstance(r.body, dict):
-            cid = r.body.get("id") or (r.body.get("cluster") or {}).get("id")
-        if cid and 200 <= r.status < 300:
-            print(f"[{engine}] created {cid} — deleting for leak-0")
-            time.sleep(5)
-            try:
-                d = c.delete(f"/v1/clusters/{cid}", service=svc)
-                print(f"[{engine}] DELETE -> {d.status}")
-            except Exception as exc:
-                print(f"[{engine}] DELETE error: {exc}")
-    except MutationBlocked as exc:
-        print(f"[{engine}] blocked: {exc}")
-    except Exception as exc:
-        print(f"[{engine}] POST error: {exc}")
+    def post_once(sip, tag):
+        name = lettername()
+        payload = fill(template, name=name, engine_version_id=ev_id, subnet_id=subnet_id,
+                       server_type_name=stype, service_ip=sip)
+        print(f"[{engine}] POST /v1/clusters name={name} ({tag}) service_ip={sip!r}")
+        try:
+            r = c.post("/v1/clusters", service=svc, json=payload)
+            body = r.body if isinstance(r.body, str) else json.dumps(r.body, ensure_ascii=False)
+            print(f"[{engine}] >>> STATUS {r.status}  BODY {body}")
+            cid = None
+            if isinstance(r.body, dict):
+                cid = r.body.get("id") or (r.body.get("cluster") or {}).get("id")
+            if cid and 200 <= r.status < 300:
+                print(f"[{engine}] *** CREATED {cid} — values VALID — deleting for leak-0 ***")
+                time.sleep(5)
+                try:
+                    d = c.delete(f"/v1/clusters/{cid}", service=svc)
+                    print(f"[{engine}] DELETE -> {d.status}")
+                except Exception as exc:
+                    print(f"[{engine}] DELETE error: {exc}")
+            return r.status, body
+        except MutationBlocked as exc:
+            print(f"[{engine}] blocked: {exc}"); return None, ""
+        except Exception as exc:
+            print(f"[{engine}] POST error: {exc}"); return 0, str(exc)
+
+    st, body = post_once(service_ip, "forced-ip")
+    # If the only complaint is the IP not being free on this shared subnet, retry
+    # with service_ip blanked — proves whether the API auto-assigns (our terraform
+    # fixtures omit service_ip_address, so this is the path that matters).
+    if body and "is not available" in body:
+        print(f"[{engine}] IP not free on shared subnet — retrying with blank service_ip (auto-assign?)")
+        post_once("", "blank-ip")
     print("-" * 70)
 
 
