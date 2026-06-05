@@ -35,10 +35,10 @@ permissions:
 env:
   SCP_TF_ACCESS_KEY: ${{ secrets.SCP_TF_ACCESS_KEY }}
   SCP_TF_SECRET_KEY: ${{ secrets.SCP_TF_SECRET_KEY }}
-  SCP_TF_AUTH_URL: ${{ secrets.SCP_TF_AUTH_URL }}
-  SCP_DEFAULT_REGION: ${{ secrets.SCP_DEFAULT_REGION }}
-  SCP_TF_DEFAULT_REGION: ${{ secrets.SCP_DEFAULT_REGION }}
-  SCP_ACCOUNT_ID: ${{ secrets.SCP_ACCOUNT_ID }}
+  SCP_TF_AUTH_URL: ${{ vars.SCP_TF_AUTH_URL }}
+  SCP_DEFAULT_REGION: ${{ vars.SCP_DEFAULT_REGION }}
+  SCP_TF_DEFAULT_REGION: ${{ vars.SCP_DEFAULT_REGION }}
+  SCP_ACCOUNT_ID: ${{ vars.SCP_ACCOUNT_ID }}
 
 jobs:
   # ---- Lane 1: VPC-independent products, no bootstrap, high parallelism ----
@@ -48,8 +48,8 @@ jobs:
     timeout-minutes: 40
     env:
       TF_VAR_suffix: ${{ github.run_id }}9
-      TF_VAR_account_id: ${{ secrets.SCP_ACCOUNT_ID }}
-      TF_VAR_trusted_account_id: ${{ secrets.SCP_ACCOUNT_ID }}
+      TF_VAR_account_id: ${{ vars.SCP_ACCOUNT_ID }}
+      TF_VAR_trusted_account_id: ${{ vars.SCP_ACCOUNT_ID }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -89,8 +89,8 @@ jobs:
     timeout-minutes: 60
     env:
       TF_VAR_suffix: ${{ github.run_id }}${{ strategy.job-index }}
-      TF_VAR_account_id: ${{ secrets.SCP_ACCOUNT_ID }}
-      TF_VAR_trusted_account_id: ${{ secrets.SCP_ACCOUNT_ID }}
+      TF_VAR_account_id: ${{ vars.SCP_ACCOUNT_ID }}
+      TF_VAR_trusted_account_id: ${{ vars.SCP_ACCOUNT_ID }}
     strategy:
       fail-fast: false
       max-parallel: 3
