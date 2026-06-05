@@ -78,15 +78,19 @@ def get_items(c, svc, path):
         return 0, [], str(exc)
 
 
-def lettername(prefix="regrprobe"):
-    return prefix + "".join(random.choice(string.ascii_lowercase) for _ in range(6))
+def lettername(prefix="rp", n=4):
+    # letters only (^[a-zA-Z]*$, #83) and SHORT: DBaaS name/instance_name_prefix
+    # have a small max_length (canonical examples: name<=9, prefix<=8). 15 chars
+    # tripped "string longer than the max_length constraint".
+    return prefix + "".join(random.choice(string.ascii_lowercase) for _ in range(n))
 
 
 def fill(body, *, name, engine_version_id, subnet_id, server_type_name):
     b = json.loads(json.dumps(body))  # deep copy
     b["name"] = name
     if "instance_name_prefix" in b:
-        b["instance_name_prefix"] = name
+        # keep the prefix even shorter than the name to stay under its max_length
+        b["instance_name_prefix"] = name[:6]
     if "dbaas_engine_version_id" in b and engine_version_id:
         b["dbaas_engine_version_id"] = engine_version_id
     if "subnet_id" in b and subnet_id:
