@@ -167,3 +167,32 @@ API로 직접 만든 클러스터는 즉시 삭제가 안 됨(클린업 시 ACTI
 ### 의도적으로 채택 안 함 (이유 명시)
 - **provider 레포 내 TF_ACC 어셉턴스 테스트/Go Sweeper 직접 작성** — third-party provider를 소유/머지하지 않음. 대신 black-box e2e + 이슈화. (provider 팀엔 권고)
 - **mock 기반 terraform test** — 목적이 provider의 실제 API 매핑 검증이라 mock은 무의미. 실제 클라우드 e2e 유지.
+
+---
+
+## ⑦ 리팩토링 + best-practice 구현 상태 (완료)
+
+### 리팩토링 (단일 소스 → 파생)
+- **`coverage/registry.yaml`** — 87개 시나리오의 단일 진실(family/vpc/timeout_class/
+  parallel/needs/depends_on/update/import/cost/status/issues). `scripts/gen_registry.py`로
+  기존 소스에서 1회 생성, 이후 수기 편집.
+- **`scripts/validate_registry.py`** — CI 게이트(dir↔entry 1:1, needs⊆bootstrap, enum, depends_on).
+- **`scripts/plan_matrix.py`** — registry에서 lane/shard **동적 생성**(slow=전용 샤드,
+  CIDR-mutator=저병렬, fast 패킹). SELECT_STATUS/VPC/FAMILY 필터.
+- **`coverage-sweep-pool.yml`** — `plan` job이 matrix 생성 → novpc/pool/selfvpc가 `fromJson`으로
+  소비. **하드코딩 쉼표 문자열 제거.** push=green 회귀, dispatch=green+untested 발굴.
+  (실증: run 27031900632에서 pool이 `pool (ske_cluster)`/`(ske_nodepool)`/`(fast-1)`로 동적 전개)
+- **`coverage-sweep.yml` 폐기**(중복 lane 정의 제거).
+
+### best-practice 5종
+| # | 항목 | 구현 |
+|---|---|---|
+| ① CheckDestroy | `destroy_verify` stage(opt-in `DESTROY_VERIFY=1`): destroy 후 Open API GET로 404 확인 → ok/leak/skip. `tests/common/apiverify.go`(HMAC) + `tests/capability/endpoints.go`(type→endpoint). 3개 레인에서 활성화 |
+| ② Idempotency | **기존 구현**(harness `replan` stage = apply 후 no-diff 검증). |
+| ③ 야간 sweep | `api-reaper.yml`에 daily cron(03:00 KST). |
+| ④ static 게이트 | `static.yml` — fmt -check + registry 검증 + go build/vet + tflint(advisory). |
+| ⑤ TTL/age | `sweep_all.py` `SWEEP_MIN_AGE_HOURS`(스케줄 sweep만 2h, 동시실행 레이스 방지). |
+
+### 남은 폴리시(소): 대시보드(`docs/index.html`)에 `replan`/`destroy_verify` 컬럼 노출,
+### stale 워크플로(nightly/regression/dynamic-regression/capability-matrix/cleanup*/dependent-probe)
+### 정리는 별도 결정 대기(자격증명 secret→variable drift로 다수 깨졌을 가능성).
