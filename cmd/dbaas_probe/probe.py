@@ -184,15 +184,11 @@ def probe(c, engine):
             print(f"[{engine}] >>> STATUS {r.status}  BODY {body}")
             cid = None
             if isinstance(r.body, dict):
-                cid = r.body.get("id") or (r.body.get("cluster") or {}).get("id")
+                cid = (r.body.get("id") or (r.body.get("cluster") or {}).get("id")
+                       or (r.body.get("resource") or {}).get("id"))  # 202: {"resource":{"id":...}}
             if cid and 200 <= r.status < 300:
                 print(f"[{engine}] *** CREATED {cid} — values VALID — deleting for leak-0 ***")
-                time.sleep(5)
-                try:
-                    d = c.delete(f"/v1/clusters/{cid}", service=svc)
-                    print(f"[{engine}] DELETE -> {d.status}")
-                except Exception as exc:
-                    print(f"[{engine}] DELETE error: {exc}")
+                delete_cluster(c, svc, cid)
             return r.status, body
         except MutationBlocked as exc:
             print(f"[{engine}] blocked: {exc}"); return None, ""
@@ -209,11 +205,79 @@ def probe(c, engine):
     print("-" * 70)
 
 
+# DBaaS clusters created by probe runs that leaked (202 id is under resource.id,
+# which the first cleanup code missed). `probe.py cleanup` removes these by id.
+LEAKED_IDS = {
+    "mysql":      ["adce924e8eca4ae5884de311f3ef12d4"],
+    "postgresql": ["eaadb833bc634cb5807269edee3408df"],
+    "mariadb":    ["d5929f06bd814c53a785bd1526fdaab6"],
+    "epas":       ["0944e0082bd4413898619a6c7601f4a9"],
+    "cachestore": ["c116a8c5cd0245659098647180ff9cf2"],
+}
+# states from which a DBaaS cluster can be deleted (CREATING usually can't)
+DELETABLE = {"RUNNING", "ACTIVE", "AVAILABLE", "STOPPED", "ERROR", "FAILED"}
+
+
+def cluster_state(c, svc, cid):
+    try:
+        r = c.get(f"/v1/clusters/{cid}", service=svc)
+        if r.status == 404:
+            return "GONE"
+        b = r.body if isinstance(r.body, dict) else {}
+        cl = b.get("cluster") if isinstance(b.get("cluster"), dict) else b
+        return str(cl.get("state") or cl.get("status") or "?")
+    except Exception as exc:
+        return f"ERR:{exc}"
+
+
+def delete_cluster(c, svc, cid, timeout=1500, interval=30):
+    """Delete a DBaaS cluster, waiting out CREATING until it's in a deletable state."""
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        st = cluster_state(c, svc, cid)
+        if st == "GONE":
+            print(f"  [{svc}] {cid} gone"); return True
+        if st in DELETABLE or st == "?":
+            try:
+                r = c.delete(f"/v1/clusters/{cid}", service=svc)
+                print(f"  [{svc}] DELETE {cid} (state={st}) -> {r.status}")
+                if r.status in (200, 202, 204, 404):
+                    if wait_gone(c, svc, cid):
+                        return True
+            except Exception as exc:
+                print(f"  [{svc}] DELETE {cid} error: {exc}")
+        else:
+            print(f"  [{svc}] {cid} state={st} not yet deletable; waiting")
+        time.sleep(interval)
+    print(f"  [{svc}] {cid} still present after {timeout}s"); return False
+
+
+def wait_gone(c, svc, cid, timeout=300, interval=20):
+    end = time.monotonic() + timeout
+    while time.monotonic() < end:
+        if cluster_state(c, svc, cid) == "GONE":
+            return True
+        time.sleep(interval)
+    return False
+
+
+def cleanup(c):
+    print("== DBaaS leak cleanup (by id) ==")
+    ok = True
+    for svc, ids in LEAKED_IDS.items():
+        for cid in ids:
+            ok = delete_cluster(c, svc, cid) and ok
+    print("cleanup done" if ok else "cleanup incomplete (some clusters remain)")
+    return 0
+
+
 def main(argv):
     settings.require_credentials()
     c = ApiClient(settings)
     print(f"region={settings.region} env={settings.env_code}")
     args = argv or ["mysql"]
+    if args[0] == "cleanup":
+        return cleanup(c)
     if args == ["all"]:
         args = list(ENGINES)
     for engine in args:

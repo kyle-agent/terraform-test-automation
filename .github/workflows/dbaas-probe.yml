@@ -29,6 +29,7 @@ jobs:
   probe:
     runs-on: ubuntu-latest
     environment: scp-integration
+    timeout-minutes: 40
     env:
       SCP_REGION: kr-west1
       SCP_ENV: e
@@ -46,4 +47,4 @@ jobs:
       - name: Install deps
         run: pip install -r /tmp/apitest/requirements.txt
       - name: Probe DBaaS create values
-        run: PYTHONPATH=/tmp/apitest python cmd/dbaas_probe/probe.py ${{ github.event.inputs.engines || 'all' }}
+        run: PYTHONPATH=/tmp/apitest python cmd/dbaas_probe/probe.py ${{ github.event.inputs.engines || 'cleanup' }}
