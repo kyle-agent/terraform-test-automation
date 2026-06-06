@@ -52,3 +52,15 @@ jobs:
       # api-test-automation repo (whose `framework` import broke this workflow).
       - name: Run API sweep (delete ALL test-created resources)
         run: python cmd/api_reaper/sweep_all.py
+      # SCP Object Storage buckets live behind the S3 API, not the Open API, so the
+      # sweep above can't see them. The network_logging fixture self-cleans its bucket
+      # on destroy, but a mid-apply crash could leak one; this catches those. Same TTL
+      # guard (SWEEP_MIN_AGE_HOURS) so a scheduled run can't race a live test.
+      - name: Sweep leaked OBS buckets (S3-compatible)
+        env:
+          TF_VAR_obs_access_key: ${{ secrets.SCP_TF_ACCESS_KEY }}
+          TF_VAR_obs_secret_key: ${{ secrets.SCP_TF_SECRET_KEY }}
+          TF_VAR_obs_endpoint: https://object-store.kr-west1.e.samsungsdscloud.com
+        run: |
+          pip install --quiet boto3
+          python scripts/obs_bucket.py sweep regrnetlog regr-obs-

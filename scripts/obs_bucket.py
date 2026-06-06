@@ -95,19 +95,31 @@ def delete(s3, bucket):
             raise
 
 
-def sweep(s3, prefixes):
+def sweep(s3, prefixes, min_age_hours=0.0):
+    """Delete every bucket whose name starts with a prefix. With min_age_hours>0,
+    only buckets older than that are deleted -- a TTL guard so a scheduled sweep can
+    never race a concurrent test that just created its bucket."""
+    import datetime
     try:
-        names = [b["Name"] for b in s3.list_buckets().get("Buckets", [])]
+        buckets = s3.list_buckets().get("Buckets", [])
     except ClientError as e:
         print(f"obs_bucket: sweep list_buckets failed ({_code(e)}); skipping")
         return
-    for name in names:
-        if any(name.startswith(p) for p in prefixes):
-            print(f"obs_bucket: sweeping stale {name}")
-            try:
-                delete(s3, name)
-            except ClientError as e:
-                print(f"obs_bucket: sweep could not delete {name}: {_code(e)}")
+    now = datetime.datetime.now(datetime.timezone.utc)
+    for b in buckets:
+        name = b["Name"]
+        if not any(name.startswith(p) for p in prefixes):
+            continue
+        if min_age_hours > 0:
+            created = b.get("CreationDate")
+            if created and (now - created).total_seconds() < min_age_hours * 3600:
+                print(f"obs_bucket: skipping {name} (younger than {min_age_hours}h)")
+                continue
+        print(f"obs_bucket: sweeping stale {name}")
+        try:
+            delete(s3, name)
+        except ClientError as e:
+            print(f"obs_bucket: sweep could not delete {name}: {_code(e)}")
 
 
 def main(argv):
@@ -120,7 +132,10 @@ def main(argv):
     elif cmd == "delete":
         delete(s3, argv[2])
     elif cmd == "sweep":
-        sweep(s3, argv[2:] or ["regrnetlog", "regr-obs-"])
+        # SWEEP_MIN_AGE_HOURS mirrors the SCP reaper's TTL guard: 0 for immediate
+        # (pre-test cleanup), >0 for scheduled sweeps that must not race live tests.
+        min_age = float(os.environ.get("SWEEP_MIN_AGE_HOURS", "0") or "0")
+        sweep(s3, argv[2:] or ["regrnetlog", "regr-obs-"], min_age_hours=min_age)
     else:
         sys.exit(f"obs_bucket: unknown command {cmd!r}")
 
