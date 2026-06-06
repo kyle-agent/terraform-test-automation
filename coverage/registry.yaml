@@ -83,7 +83,7 @@ cachestore_cluster:
   needs:
   - subnet_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: slow
   update: false
   vpc: pool
@@ -223,7 +223,7 @@ epas_cluster:
   needs:
   - subnet_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: slow
   update: false
   vpc: pool
@@ -232,11 +232,12 @@ eventstreams_basic:
   depends_on: []
   family: eventstreams
   import: false
-  issues: []
+  issues:
+  - '#83'
   needs:
   - subnet_id
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: slow
   update: false
   vpc: pool
@@ -552,7 +553,7 @@ mariadb_cluster:
   needs:
   - subnet_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: slow
   update: false
   vpc: pool
@@ -565,7 +566,7 @@ mysql_cluster:
   needs:
   - subnet_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: slow
   update: false
   vpc: pool
@@ -590,7 +591,7 @@ postgresql_cluster:
   needs:
   - subnet_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: slow
   update: false
   vpc: pool
@@ -611,11 +612,12 @@ searchengine_cluster:
   depends_on: []
   family: searchengine
   import: false
-  issues: []
+  issues:
+  - '#83'
   needs:
   - subnet_id
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: slow
   update: false
   vpc: pool
@@ -746,11 +748,12 @@ sqlserver_cluster:
   depends_on: []
   family: sqlserver
   import: false
-  issues: []
+  issues:
+  - '#83'
   needs:
   - subnet_id
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: slow
   update: false
   vpc: pool

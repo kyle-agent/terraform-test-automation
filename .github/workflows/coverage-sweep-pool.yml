@@ -72,9 +72,9 @@ jobs:
       - name: Derive matrix from registry
         id: plan
         env:
-          # push (file edits) runs the cheap green regression; dispatch defaults to
-          # the broader green+untested discovery sweep (override via the input).
-          SELECT_STATUS: ${{ github.event.inputs.select_status || (github.event_name == 'workflow_dispatch' && 'green,untested' || 'green') }}
+          # push -> 'untested' (discover unknowns, cheap: no known-green clusters);
+          # schedule -> 'green' (regression); dispatch -> input (default green,untested).
+          SELECT_STATUS: ${{ github.event.inputs.select_status || (github.event_name == 'schedule' && 'green' || github.event_name == 'push' && 'untested' || 'green,untested') }}
           SELECT_VPC: ${{ github.event.inputs.select_vpc || 'none,pool,self' }}
           SELECT_FAMILY: ${{ github.event.inputs.select_family || '' }}
         run: |
