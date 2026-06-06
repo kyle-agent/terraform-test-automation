@@ -22,11 +22,14 @@ jobs:
   probe:
     runs-on: ubuntu-latest
     environment: scp-integration
+    timeout-minutes: 6
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.SCP_TF_ACCESS_KEY }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.SCP_TF_SECRET_KEY }}
       AWS_DEFAULT_REGION: kr-west1
       AWS_EC2_METADATA_DISABLED: 'true'
+      AWS_MAX_ATTEMPTS: '1'
+      AWS_RETRY_MODE: 'standard'
     steps:
       - name: aws CLI version
         run: aws --version
@@ -44,14 +47,14 @@ jobs:
             echo "==================================================================="
             echo "ENDPOINT: $EP"
             echo "--- list buckets (auth check) ---"
-            aws --endpoint-url "$EP" s3 ls 2>&1 | head -20
+            aws --cli-connect-timeout 8 --cli-read-timeout 12 --endpoint-url "$EP" s3 ls 2>&1 | head -20
             echo "--- create bucket $BUCKET (path-style) ---"
-            aws --endpoint-url "$EP" s3api create-bucket --bucket "$BUCKET" 2>&1 | head -20
+            aws --cli-connect-timeout 8 --cli-read-timeout 12 --endpoint-url "$EP" s3api create-bucket --bucket "$BUCKET" 2>&1 | head -20
             rc=$?
             echo "create rc=$rc"
             if [ $rc -eq 0 ]; then
-              echo "--- list again ---"; aws --endpoint-url "$EP" s3 ls 2>&1 | head
-              echo "--- delete bucket (cleanup) ---"; aws --endpoint-url "$EP" s3 rb "s3://$BUCKET" 2>&1 | head
+              echo "--- list again ---"; aws --cli-connect-timeout 8 --cli-read-timeout 12 --endpoint-url "$EP" s3 ls 2>&1 | head
+              echo "--- delete bucket (cleanup) ---"; aws --cli-connect-timeout 8 --cli-read-timeout 12 --endpoint-url "$EP" s3 rb "s3://$BUCKET" 2>&1 | head
               echo "SUCCESS on $EP"
             fi
           done
