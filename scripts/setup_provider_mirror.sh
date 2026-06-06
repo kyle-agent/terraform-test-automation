@@ -57,14 +57,36 @@ fi
 # Packed filesystem-mirror layout: the .zip sits in MIRROR_DIR/HOST/NS/TYPE/,
 # so the mirror `path` is MIRROR_DIR (the dir that holds "registry.terraform.io").
 RC="${MIRROR_DIR}/terraformrc"
+# Optionally also mirror the hashicorp/aws provider (for OBS S3 fixtures: SCP
+# Object Storage is S3-compatible, so aws_s3_bucket against the object-store
+# endpoint creates buckets with the same keys). Best-effort, from GitHub releases
+# (registry.terraform.io is blocked in CI). Enable with MIRROR_AWS=1.
+AWS_INCLUDE=""
+if [ "${MIRROR_AWS:-0}" = "1" ]; then
+  AWSVER="${AWS_PROVIDER_VERSION:-5.80.0}"
+  AWS_DEST="${MIRROR_DIR}/registry.terraform.io/hashicorp/aws"
+  AWS_ASSET="terraform-provider-aws_${AWSVER}_${OS_ARCH}.zip"
+  AWS_URL="https://github.com/hashicorp/terraform-provider-aws/releases/download/v${AWSVER}/${AWS_ASSET}"
+  echo "Provider mirror: aws v${AWSVER}"
+  echo "  source: ${AWS_URL}"
+  mkdir -p "$AWS_DEST"
+  if curl -fsSL --max-time 300 -o "${AWS_DEST}/${AWS_ASSET}" "$AWS_URL"; then
+    AWS_INCLUDE=', "registry.terraform.io/hashicorp/aws"'
+    echo "  aws provider mirrored."
+  else
+    echo "  WARNING: could not download aws provider; OBS S3 fixtures will fail init."
+    rm -f "${AWS_DEST}/${AWS_ASSET}" 2>/dev/null || true
+  fi
+fi
+
 cat > "$RC" <<EOF
 provider_installation {
   filesystem_mirror {
     path    = "${MIRROR_DIR}"
-    include = ["registry.terraform.io/${NS}/${TYPE}"]
+    include = ["registry.terraform.io/${NS}/${TYPE}"${AWS_INCLUDE}]
   }
   direct {
-    exclude = ["registry.terraform.io/${NS}/${TYPE}"]
+    exclude = ["registry.terraform.io/${NS}/${TYPE}"${AWS_INCLUDE}]
   }
 }
 EOF

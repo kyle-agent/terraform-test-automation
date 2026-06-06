@@ -586,11 +586,10 @@ network_logging_network_logging_storage:
   depends_on: []
   family: network
   import: false
-  issues:
-  - 400 bad request
+  issues: []
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool

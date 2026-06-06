@@ -103,6 +103,8 @@ jobs:
           terraform_version: '1.6.6'
           terraform_wrapper: false
       - name: Set up provider mirror
+        env:
+          MIRROR_AWS: '1' # also stage hashicorp/aws for the OBS S3 (network_logging) fixture
         run: scripts/setup_provider_mirror.sh
       - name: Run VPC-independent products in parallel
         env:
@@ -112,6 +114,10 @@ jobs:
           DESTROY_VERIFY: '1'
           MATRIX_PARALLEL: '6'
           MATRIX_SCENARIOS: ${{ needs.plan.outputs.novpc }}
+          # OBS S3 (network_logging fixture creates its bucket via aws provider)
+          TF_VAR_obs_access_key: ${{ secrets.SCP_TF_ACCESS_KEY }}
+          TF_VAR_obs_secret_key: ${{ secrets.SCP_TF_SECRET_KEY }}
+          TF_VAR_obs_endpoint: https://object-store.kr-west1.e.samsungsdscloud.com
         run: |
           go test ./tests/capability/... -run TestCapabilityMatrix -count=1 -timeout 35m || true
           echo "===== capability matrix (novpc) ====="
