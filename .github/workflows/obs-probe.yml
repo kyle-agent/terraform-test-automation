@@ -33,29 +33,36 @@ jobs:
     steps:
       - name: aws CLI version
         run: aws --version
-      - name: Probe OBS S3 (create/list/delete a bucket on each candidate endpoint)
+      - name: Probe OBS S3 CreateBucket region / location-constraint matrix
+        # The terraform aws provider's aws_s3_bucket fails on OBS with
+        # "InvalidLocationConstraint" because for any region != us-east-1 it sends
+        # CreateBucketConfiguration.LocationConstraint=<region>, which OBS rejects.
+        # The only provider config that OMITS the constraint is region=us-east-1 --
+        # but that also flips the SigV4 *signing* region. This probe decides whether
+        # OBS accepts us-east-1 signing (case A); if so, the fixture sets region
+        # us-east-1 + endpoint kr-west1. Self-cleans every bucket it makes.
         run: |
           set +e
-          BUCKET="regr-obs-${GITHUB_RUN_ID}"
-          CANDIDATES="${{ github.event.inputs.endpoint }}"
-          if [ -z "$CANDIDATES" ]; then
-            CANDIDATES="https://object-store.kr-west1.e.samsungsdscloud.com
-          https://object-store.kr-west1.s.samsungsdscloud.com
-          https://object-store.e.samsungsdscloud.com"
-          fi
-          for EP in $CANDIDATES; do
-            echo "==================================================================="
-            echo "ENDPOINT: $EP"
-            echo "--- list buckets (auth check) ---"
-            aws --cli-connect-timeout 8 --cli-read-timeout 12 --endpoint-url "$EP" s3 ls 2>&1 | head -20
-            echo "--- create bucket $BUCKET (path-style) ---"
-            aws --cli-connect-timeout 8 --cli-read-timeout 12 --endpoint-url "$EP" s3api create-bucket --bucket "$BUCKET" 2>&1 | head -20
-            rc=$?
-            echo "create rc=$rc"
+          EP="${{ github.event.inputs.endpoint }}"
+          [ -z "$EP" ] && EP="https://object-store.kr-west1.e.samsungsdscloud.com"
+          A() { aws --cli-connect-timeout 8 --cli-read-timeout 12 --endpoint-url "$EP" "$@"; }
+          run_case() {
+            local name="$1" region="$2"; shift 2
+            local b="regr-obs-${GITHUB_RUN_ID}-${name}"
+            echo "=================================================================="
+            echo "CASE $name : region=$region  extra-args=[$*]"
+            AWS_DEFAULT_REGION="$region" A s3api create-bucket --bucket "$b" "$@" 2>&1 | head -8
+            local rc=$?
+            echo "CASE $name create rc=$rc"
             if [ $rc -eq 0 ]; then
-              echo "--- list again ---"; aws --cli-connect-timeout 8 --cli-read-timeout 12 --endpoint-url "$EP" s3 ls 2>&1 | head
-              echo "--- delete bucket (cleanup) ---"; aws --cli-connect-timeout 8 --cli-read-timeout 12 --endpoint-url "$EP" s3 rb "s3://$BUCKET" 2>&1 | head
-              echo "SUCCESS on $EP"
+              echo "CASE $name SUCCESS"
+              AWS_DEFAULT_REGION="$region" A s3 rb "s3://$b" 2>&1 | head -4
             fi
-          done
+          }
+          # A: us-east-1 signing, no location constraint  <-- what provider region=us-east-1 does
+          run_case A us-east-1
+          # B: kr-west1 signing + LocationConstraint=kr-west1  <-- reproduces the provider failure
+          run_case B kr-west1 --create-bucket-configuration LocationConstraint=kr-west1
+          # C: kr-west1 signing, no location constraint  <-- known-good baseline
+          run_case C kr-west1
           echo "obs-probe done"
