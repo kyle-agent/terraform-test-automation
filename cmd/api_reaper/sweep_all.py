@@ -260,7 +260,14 @@ def main() -> int:
             for sn in items(c.get(f"/v1/subnets/{sid}/vips/{vipid}/static-nat-ips", service="vpc").body):
                 if sn.get("id"):
                     delete(c, "vpc", f"/v1/subnets/{sid}/vips/{vipid}/static-nat-ips/{sn['id']}")
-            delete(c, "vpc", f"/v1/subnets/{sid}/vips/{vipid}")
+            if delete(c, "vpc", f"/v1/subnets/{sid}/vips/{vipid}") == 409:
+                # vip pinned by something the two child collections above don't cover
+                # (the #84 destroy-bug leak). Dump full state so we can see the blocker.
+                vd = c.get(f"/v1/subnets/{sid}/vips/{vipid}", service="vpc")
+                print(f"  DIAG vip {vipid} 409: state/body={vd.body}")
+                for coll in ("connected-ports", "static-nat-ips"):
+                    cb = c.get(f"/v1/subnets/{sid}/vips/{vipid}/{coll}", service="vpc")
+                    print(f"  DIAG vip {vipid} {coll}={cb.body}")
         if delete(c, "vpc", f"/v1/subnets/{sid}"):
             n += 1; sids.append(sid)
     for sid in sids:
@@ -277,6 +284,15 @@ def main() -> int:
             if st == 409:
                 time.sleep(15); continue
             break
+        else:
+            # exhausted retries on 409: enumerate everything still pinned to this VPC
+            # so the blocking child type (not yet handled above) is visible.
+            print(f"  DIAG vpc {vidx} still 409 — remaining children:")
+            for coll in ("/v1/subnets", "/v1/ports", "/v1/nat-gateways",
+                         "/v1/internet-gateways", "/v1/private-nats", "/v1/vpc-endpoints"):
+                for ch in items(c.get(coll, service="vpc").body):
+                    if isinstance(ch, dict) and ch.get("vpc_id") == vidx:
+                        print(f"  DIAG   {coll}: id={ch.get('id')} name={name_of(ch)} state={ch.get('state')}")
     # 10. resource groups + certs
     for it in lst(c, "resourcemanager", "/v1/resource-groups"):
         if it.get("id") and delete(c, "resourcemanager", f"/v1/resource-groups/{it['id']}"):
