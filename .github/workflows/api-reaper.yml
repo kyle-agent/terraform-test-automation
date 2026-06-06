@@ -47,9 +47,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Fetch API framework (kyle-agent/api-test-automation)
-        run: git clone --depth 1 https://github.com/kyle-agent/api-test-automation /tmp/apitest
-      - name: Install deps
-        run: pip install -r /tmp/apitest/requirements.txt
+      # Self-contained now: cmd/api_reaper/_client.py reimplements the HMAC client
+      # (stdlib only), so the reaper no longer depends on cloning the external
+      # api-test-automation repo (whose `framework` import broke this workflow).
       - name: Run API sweep (delete ALL test-created resources)
-        run: PYTHONPATH=/tmp/apitest python cmd/api_reaper/sweep_all.py
+        run: python cmd/api_reaper/sweep_all.py

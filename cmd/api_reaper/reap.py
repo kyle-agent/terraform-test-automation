@@ -15,8 +15,7 @@ from __future__ import annotations
 
 import time
 
-from framework.client import ApiClient, MutationBlocked
-from framework.config import settings
+from _client import ApiClient, MutationBlocked, settings
 
 TARGET_VPC_NAMES = ["rpv269469061591", "rpv269469061593"]
 # TGWs to delete explicitly by name (orphans whose vpc-connection may already be

@@ -17,8 +17,7 @@ import datetime as _dt
 import os
 import time
 
-from framework.client import ApiClient, MutationBlocked
-from framework.config import settings
+from _client import ApiClient, MutationBlocked, settings
 
 PREFIXES = ("regr", "rpv", "rps", "rpkp", "rpfs", "rske", "rlb", "rtgw", "igw_", "fw_igw")
 
