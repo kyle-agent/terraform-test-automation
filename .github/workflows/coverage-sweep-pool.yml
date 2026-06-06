@@ -225,7 +225,7 @@ jobs:
           OUTPUT_DIR: ${{ github.workspace }}/out
           CAPABILITY_MATRIX: '1'
           DESTROY_VERIFY: '1'
-          MATRIX_PARALLEL: '2'
+          MATRIX_PARALLEL: '1'
           MATRIX_SCENARIOS: ${{ needs.plan.outputs.selfvpc }}
         run: |
           go test ./tests/capability/... -run TestCapabilityMatrix -count=1 -timeout 45m || true

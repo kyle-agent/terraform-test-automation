@@ -45,11 +45,20 @@ resource "samsungcloudplatformv2_vpc_subnet_vip" "regr" {
   description        = "regr-test"
 }
 
+# Dedicated public IP for this fixture: reusing the shared bootstrap publicip
+# (TF_VAR_publicip_id) collided with other subnet-vip scenarios in the same shard
+# ("public IP already in use"). Allocate our own so the static NAT binding is
+# self-contained and parallel-safe.
+resource "samsungcloudplatformv2_vpc_publicip" "regr" {
+  type        = "IGW"
+  description = "regr subnet-vip nat ip"
+}
+
 # Static NAT binding the VIP to the public IP. The VIP id is exposed under the
 # computed nested object subnet_vip.id (no top-level id on the VIP resource).
 resource "samsungcloudplatformv2_vpc_subnet_vip_nat_ip" "regr" {
   nat_type    = var.nat_type
-  publicip_id = var.publicip_id
+  publicip_id = samsungcloudplatformv2_vpc_publicip.regr.id
   subnet_id   = var.subnet_id
   vip_id      = samsungcloudplatformv2_vpc_subnet_vip.regr.subnet_vip.id
 }
