@@ -359,7 +359,7 @@
   "highest_stage": "plan",
   "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
   "last_seen": "2026-06-05T01:30:00Z",
-  "note": "401 [HMAC] HMAC valid fail — account/creds",
+  "note": "401 [HMAC] HMAC valid fail \u2014 account/creds",
   "stages": {
    "apply": "fail",
    "destroy": "skip",
@@ -415,7 +415,7 @@
   "highest_stage": "blocked",
   "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
   "last_seen": "2026-06-05T01:30:00Z",
-  "note": "blocked: provider #77 create no-wait → destroy leak",
+  "note": "blocked: provider #77 create no-wait \u2192 destroy leak",
   "stages": {
    "apply": "skip",
    "destroy": "skip",
@@ -485,18 +485,19 @@
   }
  },
  "samsungcloudplatformv2_network_logging_network_logging_storage": {
-  "highest_stage": "plan",
-  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-  "last_seen": "2026-06-05T01:30:00Z",
-  "note": "400 (no reason)",
+  "highest_stage": "destroy",
+  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27063967180",
+  "last_seen": "2026-06-06T13:46:54Z",
+  "note": "green via boto3-created OBS bucket (S3-compatible); aws_s3_bucket read incompatible w/ OBS",
   "stages": {
-   "apply": "fail",
-   "destroy": "skip",
-   "import": "skip",
+   "validate": "ok",
    "plan": "ok",
-   "replan": "skip",
+   "apply": "ok",
+   "replan": "ok",
    "update": "skip",
-   "validate": "ok"
+   "import": "skip",
+   "destroy": "ok",
+   "destroy_verify": "skip"
   }
  },
  "samsungcloudplatformv2_postgresql_cluster": {
@@ -758,7 +759,7 @@
   "highest_stage": "destroy",
   "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
   "last_seen": "2026-06-05T01:30:00Z",
-  "note": "replan non-idempotent — provider #60",
+  "note": "replan non-idempotent \u2014 provider #60",
   "stages": {
    "apply": "ok",
    "destroy": "ok",

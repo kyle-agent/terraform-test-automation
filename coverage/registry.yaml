@@ -589,7 +589,7 @@ network_logging_network_logging_storage:
   issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
