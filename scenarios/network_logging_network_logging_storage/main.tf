@@ -49,10 +49,15 @@ variable "network_logging_resource_type" {
 
 # aws provider pointed at SCP Object Storage (S3-compatible). Path-style + all the
 # skip_* flags so it talks to OBS instead of real AWS.
+# region MUST be us-east-1: for any other region the aws provider adds
+# CreateBucketConfiguration.LocationConstraint=<region> to CreateBucket, which OBS
+# rejects ("InvalidLocationConstraint"). us-east-1 is the one region the SDK omits
+# the constraint for. OBS (like most S3-compatible stores) doesn't enforce the SigV4
+# signing region, so signing as us-east-1 against the kr-west1 endpoint still authes.
 provider "aws" {
   access_key                  = var.obs_access_key
   secret_key                  = var.obs_secret_key
-  region                      = "kr-west1"
+  region                      = "us-east-1"
   s3_use_path_style           = true
   skip_credentials_validation = true
   skip_requesting_account_id  = true

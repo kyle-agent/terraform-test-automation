@@ -247,4 +247,4 @@ jobs:
             out/capability-matrix.md
           if-no-files-found: ignore
 
-# re-run 2026-06-06T09:05:08Z: final discovery on clean quota — validate fixed subnet_vip_nat_ip/endpoint + peering/vpn
+# re-run 2026-06-06T13:35Z: network_logging OBS fixture region=us-east-1 (avoid InvalidLocationConstraint)
