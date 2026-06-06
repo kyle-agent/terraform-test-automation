@@ -592,7 +592,7 @@ network_logging_network_logging_storage:
   status: untested
   timeout_class: fast
   update: false
-  vpc: pool
+  vpc: none
 postgresql_cluster:
   cost: heavy
   depends_on: []
