@@ -308,3 +308,5 @@ if __name__ == "__main__":
 # sweep 2026-06-06T08:32:07Z: clear leaked VPCs (peering 409 pairs) — 5-VPC quota exhausted
 
 # retry 2026-06-06T08:41:09Z: transient framework-import failure on prior run
+
+# converge 2026-06-06T08:57:57Z: 1 VPC still 409 (peering partner now freed) — second pass
