@@ -103,9 +103,20 @@ jobs:
           terraform_version: '1.6.6'
           terraform_wrapper: false
       - name: Set up provider mirror
-        env:
-          MIRROR_AWS: '1' # also stage hashicorp/aws for the OBS S3 (network_logging) fixture
         run: scripts/setup_provider_mirror.sh
+      - name: Prepare OBS S3 client + sweep stale buckets
+        # The network_logging fixture creates its OBS bucket via scripts/obs_bucket.py
+        # (boto3) in a terraform_data local-exec -- aws_s3_bucket can't read OBS. Make
+        # boto3 available, export the script path so the test's local-exec children find
+        # it, and pre-sweep any buckets leaked by an earlier failed apply/destroy.
+        env:
+          TF_VAR_obs_access_key: ${{ secrets.SCP_TF_ACCESS_KEY }}
+          TF_VAR_obs_secret_key: ${{ secrets.SCP_TF_SECRET_KEY }}
+          TF_VAR_obs_endpoint: https://object-store.kr-west1.e.samsungsdscloud.com
+        run: |
+          pip install --quiet boto3
+          echo "OBS_BUCKET_SCRIPT=${{ github.workspace }}/scripts/obs_bucket.py" >> "$GITHUB_ENV"
+          python3 "${{ github.workspace }}/scripts/obs_bucket.py" sweep regrnetlog regr-obs- || true
       - name: Run VPC-independent products in parallel
         env:
           MODE: integration
@@ -114,7 +125,8 @@ jobs:
           DESTROY_VERIFY: '1'
           MATRIX_PARALLEL: '6'
           MATRIX_SCENARIOS: ${{ needs.plan.outputs.novpc }}
-          # OBS S3 (network_logging fixture creates its bucket via aws provider)
+          # OBS S3 creds/endpoint for the network_logging boto3 bucket lifecycle
+          # (read by scripts/obs_bucket.py from the env it inherits via local-exec).
           TF_VAR_obs_access_key: ${{ secrets.SCP_TF_ACCESS_KEY }}
           TF_VAR_obs_secret_key: ${{ secrets.SCP_TF_SECRET_KEY }}
           TF_VAR_obs_endpoint: https://object-store.kr-west1.e.samsungsdscloud.com
@@ -247,4 +259,4 @@ jobs:
             out/capability-matrix.md
           if-no-files-found: ignore
 
-# re-run 2026-06-06T13:35Z: network_logging OBS fixture region=us-east-1 (avoid InvalidLocationConstraint)
+# re-run 2026-06-06T13:45Z: network_logging OBS bucket via boto3 local-exec (aws_s3_bucket read incompatible w/ OBS)
