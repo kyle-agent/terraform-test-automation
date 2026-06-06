@@ -162,7 +162,7 @@ directconnect_routing_rule:
   needs:
   - vpc_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -425,12 +425,13 @@ iam_user_policy_bindings:
 import_smoke:
   cost: heavy
   depends_on: []
+  exclude_reason: import-only smoke over multinodegpucluster_gpunode (heavy GPU)
   family: import
   import: false
   issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: excluded
   timeout_class: fast
   update: false
   vpc: none
@@ -971,12 +972,14 @@ vpc_subnet_vip_nat_ip:
   depends_on: []
   family: vpc
   import: false
-  issues: []
+  issues:
+  - 'provider: destroy fails ''SUBNET not a valid PublicipAttachedResourceType'' (apply ok w/ dedicated
+    publicip)'
   needs:
   - publicip_id
   - subnet_id
   parallel: low
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool
@@ -1090,12 +1093,13 @@ vpc_vpc_endpoint:
   depends_on: []
   family: vpc
   import: false
-  issues: []
+  issues:
+  - 'provider/config: 400 ''VPC Endpoint Type Subnet not found'''
   needs:
   - subnet_id
   - vpc_id
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool
@@ -1104,10 +1108,11 @@ vpc_vpc_peering:
   depends_on: []
   family: vpc
   import: false
-  issues: []
+  issues:
+  - 'provider: API requires approver_vpc_name but schema omits it (+destroy 409 leak)'
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: self
@@ -1116,10 +1121,11 @@ vpc_vpc_peering_approval:
   depends_on: []
   family: vpc
   import: false
-  issues: []
+  issues:
+  - depends on vpc_vpc_peering (provider approver_vpc_name gap)
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: self
@@ -1128,10 +1134,11 @@ vpc_vpc_peering_rule:
   depends_on: []
   family: vpc
   import: false
-  issues: []
+  issues:
+  - depends on vpc_vpc_peering (provider approver_vpc_name gap)
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: self
@@ -1140,13 +1147,14 @@ vpn_vpn_gateway:
   depends_on: []
   family: vpn
   import: false
-  issues: []
+  issues:
+  - VPC-quota cascade from peering leak (not isolate-tested)
   needs:
   - ip_address
   - ip_id
   - vpc_id
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: self
@@ -1155,10 +1163,11 @@ vpn_vpn_tunnel:
   depends_on: []
   family: vpn
   import: false
-  issues: []
+  issues:
+  - VPC-quota cascade from peering leak (not isolate-tested)
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: self
