@@ -1,0 +1,58 @@
+name: OBS Probe
+
+# Validate that SCP Object Storage (S3-compatible) accepts the same SCP access/secret
+# key via the S3 API, and that we can create/list/delete a bucket. Uses the aws CLI
+# preinstalled on the runner (no provider mirror needed). This is the feasibility
+# check before wiring an S3 bucket into terraform fixtures (e.g. network_logging
+# needs an existing OBS bucket_name). Self-cleans the bucket it makes.
+on:
+  workflow_dispatch:
+    inputs:
+      endpoint:
+        description: 'OBS S3 endpoint (blank = try the candidates)'
+        default: ''
+  push:
+    branches: ['claude/**']
+    paths: ['.github/workflows/obs-probe.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    environment: scp-integration
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.SCP_TF_ACCESS_KEY }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.SCP_TF_SECRET_KEY }}
+      AWS_DEFAULT_REGION: kr-west1
+      AWS_EC2_METADATA_DISABLED: 'true'
+    steps:
+      - name: aws CLI version
+        run: aws --version
+      - name: Probe OBS S3 (create/list/delete a bucket on each candidate endpoint)
+        run: |
+          set +e
+          BUCKET="regr-obs-${GITHUB_RUN_ID}"
+          CANDIDATES="${{ github.event.inputs.endpoint }}"
+          if [ -z "$CANDIDATES" ]; then
+            CANDIDATES="https://object-store.kr-west1.e.samsungsdscloud.com
+          https://object-store.kr-west1.s.samsungsdscloud.com
+          https://object-store.e.samsungsdscloud.com"
+          fi
+          for EP in $CANDIDATES; do
+            echo "==================================================================="
+            echo "ENDPOINT: $EP"
+            echo "--- list buckets (auth check) ---"
+            aws --endpoint-url "$EP" s3 ls 2>&1 | head -20
+            echo "--- create bucket $BUCKET (path-style) ---"
+            aws --endpoint-url "$EP" s3api create-bucket --bucket "$BUCKET" 2>&1 | head -20
+            rc=$?
+            echo "create rc=$rc"
+            if [ $rc -eq 0 ]; then
+              echo "--- list again ---"; aws --endpoint-url "$EP" s3 ls 2>&1 | head
+              echo "--- delete bucket (cleanup) ---"; aws --endpoint-url "$EP" s3 rb "s3://$BUCKET" 2>&1 | head
+              echo "SUCCESS on $EP"
+            fi
+          done
+          echo "obs-probe done"
