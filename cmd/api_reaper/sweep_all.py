@@ -307,3 +307,5 @@ if __name__ == "__main__":
 # confirm 2026-06-05T19:19:16Z: final leak-0 pass (8->7->5->2, expect 0)
 
 # sweep 2026-06-06T08:32:07Z: clear leaked VPCs (peering 409 pairs) — 5-VPC quota exhausted
+
+# retry 2026-06-06T08:41:09Z: transient framework-import failure on prior run
