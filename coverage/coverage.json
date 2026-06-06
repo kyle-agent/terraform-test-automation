@@ -75,16 +75,18 @@
   }
  },
  "samsungcloudplatformv2_certificate_manager_self_sign": {
-  "highest_stage": "plan",
-  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26790089908",
-  "last_seen": "2026-06-02T00:16:40Z",
-  "note": "Error: Error creating certificate manager self sign with samsungcloudplatformv2_certificate_manager_self_sign.regr, on main.tf line 35, in resource \"samsungcloudplatformv2_certificate_manager_self_sign\" \"regr\": 35: resource \"samsungcloudplatformv2_certificate_manager_self_sign\" \"regr\" { Could not create certificate manager, unexpected error: 400 Bad Request Reason: The start date(NotBeforeDt) of the certificate is invalid format",
+  "highest_stage": "destroy",
+  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
+  "last_seen": "2026-06-06T07:34:00Z",
+  "note": "GREEN: discovery sweep run 27055812382 (create+destroy clean)",
   "stages": {
-   "apply": "fail",
-   "destroy": "skip",
+   "validate": "ok",
    "plan": "ok",
-   "replan": "skip",
-   "validate": "ok"
+   "apply": "ok",
+   "update": "skip",
+   "replan": "ok",
+   "destroy": "ok",
+   "import": "skip"
   }
  },
  "samsungcloudplatformv2_cloudmonitoring_event_policy": {
@@ -102,17 +104,17 @@
  },
  "samsungcloudplatformv2_directconnect_direct_connect": {
   "highest_stage": "destroy",
-  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-  "last_seen": "2026-06-05T01:30:00Z",
-  "note": "",
+  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
+  "last_seen": "2026-06-06T07:34:00Z",
+  "note": "GREEN: discovery sweep run 27055812382 (create+destroy clean)",
   "stages": {
-   "apply": "ok",
-   "destroy": "ok",
-   "import": "skip",
+   "validate": "ok",
    "plan": "ok",
-   "replan": "ok",
+   "apply": "ok",
    "update": "skip",
-   "validate": "ok"
+   "replan": "ok",
+   "destroy": "ok",
+   "import": "skip"
   }
  },
  "samsungcloudplatformv2_directconnect_routing_rule": {
@@ -131,33 +133,33 @@
   }
  },
  "samsungcloudplatformv2_dns_hosted_zone": {
-  "highest_stage": "plan",
-  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-  "last_seen": "2026-06-05T01:30:00Z",
-  "note": "404 unresolved parent id (fixture)",
+  "highest_stage": "destroy",
+  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
+  "last_seen": "2026-06-06T07:34:00Z",
+  "note": "GREEN: discovery sweep run 27055812382 (create+destroy clean)",
   "stages": {
-   "apply": "fail",
-   "destroy": "skip",
-   "import": "skip",
+   "validate": "ok",
    "plan": "ok",
-   "replan": "skip",
+   "apply": "ok",
    "update": "skip",
-   "validate": "ok"
+   "replan": "ok",
+   "destroy": "ok",
+   "import": "skip"
   }
  },
  "samsungcloudplatformv2_dns_private_dns": {
-  "highest_stage": "blocked",
-  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-  "last_seen": "2026-06-05T01:30:00Z",
-  "note": "blocked: provider #79 destroy 409",
+  "highest_stage": "destroy",
+  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
+  "last_seen": "2026-06-06T07:34:00Z",
+  "note": "GREEN: discovery sweep run 27055812382 (create+destroy clean)",
   "stages": {
-   "apply": "skip",
-   "destroy": "skip",
-   "import": "skip",
-   "plan": "skip",
-   "replan": "skip",
+   "validate": "ok",
+   "plan": "ok",
+   "apply": "ok",
    "update": "skip",
-   "validate": "ok"
+   "replan": "ok",
+   "destroy": "ok",
+   "import": "skip"
   }
  },
  "samsungcloudplatformv2_dns_public_domain_name": {
@@ -176,18 +178,18 @@
   }
  },
  "samsungcloudplatformv2_dns_record": {
-  "highest_stage": "plan",
-  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-  "last_seen": "2026-06-05T01:30:00Z",
-  "note": "404 unresolved parent id (fixture)",
+  "highest_stage": "destroy",
+  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
+  "last_seen": "2026-06-06T07:34:00Z",
+  "note": "GREEN: discovery sweep run 27055812382 (create+destroy clean)",
   "stages": {
-   "apply": "fail",
-   "destroy": "skip",
-   "import": "skip",
+   "validate": "ok",
    "plan": "ok",
-   "replan": "skip",
+   "apply": "ok",
    "update": "skip",
-   "validate": "ok"
+   "replan": "ok",
+   "destroy": "ok",
+   "import": "skip"
   }
  },
  "samsungcloudplatformv2_epas_cluster": {
@@ -237,17 +239,17 @@
  },
  "samsungcloudplatformv2_filestorage_snapshot_schedule": {
   "highest_stage": "destroy",
-  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-  "last_seen": "2026-06-05T01:30:00Z",
-  "note": "",
+  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
+  "last_seen": "2026-06-06T07:34:00Z",
+  "note": "GREEN: discovery sweep run 27055812382 (create+destroy clean)",
   "stages": {
-   "apply": "ok",
-   "destroy": "ok",
-   "import": "skip",
+   "validate": "ok",
    "plan": "ok",
-   "replan": "ok",
+   "apply": "ok",
    "update": "skip",
-   "validate": "ok"
+   "replan": "ok",
+   "destroy": "ok",
+   "import": "skip"
   }
  },
  "samsungcloudplatformv2_filestorage_volume": {
@@ -282,17 +284,17 @@
  },
  "samsungcloudplatformv2_gslb_gslb": {
   "highest_stage": "destroy",
-  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26996173645",
-  "last_seen": "2026-06-05T05:30:00Z",
-  "note": "green (FQDN domain fix)",
+  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
+  "last_seen": "2026-06-06T07:34:00Z",
+  "note": "GREEN: discovery sweep run 27055812382 (create+destroy clean)",
   "stages": {
-   "apply": "ok",
-   "destroy": "ok",
-   "import": "skip",
+   "validate": "ok",
    "plan": "ok",
-   "replan": "ok",
+   "apply": "ok",
    "update": "skip",
-   "validate": "ok"
+   "replan": "ok",
+   "destroy": "ok",
+   "import": "skip"
   }
  },
  "samsungcloudplatformv2_iam_access_key": {
@@ -310,32 +312,32 @@
  },
  "samsungcloudplatformv2_iam_group": {
   "highest_stage": "destroy",
-  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-  "last_seen": "2026-06-05T01:30:00Z",
-  "note": "",
+  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
+  "last_seen": "2026-06-06T07:34:00Z",
+  "note": "GREEN: discovery sweep run 27055812382 (create+destroy clean)",
   "stages": {
-   "apply": "ok",
-   "destroy": "ok",
-   "import": "skip",
+   "validate": "ok",
    "plan": "ok",
-   "replan": "ok",
+   "apply": "ok",
    "update": "skip",
-   "validate": "ok"
+   "replan": "ok",
+   "destroy": "ok",
+   "import": "skip"
   }
  },
  "samsungcloudplatformv2_iam_policy": {
   "highest_stage": "destroy",
-  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-  "last_seen": "2026-06-05T01:30:00Z",
-  "note": "",
+  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
+  "last_seen": "2026-06-06T07:34:00Z",
+  "note": "GREEN: discovery sweep run 27055812382 (create+destroy clean)",
   "stages": {
-   "apply": "ok",
-   "destroy": "ok",
-   "import": "skip",
+   "validate": "ok",
    "plan": "ok",
-   "replan": "ok",
+   "apply": "ok",
    "update": "skip",
-   "validate": "ok"
+   "replan": "ok",
+   "destroy": "ok",
+   "import": "skip"
   }
  },
  "samsungcloudplatformv2_iam_role": {
@@ -514,17 +516,17 @@
  },
  "samsungcloudplatformv2_resourcemanager_resource_group": {
   "highest_stage": "destroy",
-  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-  "last_seen": "2026-06-05T01:30:00Z",
-  "note": "",
+  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
+  "last_seen": "2026-06-06T07:34:00Z",
+  "note": "GREEN: discovery sweep run 27055812382 (create+destroy clean)",
   "stages": {
-   "apply": "ok",
-   "destroy": "ok",
-   "import": "skip",
+   "validate": "ok",
    "plan": "ok",
-   "replan": "ok",
+   "apply": "ok",
    "update": "skip",
-   "validate": "ok"
+   "replan": "ok",
+   "destroy": "ok",
+   "import": "skip"
   }
  },
  "samsungcloudplatformv2_searchengine_cluster": {
@@ -574,62 +576,62 @@
  },
  "samsungcloudplatformv2_servicewatch_alert": {
   "highest_stage": "destroy",
-  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-  "last_seen": "2026-06-05T01:30:00Z",
-  "note": "",
+  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
+  "last_seen": "2026-06-06T07:34:00Z",
+  "note": "GREEN: discovery sweep run 27055812382 (create+destroy clean)",
   "stages": {
-   "apply": "ok",
-   "destroy": "ok",
-   "import": "skip",
+   "validate": "ok",
    "plan": "ok",
-   "replan": "ok",
+   "apply": "ok",
    "update": "skip",
-   "validate": "ok"
+   "replan": "ok",
+   "destroy": "ok",
+   "import": "skip"
   }
  },
  "samsungcloudplatformv2_servicewatch_dashboard": {
   "highest_stage": "destroy",
-  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-  "last_seen": "2026-06-05T01:30:00Z",
-  "note": "",
+  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
+  "last_seen": "2026-06-06T07:34:00Z",
+  "note": "GREEN: discovery sweep run 27055812382 (create+destroy clean)",
   "stages": {
-   "apply": "ok",
-   "destroy": "ok",
-   "import": "skip",
+   "validate": "ok",
    "plan": "ok",
-   "replan": "ok",
+   "apply": "ok",
    "update": "skip",
-   "validate": "ok"
+   "replan": "ok",
+   "destroy": "ok",
+   "import": "skip"
   }
  },
  "samsungcloudplatformv2_servicewatch_event_rule": {
   "highest_stage": "destroy",
-  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-  "last_seen": "2026-06-05T01:30:00Z",
-  "note": "",
+  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
+  "last_seen": "2026-06-06T07:34:00Z",
+  "note": "GREEN: discovery sweep run 27055812382 (create+destroy clean)",
   "stages": {
-   "apply": "ok",
-   "destroy": "ok",
-   "import": "skip",
+   "validate": "ok",
    "plan": "ok",
-   "replan": "ok",
+   "apply": "ok",
    "update": "skip",
-   "validate": "ok"
+   "replan": "ok",
+   "destroy": "ok",
+   "import": "skip"
   }
  },
  "samsungcloudplatformv2_servicewatch_log_group": {
   "highest_stage": "destroy",
-  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-  "last_seen": "2026-06-05T01:30:00Z",
-  "note": "",
+  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
+  "last_seen": "2026-06-06T07:34:00Z",
+  "note": "GREEN: discovery sweep run 27055812382 (create+destroy clean)",
   "stages": {
-   "apply": "ok",
-   "destroy": "ok",
-   "import": "skip",
+   "validate": "ok",
    "plan": "ok",
-   "replan": "ok",
+   "apply": "ok",
    "update": "skip",
-   "validate": "ok"
+   "replan": "ok",
+   "destroy": "ok",
+   "import": "skip"
   }
  },
  "samsungcloudplatformv2_servicewatch_log_stream": {
@@ -724,17 +726,17 @@
  },
  "samsungcloudplatformv2_virtualserver_server_group": {
   "highest_stage": "destroy",
-  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-  "last_seen": "2026-06-05T01:30:00Z",
-  "note": "",
+  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
+  "last_seen": "2026-06-06T07:34:00Z",
+  "note": "GREEN: discovery sweep run 27055812382 (create+destroy clean)",
   "stages": {
-   "apply": "ok",
-   "destroy": "ok",
-   "import": "skip",
+   "validate": "ok",
    "plan": "ok",
-   "replan": "ok",
+   "apply": "ok",
    "update": "skip",
-   "validate": "ok"
+   "replan": "ok",
+   "destroy": "ok",
+   "import": "skip"
   }
  },
  "samsungcloudplatformv2_virtualserver_volume": {
@@ -782,32 +784,32 @@
  },
  "samsungcloudplatformv2_vpc_nat_gateway": {
   "highest_stage": "destroy",
-  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-  "last_seen": "2026-06-05T01:30:00Z",
-  "note": "",
+  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
+  "last_seen": "2026-06-06T07:34:00Z",
+  "note": "GREEN: discovery sweep run 27055812382 (create+destroy clean)",
   "stages": {
-   "apply": "ok",
-   "destroy": "ok",
-   "import": "skip",
+   "validate": "ok",
    "plan": "ok",
-   "replan": "ok",
+   "apply": "ok",
    "update": "skip",
-   "validate": "ok"
+   "replan": "ok",
+   "destroy": "ok",
+   "import": "skip"
   }
  },
  "samsungcloudplatformv2_vpc_port": {
   "highest_stage": "destroy",
-  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-  "last_seen": "2026-06-05T01:30:00Z",
-  "note": "",
+  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
+  "last_seen": "2026-06-06T07:34:00Z",
+  "note": "GREEN: discovery sweep run 27055812382 (create+destroy clean)",
   "stages": {
-   "apply": "ok",
-   "destroy": "ok",
-   "import": "skip",
+   "validate": "ok",
    "plan": "ok",
-   "replan": "ok",
+   "apply": "ok",
    "update": "skip",
-   "validate": "ok"
+   "replan": "ok",
+   "destroy": "ok",
+   "import": "skip"
   }
  },
  "samsungcloudplatformv2_vpc_private_nat": {
@@ -872,17 +874,17 @@
  },
  "samsungcloudplatformv2_vpc_subnet_vip": {
   "highest_stage": "destroy",
-  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-  "last_seen": "2026-06-05T01:30:00Z",
-  "note": "",
+  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
+  "last_seen": "2026-06-06T07:34:00Z",
+  "note": "GREEN: discovery sweep run 27055812382 (create+destroy clean)",
   "stages": {
-   "apply": "ok",
-   "destroy": "ok",
-   "import": "skip",
+   "validate": "ok",
    "plan": "ok",
-   "replan": "ok",
+   "apply": "ok",
    "update": "skip",
-   "validate": "ok"
+   "replan": "ok",
+   "destroy": "ok",
+   "import": "skip"
   }
  },
  "samsungcloudplatformv2_vpc_transit_gateway": {
@@ -1014,6 +1016,36 @@
    "replan": "skip",
    "update": "skip",
    "validate": "ok"
+  }
+ },
+ "samsungcloudplatformv2_iam_group_policy_bindings": {
+  "highest_stage": "destroy",
+  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
+  "last_seen": "2026-06-06T07:34:00Z",
+  "note": "GREEN: discovery sweep run 27055812382 (create+destroy clean)",
+  "stages": {
+   "validate": "ok",
+   "plan": "ok",
+   "apply": "ok",
+   "update": "skip",
+   "replan": "ok",
+   "destroy": "ok",
+   "import": "skip"
+  }
+ },
+ "samsungcloudplatformv2_vpc_subnet_vip_port": {
+  "highest_stage": "destroy",
+  "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
+  "last_seen": "2026-06-06T07:34:00Z",
+  "note": "GREEN: discovery sweep run 27055812382 (create+destroy clean)",
+  "stages": {
+   "validate": "ok",
+   "plan": "ok",
+   "apply": "ok",
+   "update": "skip",
+   "replan": "ok",
+   "destroy": "ok",
+   "import": "skip"
   }
  }
 }

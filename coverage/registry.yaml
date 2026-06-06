@@ -12,10 +12,11 @@ backup_backup:
   depends_on: []
   family: backup
   import: false
-  issues: []
+  issues:
+  - 500 ISE (platform)
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool
@@ -52,12 +53,13 @@ baremetal_blockstorage_volume:
 billing_planned_compute:
   cost: heavy
   depends_on: []
+  exclude_reason: creates a real 1-year billing commitment
   family: billing
   import: false
   issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: excluded
   timeout_class: fast
   update: false
   vpc: none
@@ -92,10 +94,11 @@ certificate_manager:
   depends_on: []
   family: certificate
   import: false
-  issues: []
+  issues:
+  - 500 ISE (platform)
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: none
@@ -107,7 +110,7 @@ certificate_manager_self_sign:
   issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -146,7 +149,7 @@ directconnect_direct_connect:
   needs:
   - vpc_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -172,7 +175,7 @@ dns_hosted_zone:
   needs:
   - vpc_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -185,7 +188,7 @@ dns_private_dns:
   needs:
   - vpc_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -194,10 +197,11 @@ dns_public_domain_name:
   depends_on: []
   family: dns
   import: false
-  issues: []
+  issues:
+  - 500 ISE (#82)
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: none
@@ -210,7 +214,7 @@ dns_record:
   needs:
   - vpc_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -246,11 +250,12 @@ filestorage_replication:
   depends_on: []
   family: filestorage
   import: false
-  issues: []
+  issues:
+  - replication not available (account feature)
   needs:
   - volume_id
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool
@@ -263,7 +268,7 @@ filestorage_snapshot_schedule:
   needs:
   - volume_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -284,10 +289,11 @@ firewall_firewall_rule:
   depends_on: []
   family: firewall
   import: false
-  issues: []
+  issues:
+  - 404 not found (needs firewall target)
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool
@@ -299,7 +305,7 @@ gslb_gslb:
   issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -324,7 +330,7 @@ iam_group:
   issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -333,10 +339,11 @@ iam_group_member:
   depends_on: []
   family: iam
   import: false
-  issues: []
+  issues:
+  - iam_user 401 HMAC (account perm)
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: none
@@ -348,7 +355,7 @@ iam_group_policy_bindings:
   issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -360,7 +367,7 @@ iam_policy:
   issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -382,10 +389,11 @@ iam_role_policy_bindings:
   depends_on: []
   family: iam
   import: false
-  issues: []
+  issues:
+  - 404 needs own role
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: none
@@ -406,10 +414,11 @@ iam_user_policy_bindings:
   depends_on: []
   family: iam
   import: false
-  issues: []
+  issues:
+  - blocked (account perm)
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: none
@@ -537,10 +546,11 @@ loggingaudit_trail:
   depends_on: []
   family: loggingaudit
   import: false
-  issues: []
+  issues:
+  - 403 forbidden (account perm)
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: none
@@ -575,10 +585,11 @@ network_logging_network_logging_storage:
   depends_on: []
   family: network
   import: false
-  issues: []
+  issues:
+  - 400 bad request
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool
@@ -603,7 +614,7 @@ resourcemanager_resource_group:
   issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -654,7 +665,7 @@ servicewatch_alert:
   issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -666,7 +677,7 @@ servicewatch_dashboard:
   issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -678,7 +689,7 @@ servicewatch_event_rule:
   issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -690,7 +701,7 @@ servicewatch_log_group:
   issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -776,10 +787,11 @@ virtualserver_image:
   depends_on: []
   family: virtualserver
   import: false
-  issues: []
+  issues:
+  - invalid OBS image URL (needs real image file)
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool
@@ -819,7 +831,7 @@ virtualserver_server_group:
   issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -872,7 +884,7 @@ vpc_nat_gateway:
   - publicip_id
   - subnet_id
   parallel: low
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -885,7 +897,7 @@ vpc_port:
   needs:
   - subnet_id
   parallel: low
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -894,10 +906,11 @@ vpc_private_nat:
   depends_on: []
   family: vpc
   import: false
-  issues: []
+  issues:
+  - TGW not connectable (#76)
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: none
@@ -949,7 +962,7 @@ vpc_subnet_vip:
   needs:
   - subnet_id
   parallel: low
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -958,12 +971,13 @@ vpc_subnet_vip_nat_ip:
   depends_on: []
   family: vpc
   import: false
-  issues: []
+  issues:
+  - publicip-in-use (fixture reuses shared publicip)
   needs:
   - publicip_id
   - subnet_id
   parallel: low
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool
@@ -976,7 +990,7 @@ vpc_subnet_vip_port:
   needs:
   - subnet_id
   parallel: low
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -1077,12 +1091,13 @@ vpc_vpc_endpoint:
   depends_on: []
   family: vpc
   import: false
-  issues: []
+  issues:
+  - 404 zero-uuid target (needs real endpoint resource)
   needs:
   - subnet_id
   - vpc_id
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: self
@@ -1091,10 +1106,11 @@ vpc_vpc_peering:
   depends_on: []
   family: vpc
   import: false
-  issues: []
+  issues:
+  - approver_vpc_name required + destroy 409 leak
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: self
@@ -1103,10 +1119,11 @@ vpc_vpc_peering_approval:
   depends_on: []
   family: vpc
   import: false
-  issues: []
+  issues:
+  - depends on vpc_vpc_peering (approver_vpc_name)
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: self
@@ -1115,10 +1132,11 @@ vpc_vpc_peering_rule:
   depends_on: []
   family: vpc
   import: false
-  issues: []
+  issues:
+  - depends on vpc_vpc_peering
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: self
