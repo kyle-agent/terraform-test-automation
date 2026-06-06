@@ -310,3 +310,5 @@ if __name__ == "__main__":
 # retry 2026-06-06T08:41:09Z: transient framework-import failure on prior run
 
 # converge 2026-06-06T08:57:57Z: 1 VPC still 409 (peering partner now freed) — second pass
+
+# sweep 2026-06-06T09:33:36Z: clear peering leak from final discovery (issue #84)
