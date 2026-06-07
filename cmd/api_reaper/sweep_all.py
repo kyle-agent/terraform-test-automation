@@ -355,3 +355,6 @@ if __name__ == "__main__":
 # converge 2026-06-06T08:57:57Z: 1 VPC still 409 (peering partner now freed) — second pass
 
 # sweep 2026-06-06T09:33:36Z: clear peering leak from final discovery (issue #84)
+
+# sweep 2026-06-07T09:32Z: 2nd pass after static_nat fix freed the #84 vip/igw/publicip
+# and zznet LBs deleted async — clear the now-unblocked subnets + vpcs (e404e9e1, fa91b5, a5f229).
