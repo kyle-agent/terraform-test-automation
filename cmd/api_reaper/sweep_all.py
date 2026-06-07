@@ -408,3 +408,5 @@ if __name__ == "__main__":
 
 # sweep 2026-06-07T09:32Z: 2nd pass after static_nat fix freed the #84 vip/igw/publicip
 # and zznet LBs deleted async — clear the now-unblocked subnets + vpcs (e404e9e1, fa91b5, a5f229).
+
+# final cleanup after stopping main-branch schedules 2026-06-07T13:04:06Z
