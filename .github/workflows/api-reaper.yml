@@ -8,11 +8,9 @@ name: API Reaper
 # reaper script / this workflow.
 on:
   workflow_dispatch: {}
-  # Nightly safety-net sweep (best-practice: scheduled leak cleanup, cf. cloud-nuke).
-  # The scheduled run only reaps resources older than SWEEP_MIN_AGE_HOURS so it can
-  # never delete a resource that a concurrent test run is still using.
-  schedule:
-    - cron: '0 18 * * *'   # 03:00 KST daily
+  # Manual only. The nightly cron was removed (no periodic runs on the dedicated
+  # account); trigger a sweep by dispatching this workflow or by pushing the reaper
+  # scripts below. Push sweeps run immediately (SWEEP_MIN_AGE_HOURS=0, SWEEP_ALL=1).
   push:
     branches:
       - 'claude/**'

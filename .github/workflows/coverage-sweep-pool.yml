@@ -12,6 +12,9 @@ name: Coverage Sweep Pool
 # Selection is controlled by SELECT_STATUS / SELECT_VPC / SELECT_FAMILY (workflow
 # inputs); push defaults to green+untested (skips known-broken and excluded).
 on:
+  # Manual only. Periodic (cron) and push triggers were removed so nothing runs
+  # automatically on the dedicated account — dispatch this from the Actions UI when you
+  # want a coverage run. (SELECT_* are read from these inputs.)
   workflow_dispatch:
     inputs:
       select_status:
@@ -23,16 +26,6 @@ on:
       select_family:
         description: 'optional comma families filter (blank = all)'
         default: ''
-  # Daily green-scope regression (replaces the retired nightly/regression workflows).
-  schedule:
-    - cron: '0 17 * * *'   # 02:00 KST; schedule event -> SELECT_STATUS defaults to green
-  push:
-    branches:
-      - 'claude/**'
-    paths:
-      - '.github/workflows/coverage-sweep-pool.yml'
-      - 'coverage/registry.yaml'
-      - 'scripts/plan_matrix.py'
 
 concurrency:
   group: coverage-sweep-pool-${{ github.ref }}
