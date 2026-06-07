@@ -268,8 +268,19 @@ def main() -> int:
                 for coll in ("connected-ports", "static-nat-ips"):
                     cb = c.get(f"/v1/subnets/{sid}/vips/{vipid}/{coll}", service="vpc")
                     print(f"  DIAG vip {vipid} {coll}={cb.body}")
-        if delete(c, "vpc", f"/v1/subnets/{sid}"):
-            n += 1; sids.append(sid)
+        # A subnet in CREATING can't be deleted (409) until it settles to ACTIVE;
+        # retry a few times, then dump its state so a truly-stuck one is visible.
+        st = None
+        for _ in range(6):
+            st = delete(c, "vpc", f"/v1/subnets/{sid}")
+            if st in (200, 202, 204, 404):
+                n += 1; sids.append(sid); break
+            if st == 409:
+                time.sleep(20); continue
+            break
+        if st == 409:
+            sd = c.get(f"/v1/subnets/{sid}", service="vpc")
+            print(f"  DIAG subnet {sid} still 409: {sd.body}")
     for sid in sids:
         wait_gone(c, "vpc", f"/v1/subnets/{sid}")
     for it in lst(c, "vpc", "/v1/internet-gateways"):
