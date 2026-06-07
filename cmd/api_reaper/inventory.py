@@ -77,6 +77,30 @@ def main():
     settings.require_credentials()
     c = ApiClient(settings)
     print(f"=== SCP inventory  region={settings.region} env={settings.env_code} ===")
+
+    # Identity probe: which account does the access-key SECRET actually belong to?
+    # (Independent of infra resources, so it works even on an empty account.) IAM
+    # list endpoints are account-scoped and their items carry account_id; we also try
+    # listing users for the configured SCP_ACCOUNT_ID to see if the secret matches it.
+    cfg_acct = os.environ.get("SCP_ACCOUNT_ID", "").strip()
+    id_accounts = set()
+    for path in ("/v1/roles", "/v1/groups", "/v1/policies"):
+        try:
+            r = c.get(path, service="iam")
+            for it in items(r.body):
+                if isinstance(it, dict) and it.get("account_id"):
+                    id_accounts.add(it["account_id"])
+        except Exception:
+            pass
+    if cfg_acct:
+        try:
+            ru = c.get(f"/v1/accounts/{cfg_acct}/users", service="iam")
+            print(f"--- identity: GET /v1/accounts/{cfg_acct}/users -> {ru.status} "
+                  f"({'secret CAN see this account' if getattr(ru,'ok',False) else 'secret is NOT this account'})")
+        except Exception as exc:
+            print(f"--- identity: account-users probe error: {exc}")
+    print(f"--- identity: account(s) from IAM = {sorted(id_accounts) or 'unknown'} ---")
+
     total = test_total = 0
     accounts = set()
     for svc, path, label in ENDPOINTS:
