@@ -432,12 +432,13 @@ loadbalancer_basic:
   exclude_reason: 'provider #77 (LB destroy leak)'
   family: loadbalancer
   import: false
-  issues: []
+  issues:
+  - '#77 destroy-leak (apply/replan OK; leaks LB on destroy -> pool subnet/VPC 409)'
   needs:
   - subnet_id
   - vpc_id
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool
@@ -704,7 +705,7 @@ servicewatch_log_stream:
   issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -909,11 +910,12 @@ vpc_private_nat_ip:
   depends_on: []
   family: vpc
   import: false
-  issues: []
+  issues:
+  - pool teardown 409 leak in run 27095226766 - confirm leaker vs loadbalancer_basic via reaper run 27106727666
   needs:
   - ip_address
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool
@@ -1142,7 +1144,7 @@ vpn_vpn_gateway:
   - ip_id
   - vpc_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: self
@@ -1154,7 +1156,7 @@ vpn_vpn_tunnel:
   issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: self
