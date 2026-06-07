@@ -75,3 +75,5 @@ jobs:
         run: |
           pip install --quiet boto3
           python scripts/obs_bucket.py sweep regrnetlog regr-obs-
+
+# manual sweep trigger: reclaim leaked pool VPC from run 27095226766 (2026-06-07)
