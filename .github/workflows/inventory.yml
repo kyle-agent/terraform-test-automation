@@ -24,6 +24,8 @@ jobs:
       SCP_ENV: e
       SCP_ACCESS_KEY: ${{ secrets.SCP_TF_ACCESS_KEY }}
       SCP_SECRET_KEY: ${{ secrets.SCP_TF_SECRET_KEY }}
+      # for the var-vs-live account comparison printed by inventory.py
+      SCP_ACCOUNT_ID: ${{ vars.SCP_ACCOUNT_ID }}
       TF_VAR_obs_access_key: ${{ secrets.SCP_TF_ACCESS_KEY }}
       TF_VAR_obs_secret_key: ${{ secrets.SCP_TF_SECRET_KEY }}
       TF_VAR_obs_endpoint: https://object-store.kr-west1.e.samsungsdscloud.com

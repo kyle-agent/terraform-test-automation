@@ -31,6 +31,12 @@ MIN_AGE_HOURS = float(os.environ.get("SWEEP_MIN_AGE_HOURS", "0") or "0")
 # TTL above. Off by default so the prefix allowlist protects shared accounts.
 SWEEP_ALL = os.environ.get("SWEEP_ALL", "0") == "1"
 
+# Safety guard for SWEEP_ALL: the account is decided by the access-key SECRET, not by
+# any variable, so a misconfigured secret could point the full-account nuke at the WRONG
+# account. EXPECTED_ACCOUNT_ID (= the configured account id) must match the LIVE account
+# (read from a real resource) or SWEEP_ALL is downgraded to safe prefix-only.
+EXPECTED_ACCOUNT_ID = os.environ.get("EXPECTED_ACCOUNT_ID", "").strip()
+
 
 def is_test(name) -> bool:
     if SWEEP_ALL:
@@ -138,10 +144,41 @@ def vid_field(it):
 
 
 def main() -> int:
+    global SWEEP_ALL
     settings.require_credentials()
     c = ApiClient(settings)
     n = 0
-    print(f"region={settings.region} env={settings.env_code} — sweeping test prefixes {PREFIXES}"
+
+    # Determine the LIVE account (whatever the access-key secret belongs to) by reading
+    # account_id off any real resource, then enforce the SWEEP_ALL account guard.
+    live_account = ""
+    for svc, path in (("vpc", "/v1/vpcs"), ("vpc", "/v1/subnets"),
+                      ("virtualserver", "/v1/servers"), ("security-group", "/v1/security-groups")):
+        try:
+            for it in items(c.get(path, service=svc).body):
+                if isinstance(it, dict) and it.get("account_id"):
+                    live_account = it["account_id"]; break
+        except Exception:
+            pass
+        if live_account:
+            break
+    print(f"live account (from access-key secret) = {live_account or 'unknown/empty'}; "
+          f"EXPECTED_ACCOUNT_ID = {EXPECTED_ACCOUNT_ID or 'unset'}; SWEEP_ALL requested = {SWEEP_ALL}")
+    if SWEEP_ALL:
+        if not EXPECTED_ACCOUNT_ID:
+            print("  GUARD: SWEEP_ALL requested but EXPECTED_ACCOUNT_ID is unset -> "
+                  "downgrading to prefix-only (set it to the dedicated account id to allow).")
+            SWEEP_ALL = False
+        elif live_account and live_account != EXPECTED_ACCOUNT_ID:
+            print(f"  GUARD: live account {live_account} != EXPECTED {EXPECTED_ACCOUNT_ID} -> "
+                  "the secret points at a DIFFERENT account than configured; downgrading to "
+                  "prefix-only so we never mass-delete the wrong account.")
+            SWEEP_ALL = False
+        else:
+            print(f"  GUARD ok: full-account SWEEP_ALL on {live_account or EXPECTED_ACCOUNT_ID}.")
+
+    print(f"region={settings.region} env={settings.env_code} — "
+          + ("FULL SWEEP (all resources)" if SWEEP_ALL else f"sweeping test prefixes {PREFIXES}")
           + (f" (min age {MIN_AGE_HOURS}h)" if MIN_AGE_HOURS > 0 else ""))
 
     # 1. virtualserver: servers (free subnet/sg), then keypairs, snapshots, volumes

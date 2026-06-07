@@ -78,6 +78,7 @@ def main():
     c = ApiClient(settings)
     print(f"=== SCP inventory  region={settings.region} env={settings.env_code} ===")
     total = test_total = 0
+    accounts = set()
     for svc, path, label in ENDPOINTS:
         try:
             r = c.get(path, service=svc)
@@ -99,10 +100,15 @@ def main():
             nm = name_of(it)
             state = it.get("state") or it.get("status") or ""
             flag = "  <== TEST-PREFIX (likely leak)" if is_test(nm) else ""
+            if it.get("account_id"):
+                accounts.add(it["account_id"])
             print(f"    - id={rid} name={nm or '-'} state={state}{flag}")
             total += 1
             if is_test(nm):
                 test_total += 1
+    # Which account is the access-key SECRET actually hitting? (vs the SCP_ACCOUNT_ID var)
+    print(f"=== live account(s) from resources: {sorted(accounts) or 'unknown/empty'} "
+          f"| SCP_ACCOUNT_ID var = {os.environ.get('SCP_ACCOUNT_ID', 'unset')} ===")
     print(f"=== totals: {total} resource(s) listed, {test_total} match test prefixes ===")
 
     # OBS buckets (S3-compatible) for completeness.

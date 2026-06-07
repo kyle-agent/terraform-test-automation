@@ -17,7 +17,12 @@ on:
     branches:
       - 'claude/**'
     paths:
-      - 'cmd/api_reaper/**'
+      # NOTE: deliberately not 'cmd/api_reaper/**' — inventory.py lives there too and is
+      # read-only, so it must NOT trigger the (destructive) reaper. List the reaper's own
+      # files explicitly.
+      - 'cmd/api_reaper/sweep_all.py'
+      - 'cmd/api_reaper/reap.py'
+      - 'cmd/api_reaper/_client.py'
       - '.github/workflows/api-reaper.yml'
 
 concurrency:
@@ -46,6 +51,10 @@ jobs:
       # push sweeps reap EVERYTHING (ignore the name allowlist). The nightly stays
       # allowlist-only as a conservative default.
       SWEEP_ALL: ${{ github.event_name == 'schedule' && '0' || '1' }}
+      # Account guard: SWEEP_ALL only mass-deletes if the live account (from the access
+      # key secret) matches this. Set from the configured account id; if it doesn't match
+      # the secret's real account, SWEEP_ALL self-downgrades to safe prefix-only.
+      EXPECTED_ACCOUNT_ID: ${{ vars.SCP_ACCOUNT_ID }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
