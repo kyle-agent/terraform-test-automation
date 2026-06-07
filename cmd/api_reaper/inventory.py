@@ -163,3 +163,5 @@ if __name__ == "__main__":
 # refresh 2026-06-07T10:09:52Z
 
 # verify-empty 2026-06-07T12:42:16Z
+
+# final verify after retiring main schedules 2026-06-07T13:21:52Z
