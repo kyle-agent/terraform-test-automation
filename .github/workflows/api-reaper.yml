@@ -40,8 +40,12 @@ jobs:
       SCP_ALLOW_MUTATIONS: 'true'
       SCP_ALLOW_DESTRUCTIVE: 'true'
       # On-demand/push sweeps reap immediately (age 0); the nightly schedule only
-      # reaps leaks older than 2h to avoid racing an in-flight run on the shared account.
+      # reaps leaks older than 2h to avoid racing an in-flight run.
       SWEEP_MIN_AGE_HOURS: ${{ github.event_name == 'schedule' && '2' || '0' }}
+      # Dedicated single-tenant test account with no production resources: on manual /
+      # push sweeps reap EVERYTHING (ignore the name allowlist). The nightly stays
+      # allowlist-only as a conservative default.
+      SWEEP_ALL: ${{ github.event_name == 'schedule' && '0' || '1' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

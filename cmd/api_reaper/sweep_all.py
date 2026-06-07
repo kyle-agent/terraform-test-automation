@@ -26,8 +26,15 @@ PREFIXES = ("regr", "rpv", "rps", "rpkp", "rpfs", "rske", "rlb", "rtgw", "igw_",
 # sweeps leave this at 0 (reap immediately). Set via SWEEP_MIN_AGE_HOURS.
 MIN_AGE_HOURS = float(os.environ.get("SWEEP_MIN_AGE_HOURS", "0") or "0")
 
+# SWEEP_ALL=1: this is a dedicated single-tenant test account with no production
+# resources, so reap EVERYTHING (ignore the name-prefix allowlist) — still gated by the
+# TTL above. Off by default so the prefix allowlist protects shared accounts.
+SWEEP_ALL = os.environ.get("SWEEP_ALL", "0") == "1"
+
 
 def is_test(name) -> bool:
+    if SWEEP_ALL:
+        return True
     n = str(name or "").lower()
     return any(n.startswith(p) for p in PREFIXES)
 
@@ -249,25 +256,28 @@ def main() -> int:
         sid = it.get("id")
         if not sid:
             continue
-        # subnet VIPs (connected-ports + static-nat-ips -> vip) before the subnet
+        # subnet VIPs: a vip is pinned by its static_nat (the vpc_subnet_vip_nat_ip
+        # leak, #84) and any connected ports. The list sub-endpoints (.../static-nat-ips,
+        # .../connected-ports) 403 with "Action definition is not found" — that LIST
+        # action isn't registered — but the vip SHOW response embeds both, and the
+        # DELETE-by-id action IS defined (the provider's CreateSubnetVIPNATIp /
+        # DeleteSubnetVIPNATIp). So read the ids from the vip body and delete by id.
         for vip in items(c.get(f"/v1/subnets/{sid}/vips", service="vpc").body):
             vipid = vip.get("id")
             if not vipid:
                 continue
-            for cp in items(c.get(f"/v1/subnets/{sid}/vips/{vipid}/connected-ports", service="vpc").body):
-                if cp.get("id"):
+            vbody = c.get(f"/v1/subnets/{sid}/vips/{vipid}", service="vpc").body
+            sv = vbody.get("subnet_vip", vbody) if isinstance(vbody, dict) else {}
+            sv = sv if isinstance(sv, dict) else {}
+            sn = sv.get("static_nat") or {}
+            if isinstance(sn, dict) and sn.get("id"):
+                delete(c, "vpc", f"/v1/subnets/{sid}/vips/{vipid}/static-nat-ips/{sn['id']}")
+            for cp in sv.get("connected_ports") or []:
+                if isinstance(cp, dict) and cp.get("id"):
                     delete(c, "vpc", f"/v1/subnets/{sid}/vips/{vipid}/connected-ports/{cp['id']}")
-            for sn in items(c.get(f"/v1/subnets/{sid}/vips/{vipid}/static-nat-ips", service="vpc").body):
-                if sn.get("id"):
-                    delete(c, "vpc", f"/v1/subnets/{sid}/vips/{vipid}/static-nat-ips/{sn['id']}")
             if delete(c, "vpc", f"/v1/subnets/{sid}/vips/{vipid}") == 409:
-                # vip pinned by something the two child collections above don't cover
-                # (the #84 destroy-bug leak). Dump full state so we can see the blocker.
                 vd = c.get(f"/v1/subnets/{sid}/vips/{vipid}", service="vpc")
-                print(f"  DIAG vip {vipid} 409: state/body={vd.body}")
-                for coll in ("connected-ports", "static-nat-ips"):
-                    cb = c.get(f"/v1/subnets/{sid}/vips/{vipid}/{coll}", service="vpc")
-                    print(f"  DIAG vip {vipid} {coll}={cb.body}")
+                print(f"  DIAG vip {vipid} still 409 after clearing static_nat/ports: {vd.body}")
         # A subnet in CREATING can't be deleted (409) until it settles to ACTIVE;
         # retry a few times, then dump its state so a truly-stuck one is visible.
         st = None
@@ -304,6 +314,12 @@ def main() -> int:
                 for ch in items(c.get(coll, service="vpc").body):
                     if isinstance(ch, dict) and ch.get("vpc_id") == vidx:
                         print(f"  DIAG   {coll}: id={ch.get('id')} name={name_of(ch)} state={ch.get('state')}")
+    # 9b. publicips again — deleting a vip's static_nat / an IGW frees its publicip,
+    # which only becomes deletable now. (publicips have no name, so this only does
+    # something under SWEEP_ALL; ATTACHED ones still in use are skipped by the API.)
+    for it in lst(c, "vpc", "/v1/publicips"):
+        if it.get("id") and delete(c, "vpc", f"/v1/publicips/{it['id']}"):
+            n += 1
     # 10. resource groups + certs
     for it in lst(c, "resourcemanager", "/v1/resource-groups"):
         if it.get("id") and delete(c, "resourcemanager", f"/v1/resource-groups/{it['id']}"):
