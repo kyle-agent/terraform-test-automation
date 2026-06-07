@@ -16,10 +16,16 @@ variable "tgw_name" {
   default     = "regr-tgw"
 }
 
+variable "name_suffix" {
+  type        = string
+  description = "Per-run unique suffix appended to resource names."
+  default     = ""
+}
+
 # Transit gateway fixture guarding networking coverage: a freshly-created TGW
 # must re-plan/re-apply cleanly with no spurious update or destroy+create.
 # Required arg: name. Optional: description, tags.
 resource "samsungcloudplatformv2_vpc_transit_gateway" "regr" {
-  name        = var.tgw_name
+  name        = "${var.tgw_name}${var.name_suffix}"
   description = "regr-test"
 }

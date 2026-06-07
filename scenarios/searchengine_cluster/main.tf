@@ -21,18 +21,36 @@ variable "subnet_id" {
   type    = string
   default = "00000000-0000-0000-0000-000000000000"
 }
+# Empty default => look the engine version up at runtime via the data source
+# below. Set TF_VAR_dbaas_engine_version_id to override (e.g. to pin a version).
 variable "dbaas_engine_version_id" {
   type    = string
-  default = "00000000-0000-0000-0000-000000000000"
+  default = ""
 }
 variable "server_type_name" {
   type    = string
-  default = "db1v2m4"
+  default = "ses1v2m4"
+}
+
+# Engine versions are account/region-specific, so resolve a valid id at runtime
+# instead of hardcoding one. Prefer a version that is not end-of-service.
+data "samsungcloudplatformv2_searchengine_engine_version" "regr" {}
+
+locals {
+  searchengine_engine_versions_available = [
+    for v in data.samsungcloudplatformv2_searchengine_engine_version.regr.contents :
+    v if !v.end_of_service
+  ]
+  searchengine_engine_version_id = var.dbaas_engine_version_id != "" ? var.dbaas_engine_version_id : (
+    length(local.searchengine_engine_versions_available) > 0 ?
+    local.searchengine_engine_versions_available[0].id :
+    data.samsungcloudplatformv2_searchengine_engine_version.regr.contents[0].id
+  )
 }
 
 resource "samsungcloudplatformv2_searchengine_cluster" "regr" {
-  name                    = "regr-search"
-  dbaas_engine_version_id = var.dbaas_engine_version_id
+  name                    = "regrsearch"
+  dbaas_engine_version_id = local.searchengine_engine_version_id
   nat_enabled             = false
   service_state           = "RUNNING"
   timezone                = "Asia/Seoul"
@@ -44,10 +62,10 @@ resource "samsungcloudplatformv2_searchengine_cluster" "regr" {
   init_config_option = {
     database_user_name     = "regradmin"
     database_user_password = "Regr1234!@"
-    database_port          = 9200
+    database_port          = 9201
     backup_option = {
       retention_period_day = "7"
-      starting_time_hour   = "02"
+      starting_time_hour   = "11"
     }
   }
 
@@ -60,11 +78,21 @@ resource "samsungcloudplatformv2_searchengine_cluster" "regr" {
       role_type        = "MASTER_DATA"
       server_type_name = var.server_type_name
       block_storage_groups = [
-        { role_type = "OS", size_gb = 100, volume_type = "SSD" },
+        { role_type = "OS", size_gb = 104, volume_type = "SSD" },
         { role_type = "DATA", size_gb = 200, volume_type = "SSD" },
       ]
       instances = [
         { role_type = "MASTER_DATA" },
+      ]
+    },
+    {
+      role_type        = "KIBANA"
+      server_type_name = var.server_type_name
+      block_storage_groups = [
+        { role_type = "OS", size_gb = 104, volume_type = "SSD" },
+      ]
+      instances = [
+        { role_type = "KIBANA" },
       ]
     },
   ]

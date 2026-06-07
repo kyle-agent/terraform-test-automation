@@ -28,11 +28,20 @@ variable "vpc_name" {
   default     = "regr-vpc"
 }
 
+# Per-run-unique suffix injected by the test harness (TF_VAR_name_suffix) so a
+# leaked resource from a prior run can't collide with this run's create. Empty
+# default keeps standalone `terraform apply` behavior unchanged.
+variable "name_suffix" {
+  type        = string
+  description = "Per-run unique suffix appended to resource names."
+  default     = ""
+}
+
 # Minimal VPC fixture guarding networking coverage: a freshly-created VPC must
 # re-plan/re-apply cleanly (no spurious update or destroy+create) when the
 # config is unchanged. Required args: cidr, name. Optional: description, tags.
 resource "samsungcloudplatformv2_vpc_vpc" "vpc" {
   cidr        = var.vpc_cidr
   description = var.vpc_description
-  name        = var.vpc_name
+  name        = "${var.vpc_name}${var.name_suffix}"
 }

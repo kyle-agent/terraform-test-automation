@@ -18,8 +18,8 @@ variable "subnet_id" {
 
 variable "virtual_ip_address" {
   type        = string
-  description = "Virtual IP address to reserve within the subnet CIDR."
-  default     = "192.168.0.20"
+  description = "Virtual IP address to reserve within the subnet CIDR. Defaults to null so the provider auto-assigns a free VIP and avoids collisions."
+  default     = null
 }
 
 # Subnet VIP fixture guarding networking coverage: a virtual IP reserved in a

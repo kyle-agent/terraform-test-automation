@@ -22,6 +22,13 @@ variable "port_name" {
   default     = "regr-port"
 }
 
+# Per-run-unique suffix injected by the harness (TF_VAR_name_suffix).
+variable "name_suffix" {
+  type        = string
+  description = "Per-run unique suffix appended to resource names."
+  default     = ""
+}
+
 variable "fixed_ip_address" {
   type        = string
   description = "Fixed IP address to assign to the port (must fall within the subnet CIDR)."
@@ -32,7 +39,7 @@ variable "fixed_ip_address" {
 # must re-plan cleanly with no spurious update or replacement.
 # Required args: name, subnet_id. Optional: description, fixed_ip_address, tags.
 resource "samsungcloudplatformv2_vpc_port" "regr" {
-  name             = var.port_name
+  name             = "${var.port_name}${var.name_suffix}"
   subnet_id        = var.subnet_id
   fixed_ip_address = var.fixed_ip_address
   description      = "regr-test"

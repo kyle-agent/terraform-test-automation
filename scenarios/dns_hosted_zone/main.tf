@@ -10,27 +10,38 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-# DNS hosted zone regression fixture. The resource takes a single nested object
-# attribute `hosted_zone_create`, modeled here as one object variable so the
-# fixture passes `terraform validate` without credentials. The private_dns_id
-# default is the zero-UUID placeholder; integration supplies a real private DNS id
-# via TF_VAR_hosted_zone.
-variable "hosted_zone" {
-  type = object({
-    description    = string
-    name           = string
-    private_dns_id = string
-    type           = string
-  })
-  default = {
-    description    = "regression-test hosted zone"
-    name           = "regr.example.com"
-    private_dns_id = "00000000-0000-0000-0000-000000000000"
-    type           = "PRIVATE"
+# Per-run-unique suffix injected by the harness (TF_VAR_name_suffix).
+variable "name_suffix" {
+  type        = string
+  description = "Per-run unique suffix appended to resource names."
+  default     = ""
+}
+
+# Real VPC id supplied by the dependent-probe bootstrap via TF_VAR_vpc_id;
+# defaults to the zero-UUID so the fixture validates offline.
+variable "vpc_id" {
+  type        = string
+  description = "Existing VPC id for the private DNS zone. Integration overrides via TF_VAR_vpc_id."
+  default     = "00000000-0000-0000-0000-000000000000"
+}
+
+# DNS hosted zone regression fixture. A hosted zone requires a parent private
+# DNS zone, so this fixture creates that prerequisite in-line (chained) and feeds
+# its id into hosted_zone_create.private_dns_id. A second apply with no config
+# change must re-plan cleanly.
+resource "samsungcloudplatformv2_dns_private_dns" "parent" {
+  private_dns_create = {
+    description       = "regression-test parent private DNS for hosted zone"
+    name              = "regr-hz-pdns${var.name_suffix}"
+    connected_vpc_ids = [var.vpc_id]
   }
-  description = "DNS hosted zone create input; private_dns_id defaults to the zero-UUID and is supplied by integration."
 }
 
 resource "samsungcloudplatformv2_dns_hosted_zone" "regr" {
-  hosted_zone_create = var.hosted_zone
+  hosted_zone_create = {
+    description    = "regression-test hosted zone"
+    name           = "regr${var.name_suffix}.example.com"
+    private_dns_id = samsungcloudplatformv2_dns_private_dns.parent.id
+    type           = "private"
+  }
 }

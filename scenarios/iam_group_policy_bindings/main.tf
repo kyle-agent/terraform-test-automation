@@ -10,23 +10,43 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-variable "group_id" {
+# Per-run-unique suffix injected by the harness (TF_VAR_name_suffix).
+variable "name_suffix" {
   type        = string
-  description = "Existing IAM group id to bind policies to. Integration runs override via TF_VAR_group_id."
-  default     = "00000000-0000-0000-0000-000000000000"
+  description = "Per-run unique suffix appended to resource names."
+  default     = ""
 }
 
-variable "policy_ids" {
-  type        = list(string)
-  description = "IAM policy ids to attach to the group. Integration runs override via TF_VAR_policy_ids."
-  default     = ["00000000-0000-0000-0000-000000000000"]
+# IAM group policy binding fixture. iam_group and iam_policy are both
+# self-contained (already green), so this fixture creates both prerequisites
+# in-line and attaches the policy to the group. A second apply with no config
+# change must re-plan cleanly (the computed group_policy_bindings list must not
+# force a spurious update).
+resource "samsungcloudplatformv2_iam_group" "regr" {
+  name        = "regr-gpb-grp${var.name_suffix}"
+  description = "regression-test group for policy bindings"
 }
 
-# IAM group policy binding fixture: guards that attaching a set of policies to a
-# group re-plans cleanly (the computed group_policy_bindings list must not force
-# a spurious update). ids are placeholders (zero-UUID); integration supplies the
-# real group_id / policy_ids via TF_VAR_*.
+resource "samsungcloudplatformv2_iam_policy" "regr" {
+  policy_name = "regr-gpb-pol${var.name_suffix}"
+  description = "regression-test policy for group bindings"
+
+  policy_version = {
+    policy_document = {
+      version = "2024-10-01"
+      statement = [
+        {
+          sid      = "regrReadOnly"
+          effect   = "Allow"
+          action   = ["iam:Get*", "iam:List*"]
+          resource = ["*"]
+        }
+      ]
+    }
+  }
+}
+
 resource "samsungcloudplatformv2_iam_group_policy_bindings" "regr" {
-  group_id   = var.group_id
-  policy_ids = var.policy_ids
+  group_id   = samsungcloudplatformv2_iam_group.regr.id
+  policy_ids = [samsungcloudplatformv2_iam_policy.regr.id]
 }

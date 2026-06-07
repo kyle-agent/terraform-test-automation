@@ -16,6 +16,14 @@ variable "name" {
   default     = "regr-sg-01"
 }
 
+# Per-run-unique suffix injected by the test harness (TF_VAR_name_suffix) so a
+# leaked resource from a prior run can't collide with this run's create.
+variable "name_suffix" {
+  type        = string
+  description = "Per-run unique suffix appended to resource names."
+  default     = ""
+}
+
 variable "description" {
   type        = string
   description = "Free-text description of the security group."
@@ -43,7 +51,7 @@ variable "security_group_tags" {
 # Computed + RequiresReplace() without UseStateForUnknown() — the same class of
 # bug seen on the rule resource — this fixture would surface it.
 resource "samsungcloudplatformv2_security_group_security_group" "securitygroup" {
-  name        = var.name
+  name        = "${var.name}${var.name_suffix}"
   description = var.description
   loggable    = var.loggable
   tags        = var.security_group_tags

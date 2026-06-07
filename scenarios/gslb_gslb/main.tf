@@ -14,10 +14,13 @@ provider "samsungcloudplatformv2" {}
 # health check and a weighted backend resource. Inputs overridable via TF_VAR_*;
 # schema-valid defaults keep `terraform validate` green offline.
 
+# The GSLB name must be a fully-qualified domain ending in
+# '.gslb.e.samsungsdscloud.com' (apply rejects anything else with
+# "The domain name is not valid. use '.gslb.e.samsungsdscloud.com' instead.").
 variable "gslb_name" {
-  description = "GSLB display name."
+  description = "GSLB domain name; must end with .gslb.e.samsungsdscloud.com"
   type        = string
-  default     = "regr-gslb"
+  default     = "regrgslb1.gslb.e.samsungsdscloud.com"
 }
 
 variable "gslb_algorithm" {
@@ -43,19 +46,23 @@ resource "samsungcloudplatformv2_gslb_gslb" "regr" {
     algorithm   = var.gslb_algorithm
     env_usage   = var.env_usage
     name        = var.gslb_name
-    description = "Regression GSLB fixture"
+    description = "regrgslb1"
 
     health_check = {
-      protocol     = "HTTP"
-      service_port = 80
-      send_string  = "GET / HTTP/1.0\r\n\r\n"
+      protocol                   = "HTTP"
+      service_port               = 80
+      send_string                = "regrsend1"
+      receive_string             = "regrrecv1"
+      health_check_interval      = 5
+      health_check_probe_timeout = 6
+      timeout                    = 10
     }
 
     resources = [
       {
-        description = "Primary regression backend"
+        description = "regrbackend1"
         destination = var.backend_destination
-        region      = "kr-west1"
+        region      = "KR-WEST-1"
         weight      = 100
       }
     ]

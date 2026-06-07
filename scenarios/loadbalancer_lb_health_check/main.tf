@@ -10,36 +10,40 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-# LB health check regression fixture. The resource takes a single nested object
-# attribute `lb_health_check_create`, modeled here as one object variable so the
-# fixture passes `terraform validate` without credentials. vpc_id/subnet_id
-# default to the zero-UUID; integration supplies real ids via TF_VAR_lb_health_check.
-variable "lb_health_check" {
-  type = object({
-    name                  = string
-    description           = string
-    protocol              = string
-    health_check_port     = number
-    health_check_interval = number
-    health_check_timeout  = number
-    health_check_count    = number
-    vpc_id                = string
-    subnet_id             = string
-  })
-  default = {
-    name                  = "regr-test-hc"
+# LB health check integration fixture. A health check is independent of a load
+# balancer (it binds directly to a vpc/subnet), so this scenario is self-contained:
+# it only needs vpc_id/subnet_id from the dependent-probe bootstrap (TF_VAR_*).
+# The resource takes a single nested object `lb_health_check_create`. All inputs
+# have offline-safe defaults so `terraform validate` passes without credentials.
+
+variable "name_suffix" {
+  type        = string
+  default     = ""
+  description = "Per-run unique suffix (injected by the harness as TF_VAR_name_suffix)."
+}
+
+variable "vpc_id" {
+  type        = string
+  default     = "00000000-0000-0000-0000-000000000000"
+  description = "VPC for the health check. Integration supplies a real id via TF_VAR_vpc_id."
+}
+
+variable "subnet_id" {
+  type        = string
+  default     = "00000000-0000-0000-0000-000000000000"
+  description = "Subnet for the health check. Integration supplies a real id via TF_VAR_subnet_id."
+}
+
+resource "samsungcloudplatformv2_loadbalancer_lb_health_check" "regr" {
+  lb_health_check_create = {
+    name                  = "rhc${var.name_suffix}"
     description           = "regression-test health check"
     protocol              = "TCP"
     health_check_port     = 80
     health_check_interval = 5
     health_check_timeout  = 5
     health_check_count    = 3
-    vpc_id                = "00000000-0000-0000-0000-000000000000"
-    subnet_id             = "00000000-0000-0000-0000-000000000000"
+    vpc_id                = var.vpc_id
+    subnet_id             = var.subnet_id
   }
-  description = "LB health check create input; vpc_id/subnet_id default to the zero-UUID and are supplied by integration."
-}
-
-resource "samsungcloudplatformv2_loadbalancer_lb_health_check" "regr" {
-  lb_health_check_create = var.lb_health_check
 }

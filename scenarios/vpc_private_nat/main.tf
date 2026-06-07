@@ -10,22 +10,20 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-variable "service_resource_id" {
+# Self-contained private-NAT fixture. A private NAT attaches to a "service
+# resource" (a transit gateway) which the bootstrap does not provide, so we
+# create the transit gateway here and point the private NAT at it. No VPC is
+# consumed by a transit gateway, so this stays within the account VPC quota.
+variable "name_suffix" {
   type        = string
-  description = "Id of the service resource (e.g. transit gateway) the private NAT connects to. Integration runs override via TF_VAR_service_resource_id."
-  default     = "00000000-0000-0000-0000-000000000000"
-}
-
-variable "service_type" {
-  type        = string
-  description = "Connected service type for the private NAT. Valid: TRANSIT_GATEWAY, DIRECT_CONNECT."
-  default     = "TRANSIT_GATEWAY"
+  description = "Per-run unique suffix appended to resource names."
+  default     = ""
 }
 
 variable "private_nat_name" {
   type        = string
   description = "Name of the private NAT."
-  default     = "regr-private-nat"
+  default     = "regr-pnat"
 }
 
 variable "private_nat_cidr" {
@@ -34,14 +32,23 @@ variable "private_nat_cidr" {
   default     = "192.168.64.0/24"
 }
 
-# Private NAT fixture guarding networking coverage: a private NAT bound to a
-# service resource must re-plan cleanly with no spurious update or replacement.
-# Required args: cidr, name, service_resource_id, service_type.
-# Optional: description, tags.
+variable "service_type" {
+  type        = string
+  description = "Connected service type for the private NAT. Valid: TRANSIT_GATEWAY, DIRECT_CONNECT."
+  default     = "TRANSIT_GATEWAY"
+}
+
+# Parent transit gateway acting as the private NAT service resource.
+resource "samsungcloudplatformv2_vpc_transit_gateway" "regr" {
+  name        = "regr-pn-tgw${var.name_suffix}"
+  description = "regr-test"
+}
+
+# Private NAT bound to the transit gateway (top-level id used for chaining).
 resource "samsungcloudplatformv2_vpc_private_nat" "regr" {
   cidr                = var.private_nat_cidr
-  name                = var.private_nat_name
-  service_resource_id = var.service_resource_id
+  name                = "${var.private_nat_name}${var.name_suffix}"
+  service_resource_id = samsungcloudplatformv2_vpc_transit_gateway.regr.id
   service_type        = var.service_type
   description         = "regr-test"
 }

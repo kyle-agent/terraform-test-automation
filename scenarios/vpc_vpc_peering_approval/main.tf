@@ -10,10 +10,11 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-variable "vpc_peering_id" {
+# Per-run-unique suffix injected by the harness (TF_VAR_name_suffix).
+variable "name_suffix" {
   type        = string
-  description = "Existing VPC peering id to act on. Integration runs override via TF_VAR_vpc_peering_id."
-  default     = "00000000-0000-0000-0000-000000000000"
+  description = "Per-run unique suffix appended to resource names."
+  default     = ""
 }
 
 variable "approval_type" {
@@ -22,10 +23,33 @@ variable "approval_type" {
   default     = "CREATE_APPROVE"
 }
 
-# VPC peering approval fixture guarding networking coverage: approving a peering
-# request must re-plan cleanly with no spurious update or replacement.
-# Required args: type, vpc_peering_id.
+# VPC peering approval fixture guarding networking coverage.
+#
+# SELF-CONTAINED: relying on an external vpc_peering_id resulted in a 404 (the
+# peering never existed). This fixture creates the requester + approver VPCs and
+# the peering request in-line (same account), then approves it, so it can
+# create -> destroy cleanly.
+resource "samsungcloudplatformv2_vpc_vpc" "requester" {
+  name        = "regrapvreq${var.name_suffix}"
+  cidr        = "192.168.0.0/24"
+  description = "regr-test peering-approval requester"
+}
+
+resource "samsungcloudplatformv2_vpc_vpc" "approver" {
+  name        = "regrapvapp${var.name_suffix}"
+  cidr        = "192.168.1.0/24"
+  description = "regr-test peering-approval approver"
+}
+
+resource "samsungcloudplatformv2_vpc_vpc_peering" "regr" {
+  approver_vpc_account_id = samsungcloudplatformv2_vpc_vpc.approver.vpc.account_id
+  approver_vpc_id         = samsungcloudplatformv2_vpc_vpc.approver.id
+  requester_vpc_id        = samsungcloudplatformv2_vpc_vpc.requester.id
+  name                    = "regrapv${var.name_suffix}"
+  description             = "regr-test"
+}
+
 resource "samsungcloudplatformv2_vpc_vpc_peering_approval" "regr" {
   type           = var.approval_type
-  vpc_peering_id = var.vpc_peering_id
+  vpc_peering_id = samsungcloudplatformv2_vpc_vpc_peering.regr.id
 }

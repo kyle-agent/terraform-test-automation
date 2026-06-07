@@ -1,0 +1,69 @@
+name: Inventory
+
+# READ-ONLY listing of everything currently on the SCP account (no deletes). Answers
+# "what is still out there?" Runs in the scp-integration environment (CI has the creds).
+# Triggered by editing the inventory script/this workflow, or on demand.
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - 'claude/**'
+    paths:
+      - 'cmd/api_reaper/inventory.py'
+      - '.github/workflows/inventory.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    environment: scp-integration
+    env:
+      SCP_REGION: kr-west1
+      SCP_ENV: e
+      SCP_ACCESS_KEY: ${{ secrets.SCP_TF_ACCESS_KEY }}
+      SCP_SECRET_KEY: ${{ secrets.SCP_TF_SECRET_KEY }}
+      # for the var-vs-live account comparison printed by inventory.py
+      SCP_ACCOUNT_ID: ${{ vars.SCP_ACCOUNT_ID }}
+      TF_VAR_obs_access_key: ${{ secrets.SCP_TF_ACCESS_KEY }}
+      TF_VAR_obs_secret_key: ${{ secrets.SCP_TF_SECRET_KEY }}
+      TF_VAR_obs_endpoint: https://object-store.kr-west1.e.samsungsdscloud.com
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install --quiet boto3
+      - name: List current resources (read-only)
+        run: python cmd/api_reaper/inventory.py
+
+  # Scope diagnosis: SAME secret reference, but this job has NO `environment:`, so it can
+  # only resolve repo/org secrets (NOT environment-scoped ones). Compare its identity line
+  # to the `inventory` job above:
+  #   - different account id  -> an environment-scoped SCP_TF_ACCESS_KEY is shadowing the
+  #     repo secret (== case 2); the repo secret here is the real (new) account.
+  #   - same account id       -> no environment shadow; the repo secret itself is that
+  #     account (so if it's the old one, the repo secret value is old/unset).
+  #   - "NO secret visible"   -> the secret exists ONLY at environment scope (not repo/org).
+  identity-no-env:
+    runs-on: ubuntu-latest
+    env:
+      SCP_REGION: kr-west1
+      SCP_ENV: e
+      SCP_ACCESS_KEY: ${{ secrets.SCP_TF_ACCESS_KEY }}
+      SCP_SECRET_KEY: ${{ secrets.SCP_TF_SECRET_KEY }}
+      SCP_ACCOUNT_ID: ${{ vars.SCP_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install --quiet boto3
+      - name: Identity WITHOUT environment scope (repo/org secret only)
+        run: |
+          if [ -z "$SCP_ACCESS_KEY" ]; then
+            echo "NO secret visible at repo/org scope -> SCP_TF_ACCESS_KEY exists ONLY at environment scope"
+          else
+            python cmd/api_reaper/inventory.py || true
+          fi

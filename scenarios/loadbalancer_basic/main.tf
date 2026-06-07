@@ -10,41 +10,40 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-# Chapter 2 / provider issue #12 (loadbalancer family) regression fixture.
-# Guards: a loadbalancer creates cleanly and a subsequent re-plan is idempotent
-# (no spurious diff and no destroy+create replacement). The resource takes a
-# single nested object attribute `loadbalancer_create`, so the whole input is
-# modeled as one object variable; every field has a default so the fixture
-# passes `terraform validate` (schema/type check) without credentials.
-variable "loadbalancer" {
-  type = object({
-    description              = string
-    firewall_enabled         = bool
-    firewall_logging_enabled = bool
-    layer_type               = string
-    name                     = string
-    service_ip               = string
-    subnet_id                = string
-    vpc_id                   = string
-    source_nat_ip            = string
-    health_check_ip_1        = string
-    health_check_ip_2        = string
-  })
-  default = {
-    description              = "regression-test-lb"
-    firewall_enabled         = false
-    firewall_logging_enabled = false
-    health_check_ip_1        = null
-    health_check_ip_2        = null
-    layer_type               = "L4"
-    name                     = "regr-test-lb"
-    service_ip               = null
-    source_nat_ip            = null
-    subnet_id                = "00000000-0000-0000-0000-000000000000"
-    vpc_id                   = "00000000-0000-0000-0000-000000000000"
-  }
+# Load balancer (the resource itself) integration fixture.
+# Guards: a loadbalancer creates cleanly, a subsequent re-plan is idempotent
+# (no spurious diff / replacement), and it destroys cleanly.
+# The resource takes a single nested object attribute `loadbalancer_create`.
+# vpc_id/subnet_id are bound from the dependent-probe bootstrap via TF_VAR_*.
+# All inputs have offline-safe defaults so `terraform validate` passes without
+# credentials. name carries the per-run suffix to avoid cross-run collisions.
+
+variable "name_suffix" {
+  type        = string
+  default     = ""
+  description = "Per-run unique suffix (injected by the harness as TF_VAR_name_suffix)."
 }
 
-resource "samsungcloudplatformv2_loadbalancer_loadbalancer" "loadbalancer" {
-  loadbalancer_create = var.loadbalancer
+variable "vpc_id" {
+  type        = string
+  default     = "00000000-0000-0000-0000-000000000000"
+  description = "VPC for the load balancer. Integration supplies a real id via TF_VAR_vpc_id."
+}
+
+variable "subnet_id" {
+  type        = string
+  default     = "00000000-0000-0000-0000-000000000000"
+  description = "Subnet for the load balancer. Integration supplies a real id via TF_VAR_subnet_id."
+}
+
+resource "samsungcloudplatformv2_loadbalancer_loadbalancer" "regr" {
+  loadbalancer_create = {
+    name                     = "rlb${var.name_suffix}"
+    description              = "regression-test-lb"
+    layer_type               = "L4"
+    firewall_enabled         = false
+    firewall_logging_enabled = false
+    vpc_id                   = var.vpc_id
+    subnet_id                = var.subnet_id
+  }
 }

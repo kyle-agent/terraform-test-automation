@@ -19,7 +19,7 @@ func ChangedSummary(plan PlanResult) string {
 			}
 		}
 		if !noop {
-			parts = append(parts, FormatActions(c))
+			parts = append(parts, FormatChange(c))
 		}
 	}
 	if len(parts) == 0 {

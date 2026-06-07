@@ -1,0 +1,1172 @@
+# registry.yaml — SINGLE SOURCE OF TRUTH for test scenarios.
+# Generated once by scripts/gen_registry.py from cost_tiers.yaml + live
+# scenario HCL + workflow lane membership; hand-edited thereafter.
+# Consumed by: scripts/plan_matrix.py (workflow matrix), scripts/validate_registry.py,
+# the capability harness, and the dashboard.
+#
+# Fields: family, vpc(none|pool|self), timeout_class(fast|slow), parallel(low|normal),
+# needs(bootstrap outputs), depends_on(scenario names), update/import(stage opt-in), cost, status
+# (green|broken|untested|excluded), issues, [exclude_reason].
+backup_backup:
+  cost: cheap
+  depends_on: []
+  family: backup
+  import: false
+  issues:
+  - 500 ISE (platform)
+  needs: []
+  parallel: normal
+  status: broken
+  timeout_class: fast
+  update: false
+  vpc: pool
+baremetal_baremetal:
+  cost: heavy
+  depends_on: []
+  exclude_reason: out of scope (heavy)
+  family: baremetal
+  import: false
+  issues: []
+  needs:
+  - image_id
+  - server_type_id
+  - subnet_id
+  - vpc_id
+  parallel: normal
+  status: excluded
+  timeout_class: fast
+  update: false
+  vpc: pool
+baremetal_blockstorage_volume:
+  cost: heavy
+  depends_on: []
+  exclude_reason: out of scope (heavy)
+  family: baremetal
+  import: false
+  issues: []
+  needs: []
+  parallel: normal
+  status: excluded
+  timeout_class: fast
+  update: false
+  vpc: none
+billing_planned_compute:
+  cost: heavy
+  depends_on: []
+  exclude_reason: creates a real 1-year billing commitment
+  family: billing
+  import: false
+  issues: []
+  needs: []
+  parallel: normal
+  status: excluded
+  timeout_class: fast
+  update: false
+  vpc: none
+budget_budget:
+  cost: cheap
+  depends_on: []
+  family: budget
+  import: false
+  issues:
+  - '#500-quota'
+  needs: []
+  parallel: normal
+  status: broken
+  timeout_class: fast
+  update: false
+  vpc: none
+cachestore_cluster:
+  cost: heavy
+  depends_on: []
+  family: cachestore
+  import: false
+  issues: []
+  needs:
+  - subnet_id
+  parallel: normal
+  status: green
+  timeout_class: slow
+  update: false
+  vpc: pool
+certificate_manager:
+  cost: cheap
+  depends_on: []
+  family: certificate
+  import: false
+  issues:
+  - 500 ISE (platform)
+  needs: []
+  parallel: normal
+  status: broken
+  timeout_class: fast
+  update: false
+  vpc: none
+certificate_manager_self_sign:
+  cost: cheap
+  depends_on: []
+  family: certificate
+  import: false
+  issues: []
+  needs: []
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+cloudmonitoring_event_policy:
+  cost: cheap
+  depends_on: []
+  exclude_reason: cloudmonitoring deprecated
+  family: cloudmonitoring
+  import: false
+  issues: []
+  needs: []
+  parallel: normal
+  status: excluded
+  timeout_class: fast
+  update: false
+  vpc: none
+configinspection:
+  cost: cheap
+  depends_on: []
+  exclude_reason: out of scope (per request)
+  family: configinspection
+  import: false
+  issues: []
+  needs: []
+  parallel: normal
+  status: excluded
+  timeout_class: fast
+  update: false
+  vpc: none
+directconnect_direct_connect:
+  cost: heavy
+  depends_on: []
+  family: directconnect
+  import: false
+  issues: []
+  needs:
+  - vpc_id
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: pool
+directconnect_routing_rule:
+  cost: heavy
+  depends_on: []
+  family: directconnect
+  import: false
+  issues: []
+  needs:
+  - vpc_id
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: pool
+dns_hosted_zone:
+  cost: cheap
+  depends_on: []
+  family: dns
+  import: false
+  issues: []
+  needs:
+  - vpc_id
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+dns_private_dns:
+  cost: cheap
+  depends_on: []
+  family: dns
+  import: false
+  issues: []
+  needs:
+  - vpc_id
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: pool
+dns_public_domain_name:
+  cost: cheap
+  depends_on: []
+  family: dns
+  import: false
+  issues:
+  - 500 ISE (#82)
+  needs: []
+  parallel: normal
+  status: broken
+  timeout_class: fast
+  update: false
+  vpc: none
+dns_record:
+  cost: cheap
+  depends_on: []
+  family: dns
+  import: false
+  issues: []
+  needs:
+  - vpc_id
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+epas_cluster:
+  cost: heavy
+  depends_on: []
+  family: epas
+  import: false
+  issues: []
+  needs:
+  - subnet_id
+  parallel: normal
+  status: green
+  timeout_class: slow
+  update: false
+  vpc: pool
+eventstreams_basic:
+  cost: heavy
+  depends_on: []
+  family: eventstreams
+  import: false
+  issues:
+  - '#83'
+  needs:
+  - subnet_id
+  parallel: normal
+  status: broken
+  timeout_class: slow
+  update: false
+  vpc: pool
+filestorage_replication:
+  cost: cheap
+  depends_on: []
+  family: filestorage
+  import: false
+  issues:
+  - replication not available (account feature)
+  needs:
+  - volume_id
+  parallel: normal
+  status: broken
+  timeout_class: fast
+  update: false
+  vpc: pool
+filestorage_snapshot_schedule:
+  cost: cheap
+  depends_on: []
+  family: filestorage
+  import: false
+  issues: []
+  needs:
+  - volume_id
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: pool
+filestorage_volume:
+  cost: cheap
+  depends_on: []
+  family: filestorage
+  import: false
+  issues: []
+  needs: []
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: pool
+firewall_firewall_rule:
+  cost: cheap
+  depends_on: []
+  family: firewall
+  import: false
+  issues:
+  - 404 not found (needs firewall target)
+  needs: []
+  parallel: normal
+  status: broken
+  timeout_class: fast
+  update: false
+  vpc: pool
+gslb_gslb:
+  cost: heavy
+  depends_on: []
+  family: gslb
+  import: false
+  issues: []
+  needs: []
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: pool
+iam_access_key:
+  cost: cheap
+  depends_on: []
+  family: iam
+  import: false
+  issues:
+  - '#58'
+  needs: []
+  parallel: normal
+  status: broken
+  timeout_class: fast
+  update: false
+  vpc: none
+iam_group:
+  cost: cheap
+  depends_on: []
+  family: iam
+  import: false
+  issues: []
+  needs: []
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+iam_group_member:
+  cost: cheap
+  depends_on: []
+  family: iam
+  import: false
+  issues:
+  - iam_user 401 HMAC (account perm)
+  needs: []
+  parallel: normal
+  status: broken
+  timeout_class: fast
+  update: false
+  vpc: none
+iam_group_policy_bindings:
+  cost: cheap
+  depends_on: []
+  family: iam
+  import: false
+  issues: []
+  needs: []
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+iam_policy:
+  cost: cheap
+  depends_on: []
+  family: iam
+  import: false
+  issues: []
+  needs: []
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+iam_role:
+  cost: cheap
+  depends_on: []
+  family: iam
+  import: false
+  issues:
+  - '#75'
+  needs: []
+  parallel: normal
+  status: broken
+  timeout_class: fast
+  update: false
+  vpc: none
+iam_role_policy_bindings:
+  cost: cheap
+  depends_on: []
+  family: iam
+  import: false
+  issues:
+  - 404 needs own role
+  needs: []
+  parallel: normal
+  status: broken
+  timeout_class: fast
+  update: false
+  vpc: none
+iam_user:
+  cost: cheap
+  depends_on: []
+  family: iam
+  import: false
+  issues: []
+  needs: []
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+iam_user_policy_bindings:
+  cost: cheap
+  depends_on: []
+  family: iam
+  import: false
+  issues:
+  - blocked (account perm)
+  needs: []
+  parallel: normal
+  status: broken
+  timeout_class: fast
+  update: false
+  vpc: none
+import_smoke:
+  cost: heavy
+  depends_on: []
+  exclude_reason: import-only smoke over multinodegpucluster_gpunode (heavy GPU)
+  family: import
+  import: false
+  issues: []
+  needs: []
+  parallel: normal
+  status: excluded
+  timeout_class: fast
+  update: false
+  vpc: none
+loadbalancer_basic:
+  cost: heavy
+  depends_on: []
+  exclude_reason: 'provider #77 (LB destroy leak)'
+  family: loadbalancer
+  import: false
+  issues: []
+  needs:
+  - subnet_id
+  - vpc_id
+  parallel: normal
+  status: excluded
+  timeout_class: fast
+  update: false
+  vpc: pool
+loadbalancer_lb_health_check:
+  cost: heavy
+  depends_on: []
+  exclude_reason: 'provider #77 (LB destroy leak)'
+  family: loadbalancer
+  import: false
+  issues: []
+  needs:
+  - subnet_id
+  - vpc_id
+  parallel: normal
+  status: excluded
+  timeout_class: fast
+  update: false
+  vpc: pool
+loadbalancer_lb_listener:
+  cost: heavy
+  depends_on: []
+  exclude_reason: 'provider #77 (LB destroy leak)'
+  family: loadbalancer
+  import: false
+  issues: []
+  needs:
+  - subnet_id
+  - vpc_id
+  parallel: normal
+  status: excluded
+  timeout_class: fast
+  update: false
+  vpc: pool
+loadbalancer_lb_member:
+  cost: heavy
+  depends_on: []
+  exclude_reason: 'provider #77 (LB destroy leak)'
+  family: loadbalancer
+  import: false
+  issues: []
+  needs:
+  - image_id
+  - keypair_name
+  - server_type_id
+  - subnet_id
+  - vpc_id
+  parallel: normal
+  status: excluded
+  timeout_class: fast
+  update: false
+  vpc: pool
+loadbalancer_lb_server_group:
+  cost: heavy
+  depends_on: []
+  exclude_reason: 'provider #77 (LB destroy leak)'
+  family: loadbalancer
+  import: false
+  issues: []
+  needs:
+  - subnet_id
+  - vpc_id
+  parallel: normal
+  status: excluded
+  timeout_class: fast
+  update: false
+  vpc: pool
+loadbalancer_loadbalancer_private_nat_ip:
+  cost: heavy
+  depends_on: []
+  exclude_reason: 'provider #77 (LB destroy leak)'
+  family: loadbalancer
+  import: false
+  issues: []
+  needs: []
+  parallel: normal
+  status: excluded
+  timeout_class: fast
+  update: false
+  vpc: none
+loadbalancer_loadbalancer_public_nat_ip:
+  cost: heavy
+  depends_on: []
+  exclude_reason: 'provider #77 (LB destroy leak)'
+  family: loadbalancer
+  import: false
+  issues: []
+  needs:
+  - publicip_id
+  - subnet_id
+  - vpc_id
+  parallel: normal
+  status: excluded
+  timeout_class: fast
+  update: false
+  vpc: pool
+loggingaudit_trail:
+  cost: cheap
+  depends_on: []
+  family: loggingaudit
+  import: false
+  issues:
+  - 403 forbidden (account perm)
+  needs: []
+  parallel: normal
+  status: broken
+  timeout_class: fast
+  update: false
+  vpc: none
+mariadb_cluster:
+  cost: heavy
+  depends_on: []
+  family: mariadb
+  import: false
+  issues: []
+  needs:
+  - subnet_id
+  parallel: normal
+  status: green
+  timeout_class: slow
+  update: false
+  vpc: pool
+mysql_cluster:
+  cost: heavy
+  depends_on: []
+  family: mysql
+  import: false
+  issues: []
+  needs:
+  - subnet_id
+  parallel: normal
+  status: green
+  timeout_class: slow
+  update: false
+  vpc: pool
+network_logging_network_logging_storage:
+  cost: cheap
+  depends_on: []
+  family: network
+  import: false
+  issues: []
+  needs: []
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+postgresql_cluster:
+  cost: heavy
+  depends_on: []
+  family: postgresql
+  import: false
+  issues: []
+  needs:
+  - subnet_id
+  parallel: normal
+  status: green
+  timeout_class: slow
+  update: false
+  vpc: pool
+resourcemanager_resource_group:
+  cost: cheap
+  depends_on: []
+  family: resourcemanager
+  import: false
+  issues: []
+  needs: []
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+searchengine_cluster:
+  cost: heavy
+  depends_on: []
+  family: searchengine
+  import: false
+  issues:
+  - '#83'
+  needs:
+  - subnet_id
+  parallel: normal
+  status: broken
+  timeout_class: slow
+  update: false
+  vpc: pool
+security_group_basic:
+  cost: cheap
+  depends_on: []
+  family: security
+  import: false
+  issues: []
+  needs: []
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: true
+  vpc: pool
+securitygroup_rule_basic:
+  cost: cheap
+  depends_on: []
+  family: securitygroup
+  import: false
+  issues: []
+  needs:
+  - security_group_id
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: pool
+servicewatch_alert:
+  cost: cheap
+  depends_on: []
+  family: servicewatch
+  import: false
+  issues: []
+  needs: []
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+servicewatch_dashboard:
+  cost: cheap
+  depends_on: []
+  family: servicewatch
+  import: false
+  issues: []
+  needs: []
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+servicewatch_event_rule:
+  cost: cheap
+  depends_on: []
+  family: servicewatch
+  import: false
+  issues: []
+  needs: []
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+servicewatch_log_group:
+  cost: cheap
+  depends_on: []
+  family: servicewatch
+  import: false
+  issues: []
+  needs: []
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+servicewatch_log_stream:
+  cost: cheap
+  depends_on: []
+  family: servicewatch
+  import: false
+  issues:
+  - fixture
+  needs: []
+  parallel: normal
+  status: broken
+  timeout_class: fast
+  update: false
+  vpc: none
+ske_cluster:
+  cost: heavy
+  depends_on: []
+  family: ske
+  import: false
+  issues: []
+  needs:
+  - kubernetes_version
+  - security_group_id_list
+  - subnet_id
+  - volume_id
+  - vpc_id
+  parallel: normal
+  status: green
+  timeout_class: slow
+  update: false
+  vpc: pool
+ske_nodepool:
+  cost: heavy
+  depends_on: []
+  family: ske
+  import: false
+  issues: []
+  needs:
+  - keypair_name
+  - kubernetes_version
+  - security_group_id_list
+  - server_type_id
+  - subnet_id
+  - volume_id
+  - vpc_id
+  parallel: normal
+  status: green
+  timeout_class: slow
+  update: false
+  vpc: pool
+sqlserver_cluster:
+  cost: heavy
+  depends_on: []
+  family: sqlserver
+  import: false
+  issues:
+  - '#83'
+  needs:
+  - subnet_id
+  parallel: normal
+  status: broken
+  timeout_class: slow
+  update: false
+  vpc: pool
+vertica_cluster:
+  cost: heavy
+  depends_on: []
+  exclude_reason: out of scope (heavy)
+  family: vertica
+  import: false
+  issues: []
+  needs:
+  - subnet_id
+  parallel: normal
+  status: excluded
+  timeout_class: slow
+  update: false
+  vpc: pool
+virtualserver_image:
+  cost: cheap
+  depends_on: []
+  family: virtualserver
+  import: false
+  issues:
+  - invalid OBS image URL (needs real image file)
+  needs: []
+  parallel: normal
+  status: broken
+  timeout_class: fast
+  update: false
+  vpc: pool
+virtualserver_keypair:
+  cost: cheap
+  depends_on: []
+  family: virtualserver
+  import: false
+  issues: []
+  needs: []
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: pool
+virtualserver_server:
+  cost: cheap
+  depends_on: []
+  family: virtualserver
+  import: false
+  issues: []
+  needs:
+  - image_id
+  - keypair_name
+  - server_type_id
+  - subnet_id
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: pool
+virtualserver_server_group:
+  cost: cheap
+  depends_on: []
+  family: virtualserver
+  import: false
+  issues: []
+  needs: []
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: pool
+virtualserver_volume:
+  cost: cheap
+  depends_on: []
+  family: virtualserver
+  import: false
+  issues:
+  - '#69'
+  needs: []
+  parallel: normal
+  status: broken
+  timeout_class: fast
+  update: false
+  vpc: pool
+vpc_cidr:
+  cost: cheap
+  depends_on: []
+  family: vpc
+  import: false
+  issues:
+  - '#60'
+  needs:
+  - vpc_id
+  parallel: low
+  status: broken
+  timeout_class: fast
+  update: false
+  vpc: pool
+vpc_internet_gateway:
+  cost: cheap
+  depends_on: []
+  family: vpc
+  import: false
+  issues: []
+  needs: []
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: self
+vpc_nat_gateway:
+  cost: cheap
+  depends_on: []
+  family: vpc
+  import: false
+  issues: []
+  needs:
+  - publicip_id
+  - subnet_id
+  parallel: low
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: pool
+vpc_port:
+  cost: cheap
+  depends_on: []
+  family: vpc
+  import: false
+  issues: []
+  needs:
+  - subnet_id
+  parallel: low
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: pool
+vpc_private_nat:
+  cost: cheap
+  depends_on: []
+  family: vpc
+  import: false
+  issues:
+  - TGW not connectable (#76)
+  needs: []
+  parallel: normal
+  status: broken
+  timeout_class: fast
+  update: false
+  vpc: none
+vpc_private_nat_ip:
+  cost: cheap
+  depends_on: []
+  family: vpc
+  import: false
+  issues: []
+  needs:
+  - ip_address
+  parallel: normal
+  status: untested
+  timeout_class: fast
+  update: false
+  vpc: pool
+vpc_publicip:
+  cost: cheap
+  depends_on: []
+  family: vpc
+  import: false
+  issues: []
+  needs: []
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+vpc_subnet:
+  cost: cheap
+  depends_on: []
+  family: vpc
+  import: false
+  issues:
+  - '#59'
+  needs:
+  - vpc_id
+  parallel: low
+  status: broken
+  timeout_class: fast
+  update: false
+  vpc: pool
+vpc_subnet_vip:
+  cost: cheap
+  depends_on: []
+  family: vpc
+  import: false
+  issues: []
+  needs:
+  - subnet_id
+  parallel: low
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: pool
+vpc_subnet_vip_nat_ip:
+  cost: cheap
+  depends_on: []
+  family: vpc
+  import: false
+  issues:
+  - 'provider: destroy fails ''SUBNET not a valid PublicipAttachedResourceType'' (apply ok w/ dedicated
+    publicip)'
+  needs:
+  - publicip_id
+  - subnet_id
+  parallel: low
+  status: broken
+  timeout_class: fast
+  update: false
+  vpc: pool
+vpc_subnet_vip_port:
+  cost: cheap
+  depends_on: []
+  family: vpc
+  import: false
+  issues: []
+  needs:
+  - subnet_id
+  parallel: low
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: pool
+vpc_transit_gateway:
+  cost: cheap
+  depends_on: []
+  exclude_reason: 'provider #76 (TGW status-waiter hang)'
+  family: vpc
+  import: false
+  issues: []
+  needs: []
+  parallel: normal
+  status: excluded
+  timeout_class: fast
+  update: false
+  vpc: none
+vpc_transit_gateway_firewall:
+  cost: cheap
+  depends_on: []
+  exclude_reason: 'provider #76 (TGW status-waiter hang)'
+  family: vpc
+  import: false
+  issues: []
+  needs: []
+  parallel: normal
+  status: excluded
+  timeout_class: fast
+  update: false
+  vpc: none
+vpc_transit_gateway_firewall_connection:
+  cost: cheap
+  depends_on: []
+  exclude_reason: 'provider #76 (TGW status-waiter hang)'
+  family: vpc
+  import: false
+  issues: []
+  needs: []
+  parallel: normal
+  status: excluded
+  timeout_class: fast
+  update: false
+  vpc: none
+vpc_transit_gateway_rule:
+  cost: cheap
+  depends_on: []
+  exclude_reason: 'provider #76 (TGW status-waiter hang)'
+  family: vpc
+  import: false
+  issues: []
+  needs:
+  - vpc_id
+  parallel: normal
+  status: excluded
+  timeout_class: fast
+  update: false
+  vpc: pool
+vpc_transit_gateway_uplink_rule:
+  cost: cheap
+  depends_on: []
+  exclude_reason: 'provider #76 (TGW status-waiter hang)'
+  family: vpc
+  import: false
+  issues: []
+  needs: []
+  parallel: normal
+  status: excluded
+  timeout_class: fast
+  update: false
+  vpc: none
+vpc_transit_gateway_vpc_connection:
+  cost: cheap
+  depends_on: []
+  exclude_reason: 'provider #76 (TGW status-waiter hang)'
+  family: vpc
+  import: false
+  issues: []
+  needs:
+  - vpc_id
+  parallel: normal
+  status: excluded
+  timeout_class: fast
+  update: false
+  vpc: pool
+vpc_vpc:
+  cost: cheap
+  depends_on: []
+  family: vpc
+  import: false
+  issues: []
+  needs: []
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: true
+  vpc: self
+vpc_vpc_endpoint:
+  cost: cheap
+  depends_on: []
+  family: vpc
+  import: false
+  issues:
+  - 'provider/config: 400 ''VPC Endpoint Type Subnet not found'''
+  needs:
+  - subnet_id
+  - vpc_id
+  parallel: normal
+  status: broken
+  timeout_class: fast
+  update: false
+  vpc: pool
+vpc_vpc_peering:
+  cost: cheap
+  depends_on: []
+  family: vpc
+  import: false
+  issues:
+  - 'provider: API requires approver_vpc_name but schema omits it (+destroy 409 leak)'
+  needs: []
+  parallel: normal
+  status: broken
+  timeout_class: fast
+  update: false
+  vpc: self
+vpc_vpc_peering_approval:
+  cost: cheap
+  depends_on: []
+  family: vpc
+  import: false
+  issues:
+  - depends on vpc_vpc_peering (provider approver_vpc_name gap)
+  needs: []
+  parallel: normal
+  status: broken
+  timeout_class: fast
+  update: false
+  vpc: self
+vpc_vpc_peering_rule:
+  cost: cheap
+  depends_on: []
+  family: vpc
+  import: false
+  issues:
+  - depends on vpc_vpc_peering (provider approver_vpc_name gap)
+  needs: []
+  parallel: normal
+  status: broken
+  timeout_class: fast
+  update: false
+  vpc: self
+vpn_vpn_gateway:
+  cost: cheap
+  depends_on: []
+  family: vpn
+  import: false
+  issues:
+  - VPC-quota cascade from peering leak (not isolate-tested)
+  needs:
+  - ip_address
+  - ip_id
+  - vpc_id
+  parallel: normal
+  status: broken
+  timeout_class: fast
+  update: false
+  vpc: self
+vpn_vpn_tunnel:
+  cost: cheap
+  depends_on: []
+  family: vpn
+  import: false
+  issues:
+  - VPC-quota cascade from peering leak (not isolate-tested)
+  needs: []
+  parallel: normal
+  status: broken
+  timeout_class: fast
+  update: false
+  vpc: self

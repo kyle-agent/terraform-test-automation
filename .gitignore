@@ -12,3 +12,7 @@ crash.log
 
 # Claude Code agent worktrees / local state
 .claude/
+
+# python bytecode caches
+__pycache__/
+*.pyc

@@ -10,21 +10,33 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-variable "log_stream_group_id" {
+variable "log_group_name" {
   type        = string
-  description = "ID of the ServiceWatch log group that owns this stream. Override via TF_VAR_log_stream_group_id with a real log group UUID."
-  default     = "00000000-0000-0000-0000-000000000000"
+  description = "Name of the ServiceWatch log group created as the stream's parent."
+  default     = "regr-log-stream-group"
+}
+
+variable "log_group_retention_period" {
+  type        = number
+  description = "Number of days to retain log entries in the parent group."
+  default     = 30
 }
 
 variable "log_stream_name" {
   type        = string
   description = "Name of the ServiceWatch log stream."
-  default     = "regr-log-stream"
+  default     = "regrlogstream"
 }
 
-# Minimal ServiceWatch log-stream fixture guarding log_stream coverage; both
-# attributes are required. log_group_id defaults to a zero-UUID placeholder.
+# Self-contained ServiceWatch log-stream fixture: a log stream requires an
+# existing log group, so the parent group is created here and its id is wired
+# into the stream's required log_group_id.
+resource "samsungcloudplatformv2_servicewatch_log_group" "regr" {
+  name             = var.log_group_name
+  retention_period = var.log_group_retention_period
+}
+
 resource "samsungcloudplatformv2_servicewatch_log_stream" "regr" {
-  log_group_id = var.log_stream_group_id
+  log_group_id = samsungcloudplatformv2_servicewatch_log_group.regr.id
   name         = var.log_stream_name
 }

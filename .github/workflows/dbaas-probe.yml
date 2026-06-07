@@ -1,0 +1,54 @@
+name: DBaaS Probe
+
+# Confirms DBaaS create *values* by POSTing the proven-valid api_bodies.json body
+# straight to the Open API and printing the RAW response — the opaque `value_error`
+# the terraform provider hides (issue #83) shows its offending field here. Created
+# clusters are deleted again (leak 0). Reuses the api-test-automation HMAC
+# framework, same pattern as api-reaper.yml.
+on:
+  workflow_dispatch:
+    inputs:
+      engines:
+        description: 'space-separated engines (or "all")'
+        default: 'mysql'
+  push:
+    branches:
+      - 'claude/**'
+    paths:
+      - 'cmd/dbaas_probe/**'
+      - '.github/workflows/dbaas-probe.yml'
+
+concurrency:
+  group: dbaas-probe-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    environment: scp-integration
+    timeout-minutes: 40
+    env:
+      SCP_REGION: kr-west1
+      SCP_ENV: e
+      SCP_ACCESS_KEY: ${{ secrets.SCP_TF_ACCESS_KEY }}
+      SCP_SECRET_KEY: ${{ secrets.SCP_TF_SECRET_KEY }}
+      SCP_ALLOW_MUTATIONS: 'true'
+      SCP_ALLOW_DESTRUCTIVE: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Fetch API framework (kyle-agent/api-test-automation)
+        run: git clone --depth 1 https://github.com/kyle-agent/api-test-automation /tmp/apitest
+      - name: Install deps
+        run: pip install -r /tmp/apitest/requirements.txt
+      # Default to 'cleanup' so a push never accidentally CREATES clusters (creates
+      # take ~20min to become deletable — a CREATING-trap). To probe engines, flip
+      # this to e.g. 'mysql' / 'all' / 'sqlserver searchengine eventstreams' for one
+      # push, then flip back. 'cleanup' is idempotent (GONE ids just report gone).
+      - name: Probe / cleanup DBaaS
+        run: PYTHONPATH=/tmp/apitest python cmd/dbaas_probe/probe.py ${{ github.event.inputs.engines || 'cleanup' }}

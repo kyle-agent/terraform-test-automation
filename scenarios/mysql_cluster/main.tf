@@ -21,18 +21,36 @@ variable "subnet_id" {
   type    = string
   default = "00000000-0000-0000-0000-000000000000"
 }
+# Empty default => look the engine version up at runtime via the data source
+# below. Set TF_VAR_dbaas_engine_version_id to override (e.g. to pin a version).
 variable "dbaas_engine_version_id" {
   type    = string
-  default = "00000000-0000-0000-0000-000000000000"
+  default = ""
 }
 variable "server_type_name" {
   type    = string
   default = "db1v2m4"
 }
 
+# Engine versions are account/region-specific, so resolve a valid id at runtime
+# instead of hardcoding one. Prefer a version that is not end-of-service.
+data "samsungcloudplatformv2_mysql_engine_version" "regr" {}
+
+locals {
+  mysql_engine_versions_available = [
+    for v in data.samsungcloudplatformv2_mysql_engine_version.regr.contents :
+    v if !v.end_of_service
+  ]
+  mysql_engine_version_id = var.dbaas_engine_version_id != "" ? var.dbaas_engine_version_id : (
+    length(local.mysql_engine_versions_available) > 0 ?
+    local.mysql_engine_versions_available[0].id :
+    data.samsungcloudplatformv2_mysql_engine_version.regr.contents[0].id
+  )
+}
+
 resource "samsungcloudplatformv2_mysql_cluster" "regr" {
-  name                    = "regr-mysql"
-  dbaas_engine_version_id = var.dbaas_engine_version_id
+  name                    = "regrmysql"
+  dbaas_engine_version_id = local.mysql_engine_version_id
   ha_enabled              = false
   nat_enabled             = false
   service_state           = "RUNNING"
@@ -46,11 +64,11 @@ resource "samsungcloudplatformv2_mysql_cluster" "regr" {
     database_user_name      = "regradmin"
     database_user_password  = "Regr1234!@"
     database_port           = 3306
-    database_character_set  = "utf8mb4"
+    database_character_set  = "utf8"
     database_case_sensitive = false
     backup_option = {
       retention_period_day     = "7"
-      starting_time_hour       = "02"
+      starting_time_hour       = "11"
       archive_frequency_minute = "30"
     }
   }
@@ -64,7 +82,7 @@ resource "samsungcloudplatformv2_mysql_cluster" "regr" {
       role_type        = "ACTIVE"
       server_type_name = var.server_type_name
       block_storage_groups = [
-        { role_type = "OS", size_gb = 100, volume_type = "SSD" },
+        { role_type = "OS", size_gb = 104, volume_type = "SSD" },
         { role_type = "DATA", size_gb = 200, volume_type = "SSD" },
       ]
       instances = [

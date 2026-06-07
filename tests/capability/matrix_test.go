@@ -27,10 +27,13 @@ package capability
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/kyle-agent/terraform-test-automation/tests/common"
@@ -46,13 +49,74 @@ func TestCapabilityMatrix(t *testing.T) {
 		t.Fatalf("discover scenarios: %v", err)
 	}
 
+	// MATRIX_SCENARIOS (comma-separated) restricts the run to specific scenarios.
+	// The full integration matrix walks all 87 resources sequentially through the
+	// whole lifecycle, which takes hours and risks timing out / leaking heavyweight
+	// clusters; an on-demand run can scope to just the resources under
+	// investigation while the scheduled run stays full.
+	if sel := strings.TrimSpace(os.Getenv("MATRIX_SCENARIOS")); sel != "" {
+		want := map[string]bool{}
+		for _, s := range strings.Split(sel, ",") {
+			if s = strings.TrimSpace(s); s != "" {
+				want[s] = true
+			}
+		}
+		var filtered []string
+		for _, n := range scenarios {
+			if want[n] {
+				filtered = append(filtered, n)
+			}
+		}
+		scenarios = filtered
+		t.Logf("MATRIX_SCENARIOS set: restricting matrix to %d scenario(s): %v", len(scenarios), scenarios)
+	}
+
+	// MATRIX_PARALLEL (integer) opts into running scenarios concurrently within a
+	// shared VPC. Unset or <=1 keeps the default, fully sequential behavior. >=2
+	// runs each scenario subtest with t.Parallel(), capping concurrency to that
+	// value via a buffered-channel semaphore. This is safe because every
+	// terraform invocation runs in its own scenario directory (common.TFRun sets
+	// cmd.Dir per-process — no os.Chdir / process-global cwd is mutated), so
+	// concurrent scenarios never corrupt each other's state.
+	parallel := 0
+	if v := strings.TrimSpace(os.Getenv("MATRIX_PARALLEL")); v != "" {
+		if n, err := strconv.Atoi(v); err == nil {
+			parallel = n
+		}
+	}
+
 	var caps []ResourceCaps
-	for _, name := range scenarios {
-		name := name
-		t.Run(name, func(t *testing.T) {
-			rc := runScenario(t, name)
-			caps = append(caps, rc)
+	var capsMu sync.Mutex
+	appendCap := func(rc ResourceCaps) {
+		capsMu.Lock()
+		caps = append(caps, rc)
+		capsMu.Unlock()
+	}
+
+	if parallel >= 2 {
+		// Bounded-concurrency parallel run. The outer "scenarios" subtest returns
+		// only after all its parallel children complete, so writeMatrix below is
+		// guaranteed to see the full result set (and never races the appends).
+		sem := make(chan struct{}, parallel)
+		t.Run("scenarios", func(t *testing.T) {
+			for _, name := range scenarios {
+				name := name
+				t.Run(name, func(t *testing.T) {
+					t.Parallel()
+					sem <- struct{}{}        // acquire
+					defer func() { <-sem }() // release
+					appendCap(runScenario(t, name))
+				})
+			}
 		})
+	} else {
+		// Default: fully sequential, identical to the original behavior.
+		for _, name := range scenarios {
+			name := name
+			t.Run(name, func(t *testing.T) {
+				appendCap(runScenario(t, name))
+			})
+		}
 	}
 
 	sort.Slice(caps, func(i, j int) bool { return caps[i].Scenario < caps[j].Scenario })
@@ -116,6 +180,14 @@ func runScenario(t *testing.T, name string) ResourceCaps {
 	// --- plan ---
 	plan := common.Plan(t, dir)
 	if plan.RawOutput != "" && strings.Contains(plan.RawOutput, "Error:") && len(plan.ResourceChanges) == 0 {
+		// Distinguish a provider-init/Configure failure (e.g. IAM endpoint list)
+		// from a real plan defect: the former is tracked as provider #38/#37 and
+		// must not be filed as a resource regression.
+		if common.IsProviderInitTransient(plan.RawOutput) {
+			rc.Stages["plan"] = "blocked"
+			rc.Note = "provider-init transient, see provider #38: " + firstError(plan.RawOutput)
+			return rc
+		}
 		rc.Stages["plan"] = "fail"
 		rc.Note = firstError(plan.RawOutput)
 		return rc
@@ -124,8 +196,20 @@ func runScenario(t *testing.T, name string) ResourceCaps {
 
 	out, err := common.TFRun(t, dir, "apply", "-no-color", "-input=false", "-auto-approve")
 	if err != nil {
+		if common.IsProviderInitTransient(out) {
+			rc.Stages["apply"] = "blocked"
+			rc.Note = "provider-init transient, see provider #38: " + firstError(out)
+			return rc
+		}
 		rc.Stages["apply"] = "fail"
 		rc.Note = firstError(out)
+		// Best-effort cleanup: a partial apply may have already created some
+		// resources (e.g. a parent created before a dependent child failed).
+		// terraform skips them otherwise, leaking real cloud resources. Destroy
+		// what made it into state; surface a LEAK marker if that also fails.
+		if dout, derr := common.TFRun(t, dir, "destroy", "-no-color", "-input=false", "-auto-approve"); derr != nil {
+			rc.Note += " | LEAK: partial-create cleanup destroy failed: " + firstError(dout)
+		}
 		return rc
 	}
 	rc.Stages["apply"] = "ok"
@@ -139,6 +223,29 @@ func runScenario(t *testing.T, name string) ResourceCaps {
 		rc.Note = "non-idempotent: " + changedSummary(replan)
 	}
 
+	// --- update (OPTIONAL, gated by MATRIX_UPDATE=1) ---
+	// After a clean apply+replan, re-apply with scenarios/<name>/update.tfvars
+	// (which mutates a safe, in-place-updatable attribute) and require the
+	// re-apply to succeed AND a subsequent re-plan to be clean. This catches
+	// in-place Update defects (cf. provider #71/#72) that the create-only
+	// pipeline never exercises. Stays "skip" when the gate is unset or the
+	// scenario has no update.tfvars.
+	runUpdateStage(t, dir, name, &rc)
+
+	// --- import (OPTIONAL, gated by MATRIX_IMPORT=1) ---
+	// Read the primary resource's address+id from `terraform show -json`, then in
+	// a throwaway copy+state run `terraform import <addr> <id>`. A resource that
+	// does not implement ImportState records "unsupported" (NOT "fail") — that is
+	// the #4 gap, surfaced per-resource rather than a defect of this run.
+	runImportStage(t, dir, name, &rc)
+
+	// Capture created resources from state BEFORE destroy, so destroy_verify can
+	// confirm they're actually gone afterwards (state is wiped by destroy).
+	var created []managedResource
+	if os.Getenv("DESTROY_VERIFY") == "1" {
+		created = collectManagedResources(t, dir)
+	}
+
 	// destroy regardless of replan outcome, and record whether cleanup worked.
 	if dout, derr := common.TFRun(t, dir, "destroy", "-no-color", "-input=false", "-auto-approve"); derr != nil {
 		rc.Stages["destroy"] = "fail"
@@ -147,8 +254,51 @@ func runScenario(t *testing.T, name string) ResourceCaps {
 		}
 	} else {
 		rc.Stages["destroy"] = "ok"
+		runDestroyVerify(&rc, created)
 	}
 	return rc
+}
+
+// runDestroyVerify (OPTIONAL, gated by DESTROY_VERIFY=1) confirms via the Open API
+// that destroyed resources are actually gone — a CheckDestroy-equivalent that
+// catches "terraform destroy succeeded but the resource lingers" (cf. #77/#82).
+// Records destroy_verify = ok (all mapped resources 404) | leak (one still 2xx) |
+// skip (no mapped resources / no credentials). Only high-confidence endpoint
+// mappings are checked; an ambiguous status (not 2xx and not 404) is ignored.
+func runDestroyVerify(rc *ResourceCaps, created []managedResource) {
+	if os.Getenv("DESTROY_VERIFY") != "1" || !common.APICredsAvailable() {
+		return
+	}
+	var checked int
+	var leaks []string
+	for _, r := range created {
+		ep, ok := resourceEndpoints[r.Type]
+		if !ok {
+			continue
+		}
+		checked++
+		st, err := common.APIStatus(ep.service, fmt.Sprintf(ep.path, r.ID))
+		if err != nil {
+			continue // transport/credential issue -> inconclusive, don't flag
+		}
+		if st >= 200 && st < 300 {
+			leaks = append(leaks, fmt.Sprintf("%s(%s) still present [HTTP %d]", r.Type, r.ID, st))
+		}
+		// 404 (or other non-2xx) => treated as gone/inconclusive, not a leak.
+	}
+	if checked == 0 {
+		rc.Stages["destroy_verify"] = "skip"
+		return
+	}
+	if len(leaks) > 0 {
+		rc.Stages["destroy_verify"] = "leak"
+		if rc.Note != "" {
+			rc.Note += " | "
+		}
+		rc.Note += "DESTROY_VERIFY leak: " + strings.Join(leaks, "; ")
+	} else {
+		rc.Stages["destroy_verify"] = "ok"
+	}
 }
 
 // changedSummary lists the non-noop resource changes in a plan, for the note.
@@ -162,7 +312,7 @@ func changedSummary(plan common.PlanResult) string {
 			}
 		}
 		if !noop {
-			parts = append(parts, common.FormatActions(c))
+			parts = append(parts, common.FormatChange(c))
 		}
 	}
 	if len(parts) == 0 {
@@ -222,16 +372,204 @@ func firstError(out string) string {
 				if d.Detail != "" {
 					s += ": " + d.Detail
 				}
-				return clip(oneLine(s), 160)
+				return clip(oneLine(s), 600)
 			}
 		}
 	}
-	for _, ln := range strings.Split(out, "\n") {
+	// Plain-text terraform output: capture the "Error:" summary AND the
+	// following diagnostic block (the `│`-prefixed detail / API message),
+	// which is where the actionable cause lives — not just the summary.
+	lines := strings.Split(out, "\n")
+	for i, ln := range lines {
 		if strings.Contains(ln, "Error:") {
-			return clip(oneLine(strings.TrimSpace(ln)), 160)
+			var block []string
+			for _, bl := range lines[i:min(i+12, len(lines))] {
+				if strings.Contains(bl, "╵") {
+					break
+				}
+				t := strings.TrimSpace(strings.Trim(strings.TrimSpace(bl), "│╷╵"))
+				if t != "" {
+					block = append(block, t)
+				}
+			}
+			return clip(oneLine(strings.Join(block, " ")), 600)
 		}
 	}
 	return ""
+}
+
+// runUpdateStage implements the optional "update" stage. It is a no-op (stage
+// stays "skip") unless MATRIX_UPDATE=1 AND scenarios/<name>/update.tfvars exists.
+func runUpdateStage(t *testing.T, dir, name string, rc *ResourceCaps) {
+	if os.Getenv("MATRIX_UPDATE") != "1" {
+		return // gate unset → skip (default runs unaffected)
+	}
+	varFile := filepath.Join(dir, "update.tfvars")
+	if _, err := os.Stat(varFile); err != nil {
+		return // no update fixture for this scenario → skip
+	}
+	// Only meaningful once the resource is actually applied.
+	if rc.Stages["apply"] != "ok" {
+		return
+	}
+
+	if out, err := common.TFRun(t, dir, "apply", "-no-color", "-input=false", "-auto-approve", "-var-file=update.tfvars"); err != nil {
+		rc.Stages["update"] = "fail"
+		appendNote(rc, "update apply failed: "+firstError(out))
+		return
+	}
+	// A clean re-plan WITH the same var-file proves the update converged
+	// (no churn / non-idempotent in-place update).
+	replan := common.PlanWithArgs(t, dir, "-var-file=update.tfvars")
+	if idempotent(replan) {
+		rc.Stages["update"] = "ok"
+	} else {
+		rc.Stages["update"] = "fail"
+		appendNote(rc, "update non-idempotent: "+changedSummary(replan))
+	}
+}
+
+// runImportStage implements the optional "import" stage. No-op (stays "skip")
+// unless MATRIX_IMPORT=1. Runs `terraform import` in a throwaway copy of the
+// scenario with its own empty state, so it never disturbs the live state that
+// destroy still needs. A resource lacking ImportState records "unsupported".
+func runImportStage(t *testing.T, dir, name string, rc *ResourceCaps) {
+	if os.Getenv("MATRIX_IMPORT") != "1" {
+		return // gate unset → skip
+	}
+	if rc.Stages["apply"] != "ok" {
+		return
+	}
+
+	addr, id, err := primaryResourceAddrID(t, dir)
+	if err != nil || addr == "" || id == "" {
+		rc.Stages["import"] = "skip"
+		appendNote(rc, "import: could not resolve primary resource addr/id: "+errStr(err))
+		return
+	}
+
+	// Throwaway working dir: copy the scenario's *.tf so the resource block and
+	// provider config exist, but keep a fresh empty state/backend so the import
+	// target is the only thing in state. Runs in a temp dir under the OS tmp.
+	work, derr := copyScenarioForImport(dir)
+	if derr != nil {
+		rc.Stages["import"] = "skip"
+		appendNote(rc, "import: could not stage throwaway copy: "+derr.Error())
+		return
+	}
+	defer os.RemoveAll(work)
+
+	if out, ierr := common.TFRun(t, work, "init", "-backend=false", "-no-color", "-input=false"); ierr != nil {
+		rc.Stages["import"] = "skip"
+		appendNote(rc, "import: throwaway init failed: "+firstError(out))
+		return
+	}
+
+	out, ierr := common.TFRun(t, work, "import", "-no-color", "-input=false", addr, id)
+	if ierr != nil {
+		if importUnsupported(out) {
+			// Resource does not implement ImportState — this is the #4 gap, not a
+			// failure of this run. Surface it without failing the stage.
+			rc.Stages["import"] = "unsupported"
+			appendNote(rc, "import unsupported (no ImportState; see #4): "+addr)
+			return
+		}
+		rc.Stages["import"] = "fail"
+		appendNote(rc, "import failed for "+addr+": "+firstError(out))
+		return
+	}
+	rc.Stages["import"] = "ok"
+}
+
+// importUnsupported reports whether a terraform import error indicates the
+// resource type does not implement ImportState (vs. a genuine import failure).
+func importUnsupported(out string) bool {
+	for _, sig := range []string{
+		"resource import not implemented",
+		"does not support import",
+		"Import is not implemented",
+		"doesn't support import",
+		"Resource Import Not Implemented",
+		"This resource does not support import",
+	} {
+		if strings.Contains(out, sig) {
+			return true
+		}
+	}
+	return false
+}
+
+// primaryResourceAddrID returns the address and id of the scenario's primary
+// (first managed) resource, read from the live state via `terraform show -json`.
+func primaryResourceAddrID(t *testing.T, dir string) (string, string, error) {
+	showOut, err := common.TFRun(t, dir, "show", "-json")
+	if err != nil {
+		return "", "", err
+	}
+	var state struct {
+		Values struct {
+			RootModule struct {
+				Resources []struct {
+					Address string                     `json:"address"`
+					Mode    string                     `json:"mode"`
+					Values  map[string]json.RawMessage `json:"values"`
+				} `json:"resources"`
+			} `json:"root_module"`
+		} `json:"values"`
+	}
+	if err := json.Unmarshal([]byte(showOut), &state); err != nil {
+		return "", "", err
+	}
+	for _, r := range state.Values.RootModule.Resources {
+		if r.Mode != "managed" {
+			continue
+		}
+		var id string
+		if raw, ok := r.Values["id"]; ok {
+			_ = json.Unmarshal([]byte(raw), &id)
+		}
+		return r.Address, id, nil
+	}
+	return "", "", nil
+}
+
+// copyScenarioForImport makes a temp dir containing only the scenario's *.tf
+// files (no state, no .terraform), suitable for a throwaway `terraform import`.
+func copyScenarioForImport(dir string) (string, error) {
+	work, err := os.MkdirTemp("", "matrix-import-")
+	if err != nil {
+		return "", err
+	}
+	files, _ := filepath.Glob(filepath.Join(dir, "*.tf"))
+	for _, f := range files {
+		b, rerr := os.ReadFile(f)
+		if rerr != nil {
+			os.RemoveAll(work)
+			return "", rerr
+		}
+		if werr := os.WriteFile(filepath.Join(work, filepath.Base(f)), b, 0o644); werr != nil {
+			os.RemoveAll(work)
+			return "", werr
+		}
+	}
+	return work, nil
+}
+
+// appendNote joins a new note onto rc.Note with a separator, preserving any
+// earlier note (e.g. a replan non-idempotency) instead of overwriting it.
+func appendNote(rc *ResourceCaps, s string) {
+	if rc.Note == "" {
+		rc.Note = s
+		return
+	}
+	rc.Note += " | " + s
+}
+
+func errStr(err error) string {
+	if err == nil {
+		return ""
+	}
+	return err.Error()
 }
 
 // scenarioResource returns the first provider resource declared by a scenario.

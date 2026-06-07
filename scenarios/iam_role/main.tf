@@ -42,27 +42,56 @@ variable "role_tags" {
   }
 }
 
+# SELF-CONTAINED: create a real customer-managed IAM policy in this fixture and
+# attach it to the role via policy_ids. Previously policy_ids held a zero-UUID
+# placeholder, which the API rejected with "No Policy found with ID 0000...0000".
+# The policy document mirrors the iam_policy scenario's known-good fixture.
+resource "samsungcloudplatformv2_iam_policy" "regr" {
+  policy_name = "regr-iam-role-policy"
+  description = "regression test IAM policy for iam_role"
+  tags = {
+    tf = "terraform"
+  }
+
+  policy_version = {
+    policy_document = {
+      version = "2024-10-01"
+      statement = [
+        {
+          sid      = "regrReadOnly"
+          effect   = "Allow"
+          action   = ["iam:Get*", "iam:List*"]
+          resource = ["*"]
+        }
+      ]
+    }
+  }
+}
+
 # IAM role fixture: guards that a role with an assume-role trust policy (one
 # Allow statement scoped to a trusted account principal) re-plans cleanly. The
 # trusted account is a placeholder; integration supplies the real value via
-# TF_VAR_trusted_account_id. policy_ids are left unset to avoid referencing real
-# policy ids during offline validation.
+# TF_VAR_trusted_account_id. policy_ids references the policy created above so
+# the role attaches a real, existing policy.
 resource "samsungcloudplatformv2_iam_role" "regr" {
   name                 = var.role_name
   description          = var.role_description
   max_session_duration = var.max_session_duration
+  policy_ids           = [samsungcloudplatformv2_iam_policy.regr.id]
   tags                 = var.role_tags
 
   assume_role_policy_document = {
-    version = "2024-10-01"
+    version = "2024-07-01"
     statement = [
       {
-        sid    = "regrAssumeRole"
-        effect = "Allow"
-        action = ["sts:AssumeRole"]
+        sid       = "regrAssumeRole"
+        effect    = "Allow"
+        action    = ["sts:AssumeRole"]
+        resource  = ["*"]
+        condition = {}
         principal = {
           principal_map = {
-            account = [var.trusted_account_id]
+            Account = [var.trusted_account_id]
           }
         }
       }

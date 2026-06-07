@@ -36,7 +36,7 @@ resource "samsungcloudplatformv2_budget_budget" "regr" {
   name        = var.budget_name
   amount      = var.budget_amount
   start_month = "2026-01"
-  unit        = "KRW"
+  unit        = "MONTHLY"
 
   notifications = {
     is_use_notification      = true

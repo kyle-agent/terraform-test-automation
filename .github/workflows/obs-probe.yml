@@ -1,0 +1,68 @@
+name: OBS Probe
+
+# Validate that SCP Object Storage (S3-compatible) accepts the same SCP access/secret
+# key via the S3 API, and that we can create/list/delete a bucket. Uses the aws CLI
+# preinstalled on the runner (no provider mirror needed). This is the feasibility
+# check before wiring an S3 bucket into terraform fixtures (e.g. network_logging
+# needs an existing OBS bucket_name). Self-cleans the bucket it makes.
+on:
+  workflow_dispatch:
+    inputs:
+      endpoint:
+        description: 'OBS S3 endpoint (blank = try the candidates)'
+        default: ''
+  push:
+    branches: ['claude/**']
+    paths: ['.github/workflows/obs-probe.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    environment: scp-integration
+    timeout-minutes: 6
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.SCP_TF_ACCESS_KEY }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.SCP_TF_SECRET_KEY }}
+      AWS_DEFAULT_REGION: kr-west1
+      AWS_EC2_METADATA_DISABLED: 'true'
+      AWS_MAX_ATTEMPTS: '1'
+      AWS_RETRY_MODE: 'standard'
+    steps:
+      - name: aws CLI version
+        run: aws --version
+      - name: Probe OBS S3 CreateBucket region / location-constraint matrix
+        # The terraform aws provider's aws_s3_bucket fails on OBS with
+        # "InvalidLocationConstraint" because for any region != us-east-1 it sends
+        # CreateBucketConfiguration.LocationConstraint=<region>, which OBS rejects.
+        # The only provider config that OMITS the constraint is region=us-east-1 --
+        # but that also flips the SigV4 *signing* region. This probe decides whether
+        # OBS accepts us-east-1 signing (case A); if so, the fixture sets region
+        # us-east-1 + endpoint kr-west1. Self-cleans every bucket it makes.
+        run: |
+          set +e
+          EP="${{ github.event.inputs.endpoint }}"
+          [ -z "$EP" ] && EP="https://object-store.kr-west1.e.samsungsdscloud.com"
+          A() { aws --cli-connect-timeout 8 --cli-read-timeout 12 --endpoint-url "$EP" "$@"; }
+          run_case() {
+            local name="$1" region="$2"; shift 2
+            local b="regr-obs-${GITHUB_RUN_ID}-${name}"
+            echo "=================================================================="
+            echo "CASE $name : region=$region  extra-args=[$*]"
+            AWS_DEFAULT_REGION="$region" A s3api create-bucket --bucket "$b" "$@" 2>&1 | head -8
+            local rc=$?
+            echo "CASE $name create rc=$rc"
+            if [ $rc -eq 0 ]; then
+              echo "CASE $name SUCCESS"
+              AWS_DEFAULT_REGION="$region" A s3 rb "s3://$b" 2>&1 | head -4
+            fi
+          }
+          # A: us-east-1 signing, no location constraint  <-- what provider region=us-east-1 does
+          run_case A us-east-1
+          # B: kr-west1 signing + LocationConstraint=kr-west1  <-- reproduces the provider failure
+          run_case B kr-west1 --create-bucket-configuration LocationConstraint=kr-west1
+          # C: kr-west1 signing, no location constraint  <-- known-good baseline
+          run_case C kr-west1
+          echo "obs-probe done"

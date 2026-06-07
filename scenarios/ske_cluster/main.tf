@@ -14,16 +14,28 @@ provider "samsungcloudplatformv2" {}
 # version with vpc/subnet/volume/security-group references. UUID inputs default
 # to the zero-UUID, overridable via TF_VAR_*; passes validate offline.
 
-variable "cluster_name" {
-  description = "SKE cluster name."
+variable "name_suffix" {
   type        = string
-  default     = "regr-ske-cluster"
+  default     = ""
+  description = "Per-run unique suffix (injected by the harness as TF_VAR_name_suffix)."
+}
+
+# The harness only exports TF_VAR_suffix (= github.run_id); prefer it so the
+# cluster name is actually unique per run. Falls back to name_suffix, then "".
+variable "suffix" {
+  type        = string
+  default     = ""
+  description = "Per-run unique suffix injected by the harness as TF_VAR_suffix (github.run_id)."
+}
+
+locals {
+  ske_suffix = var.suffix != "" ? var.suffix : var.name_suffix
 }
 
 variable "kubernetes_version" {
-  description = "Kubernetes version string (e.g. 1.30.1)."
+  description = "Kubernetes version (Required pattern ^v\\d\\.\\d{1,2}\\.\\d{1,2}$, e.g. v1.29.8). Integration overrides via TF_VAR_kubernetes_version from the catalog."
   type        = string
-  default     = "1.30.1"
+  default     = "v1.30.1"
 }
 
 variable "vpc_id" {
@@ -51,7 +63,10 @@ variable "security_group_id_list" {
 }
 
 resource "samsungcloudplatformv2_ske_cluster" "regr" {
-  name                          = var.cluster_name
+  # name pattern ^[a-z][a-z0-9-]*[a-z0-9]$, 3-30 chars. suffix is numeric
+  # (github.run_id) so "rske<suffix>" stays valid (and "rske" when empty for
+  # offline validate).
+  name                          = "rske${local.ske_suffix}"
   kubernetes_version            = var.kubernetes_version
   cloud_logging_enabled         = false
   service_watch_logging_enabled = false

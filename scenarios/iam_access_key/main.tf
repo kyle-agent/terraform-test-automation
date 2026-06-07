@@ -19,7 +19,7 @@ variable "access_key_description" {
 variable "access_key_type" {
   type        = string
   description = "Access key type. Integration runs may override via TF_VAR_access_key_type."
-  default     = "user"
+  default     = "PERMANENT"
 }
 
 # IAM access key fixture: guards that an access key for the calling identity can

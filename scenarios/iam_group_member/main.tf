@@ -10,22 +10,28 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-variable "group_id" {
+# Per-run-unique suffix injected by the harness (TF_VAR_name_suffix).
+variable "name_suffix" {
   type        = string
-  description = "Existing IAM group id to add the member to. Integration runs override via TF_VAR_group_id."
-  default     = "00000000-0000-0000-0000-000000000000"
+  description = "Per-run unique suffix appended to resource names."
+  default     = ""
 }
 
-variable "user_id" {
-  type        = string
-  description = "Existing IAM user id to add as a group member. Integration runs override via TF_VAR_user_id."
-  default     = "00000000-0000-0000-0000-000000000000"
+# IAM group membership fixture. iam_group and iam_user are both self-contained
+# (already green), so this fixture creates both prerequisites in-line and binds
+# the user into the group. A second apply with no config change must re-plan
+# cleanly (the computed membership list must not force a spurious update).
+resource "samsungcloudplatformv2_iam_group" "regr" {
+  name        = "regr-gm-grp${var.name_suffix}"
+  description = "regression-test group for membership"
 }
 
-# IAM group membership fixture: guards that binding a user into a group re-plans
-# cleanly. Both ids are placeholders (zero-UUID) so the fixture validates
-# offline; integration supplies real group_id / user_id via TF_VAR_*.
+resource "samsungcloudplatformv2_iam_user" "regr" {
+  user_name   = "regr-gm-user${var.name_suffix}"
+  description = "regression-test user for membership"
+}
+
 resource "samsungcloudplatformv2_iam_group_member" "regr" {
-  group_id = var.group_id
-  user_id  = var.user_id
+  group_id = samsungcloudplatformv2_iam_group.regr.id
+  user_id  = samsungcloudplatformv2_iam_user.regr.user_id
 }
