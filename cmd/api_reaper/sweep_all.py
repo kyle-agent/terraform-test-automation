@@ -166,10 +166,23 @@ def main() -> int:
         for it in lst(c, svc, "/v1/clusters"):
             if it.get("id") and delete(c, svc, f"/v1/clusters/{it['id']}"):
                 n += 1
-    # 4. loadbalancers
+    # 4. loadbalancers — an LB won't delete (409) while it has listeners / server
+    # groups / health checks, so tear those down first, then the LB with retries.
+    for coll in ("lb-listeners", "lb-server-groups", "lb-health-checks"):
+        for it in lst(c, "loadbalancer", f"/v1/{coll}"):
+            if it.get("id"):
+                delete(c, "loadbalancer", f"/v1/{coll}/{it['id']}")
     for it in lst(c, "loadbalancer", "/v1/loadbalancers"):
-        if it.get("id") and delete(c, "loadbalancer", f"/v1/loadbalancers/{it['id']}"):
-            n += 1
+        lbid = it.get("id")
+        if not lbid:
+            continue
+        for _ in range(6):
+            st = delete(c, "loadbalancer", f"/v1/loadbalancers/{lbid}")
+            if st in (200, 202, 204, 404):
+                n += 1; wait_gone(c, "loadbalancer", f"/v1/loadbalancers/{lbid}", 240, 15); break
+            if st == 409:
+                time.sleep(20); continue
+            break
     # 5. transit gateways — full teardown (rules -> connections -> tgw)
     for it in lst(c, "vpc", "/v1/transit-gateways"):
         if it.get("id"):
