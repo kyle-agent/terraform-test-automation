@@ -301,7 +301,8 @@ def main() -> int:
     # the service principal — so the reaper can't delete those directly) and pins
     # its subnet/VPC. Surface the cluster state + delete response body so the 400
     # is diagnosable, retry transitional states, and only count real deletes.
-    for svc in ("mysql", "postgresql", "mariadb", "sqlserver", "epas", "cachestore", "searchengine"):
+    for svc in ("mysql", "postgresql", "mariadb", "sqlserver", "epas", "cachestore",
+                "searchengine", "eventstreams", "vertica", "multinodegpucluster"):
         for it in lst(c, svc, "/v1/clusters"):
             cid = it.get("id")
             if not cid:
@@ -408,6 +409,40 @@ def main() -> int:
         vid = it.get("volume_id") or it.get("id")
         if vid and delete(c, "filestorage", f"/v1/volumes/{vid}"):
             n += 1
+    # 7a. block storage volumes (VM + baremetal) — servers were deleted above, so the
+    # detached volumes are now removable. SCP exposes these on different hosts; probe
+    # the candidate (host, collection) pairs and delete each by id. Wrong paths just
+    # list-error and skip, so probing is harmless.
+    for svc, path in (("virtualserver", "/v1/block-storages"),
+                      ("virtualserver", "/v1/volumes"),
+                      ("baremetal-blockstorage", "/v1/block-storages"),
+                      ("baremetal-blockstorage", "/v1/volumes"),
+                      ("baremetal", "/v1/block-storages")):
+        for it in lst(c, svc, path):
+            vid = it.get("id") or it.get("volume_id")
+            if vid and delete(c, svc, f"{path}/{vid}") in (200, 202, 204, 404):
+                n += 1
+    # 7b. virtualserver server-groups, then custom images. Images are GUARDED to
+    # test-prefix names only — never delete the account's base/public OS images.
+    for it in lst(c, "virtualserver", "/v1/server-groups"):
+        if it.get("id") and delete(c, "virtualserver", f"/v1/server-groups/{it['id']}") in (200, 202, 204, 404):
+            n += 1
+    try:
+        for it in items(c.get("/v1/images", service="virtualserver").body):
+            nm = name_of(it).lower()
+            if it.get("id") and any(nm.startswith(p) for p in ("regr", "rpv", "rske")):
+                if delete(c, "virtualserver", f"/v1/images/{it['id']}") in (200, 202, 204, 404):
+                    n += 1
+    except Exception as exc:
+        print(f"  images sweep error: {exc}")
+    # 7c. backup + gslb (best-effort; probe collection names, delete by id)
+    for svc, paths in (("backup", ("/v1/backups", "/v1/vaults", "/v1/backup-policies")),
+                       ("gslb", ("/v1/gslbs", "/v1/gslb"))):
+        for path in paths:
+            for it in lst(c, svc, path):
+                rid = it.get("id")
+                if rid and delete(c, svc, f"{path}/{rid}") in (200, 202, 204, 404):
+                    n += 1
     # 8. DNS: private-dns (deletable only when ACTIVE), public-domain (NO delete API)
     for it in lst(c, "dns", "/v1/private-dns"):
         if it.get("id"):
