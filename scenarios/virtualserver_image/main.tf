@@ -46,8 +46,8 @@ variable "image_container_format" {
 
 variable "image_os_distro" {
   type        = string
-  description = "OS distro hint for the registered image."
-  default     = "ubuntu"
+  description = "OS distro hint for the registered image. 'cirros' matches the tiny CirrOS qcow2 staged by scripts/upload_image_to_obs.py (CI uploads CirrOS, not Ubuntu). The schema has no enum validator for os_distro; it is validated server-side at import time."
+  default     = "cirros"
 }
 
 variable "image_visibility" {

@@ -787,13 +787,13 @@ virtualserver_image:
   family: virtualserver
   import: false
   issues:
-  - invalid OBS image URL (needs real image file)
+  - 'probe: registers a real CirrOS qcow2 staged in OBS by the novpc lane (TF_VAR_image_url)'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
-  vpc: pool
+  vpc: none
 virtualserver_keypair:
   cost: cheap
   depends_on: []

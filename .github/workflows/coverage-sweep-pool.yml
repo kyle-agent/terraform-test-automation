@@ -118,6 +118,28 @@ jobs:
           pip install --quiet boto3
           echo "OBS_BUCKET_SCRIPT=${{ github.workspace }}/scripts/obs_bucket.py" >> "$GITHUB_ENV"
           python3 "${{ github.workspace }}/scripts/obs_bucket.py" sweep regrnetlog regr-obs- || true
+      - name: Stage CirrOS image in OBS for virtualserver_image
+        # Only when the novpc set actually includes virtualserver_image. Best-effort:
+        # download a tiny CirrOS qcow2, upload it to OBS public-read, and export its
+        # public URL as TF_VAR_image_url so the fixture registers a REAL image. If the
+        # upload fails, the fixture keeps its offline dummy URL (|| true).
+        if: contains(needs.plan.outputs.novpc, 'virtualserver_image')
+        env:
+          TF_VAR_obs_access_key: ${{ secrets.SCP_TF_ACCESS_KEY }}
+          TF_VAR_obs_secret_key: ${{ secrets.SCP_TF_SECRET_KEY }}
+          TF_VAR_obs_endpoint: https://object-store.kr-west1.e.samsungsdscloud.com
+        run: |
+          pip install --quiet boto3
+          # Capture first; only export if the helper actually printed a URL, so a
+          # failed upload leaves the fixture's offline dummy default in place.
+          url="$(python3 "${{ github.workspace }}/scripts/upload_image_to_obs.py" \
+            --source-url https://download.cirros-cloud.net/0.6.2/cirros-0.6.2-x86_64-disk.img \
+            --bucket regr-obs-image)" || true
+          if [ -n "$url" ]; then
+            echo "TF_VAR_image_url=$url" >> "$GITHUB_ENV"
+          else
+            echo "image staging failed; keeping offline dummy image_url" >&2
+          fi
       - name: Run VPC-independent products in parallel
         env:
           MODE: integration

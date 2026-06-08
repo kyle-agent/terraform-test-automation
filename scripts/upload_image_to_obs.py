@@ -16,9 +16,11 @@ This helper:
 
 Feed that URL to the fixture as TF_VAR_image_url:
 
-    export TF_VAR_image_url="$(python3 scripts/upload_image_to_obs.py \
-        --source-url https://cloud-images.ubuntu.com/.../ubuntu.qcow2 \
-        --bucket regr-vsimage --key ubuntu-22.04.qcow2)"
+    export TF_VAR_image_url="$(python3 scripts/upload_image_to_obs.py)"
+
+With no flags it downloads the default tiny CirrOS qcow2 (a few MB), uploads it
+to the default test bucket, and prints the public URL. Override any of
+--source-url / --bucket / --key as needed.
 
 Auth + endpoint reuse the same env contract as scripts/obs_bucket.py (the SCP
 access/secret key pair). NOTHING is hardcoded:
@@ -27,11 +29,13 @@ access/secret key pair). NOTHING is hardcoded:
   TF_VAR_obs_endpoint   / OBS_ENDPOINT   (default object-store.kr-west1.e...)
 
 This is best-effort and meant to run in CI where OBS creds exist. See
-docs/findings/virtualserver-image-obs.md for the ~600MB-vs-tiny-image tradeoff
-and the timebox / blocked-with-findings recommendation.
+docs/findings/virtualserver-image-obs.md for the tiny-image rationale.
 
-NOTE: A real upload of an Ubuntu cloud qcow2 is ~600MB. This script does NOT run
-as part of `terraform validate`; it is invoked explicitly in an integration job.
+The default image is a CirrOS qcow2 (a few MB), chosen because SCP is
+OpenStack-based and CirrOS is the canonical tiny OpenStack-compatible test image
+-- so it is the highest-probability accepted upload while keeping the download +
+upload fast. This script does NOT run as part of `terraform validate`; it is
+invoked explicitly in an integration job.
 """
 import argparse
 import os
@@ -46,6 +50,13 @@ from botocore.exceptions import ClientError
 
 # Mirror obs_bucket.py so both scripts share one endpoint/region contract.
 DEFAULT_ENDPOINT = "https://object-store.kr-west1.e.samsungsdscloud.com"
+
+# CirrOS: the canonical tiny OpenStack test image (a few MB). SCP is
+# OpenStack-based, so this is the highest-probability accepted import.
+DEFAULT_SOURCE_URL = "https://download.cirros-cloud.net/0.6.2/cirros-0.6.2-x86_64-disk.img"
+# Test-prefixed bucket name so the existing OBS sweep (prefix "regr-obs-") can
+# reclaim it; idempotently created if absent.
+DEFAULT_BUCKET = "regr-obs-image"
 
 
 def _env(*names, default=None):
@@ -153,8 +164,17 @@ def public_url(endpoint, bucket, key):
 def main(argv):
     ap = argparse.ArgumentParser(description="Upload a VM image to OBS and print its public URL.")
     ap.add_argument("--image", help="path to a local image file (qcow2)")
-    ap.add_argument("--source-url", help="download the image from this URL if --image is not given")
-    ap.add_argument("--bucket", required=True, help="OBS bucket to upload into (created if absent)")
+    ap.add_argument(
+        "--source-url",
+        default=DEFAULT_SOURCE_URL,
+        help="download the image from this URL if --image is not given "
+        f"(default: tiny CirrOS qcow2 {DEFAULT_SOURCE_URL})",
+    )
+    ap.add_argument(
+        "--bucket",
+        default=DEFAULT_BUCKET,
+        help=f"OBS bucket to upload into, created if absent (default: {DEFAULT_BUCKET})",
+    )
     ap.add_argument("--key", help="object key; defaults to the source/local filename")
     args = ap.parse_args(argv[1:])
 
