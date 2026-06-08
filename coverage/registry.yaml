@@ -431,12 +431,14 @@ loadbalancer_basic:
   family: loadbalancer
   import: false
   issues:
-  - '#77 destroy-leak (apply/replan OK; leaks LB on destroy -> pool subnet/VPC 409); reap after sweep'
+  - '#77 provider Create does not wait for ACTIVE: apply/replan OK but destroy 400
+    ''not in a deletable state (state: CREATING)'' -> leaks LB pinning pool subnet/VPC
+    (run 27121594571). Needs a provider-side wait-for-ACTIVE in Create/Delete.'
   needs:
   - subnet_id
   - vpc_id
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool
@@ -445,13 +447,12 @@ loadbalancer_lb_health_check:
   depends_on: []
   family: loadbalancer
   import: false
-  issues:
-  - 'un-excluded: self-standing fixture; #77 destroy-leak family -> reap after sweep'
+  issues: []
   needs:
   - subnet_id
   - vpc_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
