@@ -5,6 +5,8 @@ Deletes every resource whose NAME matches our test prefixes, in dependency order
 (children before parents). terraform bootstrap names: rpv (vpc), rps/rpsg
 (subnet/sg), rpkp (keypair), rpfs (filestorage), IGW_/FW_IGW_ (gateway/firewall);
 scenario names: regr*, rske (ske), rlb (loadbalancer), rtgw (transit gateway).
+# Manual sweep 2026-06-08: reclaim pool subnet/VPC leaked by loadbalancer_basic
+# (LB stuck CREATING blocked subnet delete -> 409, run 27121594571 / #77).
 
 Scoped strictly to those prefixes so a pre-existing non-test resource is never
 touched. Requires SCP_ALLOW_MUTATIONS=true and SCP_ALLOW_DESTRUCTIVE=true.
