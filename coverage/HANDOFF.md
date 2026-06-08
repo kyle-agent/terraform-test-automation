@@ -1,6 +1,7 @@
 # Coverage-expansion session handoff
 
-**Branch:** `claude/youthful-albattani-CzhCZ` (both repos)
+**Branch:** `main` — consolidated 2026-06-08 (PR #14); all prior `claude/*` scratch
+branches in this repo were deleted. Resume from `main`.
 **Last updated:** 2026-06-08
 **Purpose:** Single source of truth for resuming the Terraform-provider coverage
 expansion work in a fresh session. **Start at [`AGENTS.md`](../AGENTS.md)** (mission +
@@ -29,6 +30,11 @@ multi-agent architecture + session bootstrap), then this file, then
   continues identically): `AGENTS.md`, `docs/agents/*`, runnable subagents in
   **`.claude/agents/*`**, `coverage/domain.yaml` + `docs/domain/*`,
   `docs/PROVIDER_VERIFICATION.md`, `docs/PROVIDER_ISSUES.md`.
+
+**Branch consolidation (2026-06-08):** this session's work was merged to **`main`**
+(PR #14) and every `claude/*` scratch branch in this repo was deleted — `main` is now
+the single source of truth; new sessions branch from it. (The session token couldn't
+delete branches itself — `403`; deletion was done manually.)
 
 **Resume next session by:** reading `AGENTS.md` → this §0 → `docs/roadmap.md`. The
 coverage-expansion TODO is unchanged (see §5 below): firewall_firewall_rule self-contain,
