@@ -143,6 +143,52 @@ def vid_field(it):
     return str(it.get("vpc_id") or "")
 
 
+def reap_servicewatch(c):
+    """ServiceWatch log groups (and their nested log streams) are NOT reachable by
+    terraform cleanup or the by-id deletes above, so they accumulate every run (the
+    servicewatch_log_stream/log_group fixtures leak one group each). Delete is a BULK
+    op: DELETE <collection> with body {"ids":[...]} (per the SDK's DeleteLogGroups /
+    DeleteLogGroupLogStreams). Self-discover the collection path (SCP uses kebab
+    paths) and tolerate body-field/verb variations so a schema quirk can't silently
+    no-op. Region-scoped, independent of any VPC."""
+    svc, n = "servicewatch", 0
+    base = None
+    for cand in ("/v1/log-groups", "/v1/loggroups", "/v1/log_groups"):
+        r = c.get(cand, service=svc)
+        print(f"  probe {svc}{cand} -> {getattr(r, 'status', '?')}")
+        if getattr(r, "ok", False):
+            base = cand
+            break
+    if base is None:
+        print("  servicewatch: no log-group list endpoint reachable; skipping")
+        return 0
+    groups = [g for g in items(c.get(base, service=svc).body)
+              if isinstance(g, dict) and is_test(name_of(g)) and old_enough(g)]
+    ids = [g["id"] for g in groups if g.get("id")]
+    print(f"  servicewatch: {len(ids)} log group(s) to reap: "
+          + ", ".join(f"{name_of(g)}({g.get('id')})" for g in groups))
+    if not ids:
+        return 0
+    # 1) try bulk delete on the collection, trying a few plausible id-field names.
+    for body in ({"ids": ids}, {"logGroupIds": ids}, {"log_group_ids": ids}):
+        if delete(c, svc, base, json=body) in (200, 202, 204):
+            return len(ids)
+    # 2) fall back to per-id delete; if a group 409s, clear its log streams first.
+    for gid in ids:
+        st = delete(c, svc, f"{base}/{gid}")
+        if st == 409:
+            for spath in (f"{base}/{gid}/log-streams", f"{base}/{gid}/logstreams"):
+                streams = items(c.get(spath, service=svc).body)
+                sids = [s["id"] for s in streams if isinstance(s, dict) and s.get("id")]
+                if sids:
+                    delete(c, svc, spath, json={"ids": sids})
+                    break
+            st = delete(c, svc, f"{base}/{gid}")
+        if st in (200, 202, 204, 404):
+            n += 1
+    return n
+
+
 def main() -> int:
     global SWEEP_ALL
     settings.require_credentials()
@@ -377,6 +423,9 @@ def main() -> int:
     for it in lst(c, "certificatemanager", "/v1/certificatemanager"):
         if it.get("id") and delete(c, "certificatemanager", f"/v1/certificatemanager/{it['id']}"):
             n += 1
+    # 11. servicewatch log groups (+ nested log streams) — leaked every run, never
+    # reaped before; not VPC-bound so order doesn't matter.
+    n += reap_servicewatch(c)
     print(f"sweep_all done: {n} resource(s) deleted")
     return 0
 
