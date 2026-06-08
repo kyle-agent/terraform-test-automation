@@ -431,11 +431,12 @@ loadbalancer_basic:
   family: loadbalancer
   import: false
   issues:
-  - 'self-VPC re-test (#77): creates own vpc+subnet (no shared pool subnet). apply/replan
-    expected OK; clean destroy still blocked by provider #77 (Create-no-wait) until fixed.'
+  - 'self-VPC CONFIRMED apply ✅ replan ✅ (run 27171780178) — the re-model resolves the
+    one-LB-per-subnet collision; only destroy ❌ provider #77 (400 not-in-a-deletable-state
+    CREATING). #77 (Create wait-for-ACTIVE) is now the SOLE blocker.'
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: self
@@ -459,11 +460,12 @@ loadbalancer_lb_listener:
   family: loadbalancer
   import: false
   issues:
-  - 'self-VPC re-test (#77): creates own vpc+subnet (resolves the one-LB-per-subnet 409).
-    apply/replan expected OK; clean destroy still blocked by provider #77 until fixed.'
+  - 'self-VPC: fixed listener routing_action enum (ROUNDROBIN -> LB_SERVER_GROUP; run
+    27171780178 apply 400 "Input should be LB_SERVER_GROUP or URL_REDIRECT"). apply now
+    expected OK like basic/server_group; destroy still blocked by provider #77.'
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: self
@@ -493,11 +495,12 @@ loadbalancer_lb_server_group:
   family: loadbalancer
   import: false
   issues:
-  - 'self-VPC re-test (#77): creates own vpc+subnet. apply/replan expected OK; clean
-    destroy still blocked by provider #77 (Create-no-wait -> CREATING) until fixed.'
+  - 'self-VPC CONFIRMED apply ✅ replan ✅ (run 27171780178) — creates LB+server_group in
+    its own subnet; only destroy ❌ provider #77 (leaked LB -> subnet 409). #77 is the SOLE
+    blocker.'
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: self
@@ -521,11 +524,12 @@ loadbalancer_loadbalancer_public_nat_ip:
   family: loadbalancer
   import: false
   issues:
-  - 'self-VPC re-test (#77): creates own vpc+subnet+publicip (resolves one-LB-per-subnet 409).
-    apply/replan expected OK; clean destroy still blocked by provider #77 until fixed.'
+  - 'self-VPC: apply ❌ (run 27171780178) — public NAT attach needs the LB ACTIVE first
+    ("Unable to update loadbalancer in current state CREATING"), i.e. #77-dependent: the
+    provider does not wait for the LB to be ACTIVE before attaching the NAT IP.'
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: self
@@ -774,11 +778,14 @@ virtualserver_image:
   family: virtualserver
   import: false
   issues:
-  - 'retry: operator pre-created an OBS bucket; helper now reuses an existing bucket
-    (list_buckets fallback). URL .qcow2 + os_distro=ubuntu already satisfied (see #86).'
+  - 'staging now SUCCEEDS (CirrOS 21.4MB uploaded to OBS bucket regr-obs-image), but the
+    platform rejects the image URL with "Object Storage URL ... is invalid" for BOTH
+    path-style and virtual-hosted forms (runs 27171440897 / 27171780178). Remaining
+    unknown = object public-access + the OBS URL form the import service expects (#86);
+    needs operator input.'
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: none

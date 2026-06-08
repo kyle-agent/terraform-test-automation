@@ -85,6 +85,8 @@ resource "samsungcloudplatformv2_loadbalancer_lb_listener" "regr" {
     loadbalancer_id = samsungcloudplatformv2_loadbalancer_loadbalancer.regr.id
     server_group_id = samsungcloudplatformv2_loadbalancer_lb_server_group.regr.id
     persistence     = "SOURCE_IP"
-    routing_action  = "ROUNDROBIN"
+    # routing_action enum is {LB_SERVER_GROUP, URL_REDIRECT} (run 27171780178 400);
+    # ROUNDROBIN is an lb_method, not a listener routing_action.
+    routing_action  = "LB_SERVER_GROUP"
   }
 }
