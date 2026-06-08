@@ -295,11 +295,32 @@ def main() -> int:
             if st in (409, 500):
                 time.sleep(30); continue
             break
-    # 3. dbaas clusters (per engine host) + searchengine
+    # 3. dbaas clusters (per engine host) + searchengine. These leak hardest: a
+    # failed/half-created cluster often 400s on delete, and while it lives the
+    # managed service keeps its slowlog/alertlog ServiceWatch log groups (owned by
+    # the service principal — so the reaper can't delete those directly) and pins
+    # its subnet/VPC. Surface the cluster state + delete response body so the 400
+    # is diagnosable, retry transitional states, and only count real deletes.
     for svc in ("mysql", "postgresql", "mariadb", "sqlserver", "epas", "cachestore", "searchengine"):
         for it in lst(c, svc, "/v1/clusters"):
-            if it.get("id") and delete(c, svc, f"/v1/clusters/{it['id']}"):
-                n += 1
+            cid = it.get("id")
+            if not cid:
+                continue
+            state = it.get("state") or it.get("status") or "?"
+            done = False
+            for attempt in range(6):
+                r = c.delete(f"/v1/clusters/{cid}", service=svc)
+                print(f"  DELETE {svc}/v1/clusters/{cid} (state={state}) -> {r.status} {str(r.body)[:220]}")
+                if r.status in (200, 202, 204, 404):
+                    n += 1; done = True
+                    wait_gone(c, svc, f"/v1/clusters/{cid}", 300, 20)
+                    break
+                if r.status in (400, 409, 500):  # often transitional (CREATING/RESTARTING) — settle
+                    time.sleep(30); continue
+                break
+            if not done:
+                cb = c.get(f"/v1/clusters/{cid}", service=svc).body
+                print(f"  DIAG {svc} cluster {cid} undeletable after retries: {str(cb)[:300]}")
     # 4. loadbalancers — an LB won't delete (409) while it has listeners / server
     # groups / health checks, so tear those down first, then the LB with retries.
     for coll in ("lb-listeners", "lb-server-groups", "lb-health-checks"):
