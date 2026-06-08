@@ -143,14 +143,24 @@ def vid_field(it):
     return str(it.get("vpc_id") or "")
 
 
+def _sw_groups(c, base):
+    """List reapable servicewatch log groups. Request a large page (the API
+    paginates — the SDK passes size=MaxInt32) so we don't only see the default
+    first 20."""
+    r = c.get(f"{base}?size=1000", service="servicewatch")
+    return [g for g in items(r.body)
+            if isinstance(g, dict) and is_test(name_of(g)) and g.get("id") and old_enough(g)]
+
+
 def reap_servicewatch(c):
-    """ServiceWatch log groups (and their nested log streams) are NOT reachable by
-    terraform cleanup or the by-id deletes above, so they accumulate every run (the
-    servicewatch_log_stream/log_group fixtures leak one group each). Delete is a BULK
-    op: DELETE <collection> with body {"ids":[...]} (per the SDK's DeleteLogGroups /
-    DeleteLogGroupLogStreams). Self-discover the collection path (SCP uses kebab
-    paths) and tolerate body-field/verb variations so a schema quirk can't silently
-    no-op. Region-scoped, independent of any VPC."""
+    """ServiceWatch log groups (and nested log streams) are NOT reachable by
+    terraform cleanup or the by-id deletes above, so they accumulate every run —
+    including the slowlog/alertlog groups auto-created by every DBaaS/SKE/SCF
+    resource. Delete is a BULK op: DELETE <collection> {"ids":[...]} (the SDK's
+    DeleteLogGroups). The list paginates (default page 20), so loop: list a large
+    page, chunk-delete, repeat until empty. Detect no-progress (same id set ->
+    bulk isn't actually deleting) and fall back to per-id / dump a diagnostic so a
+    silent 200-no-op or a pinned group can't hide. Region-scoped, VPC-independent."""
     svc, n = "servicewatch", 0
     base = None
     for cand in ("/v1/log-groups", "/v1/loggroups", "/v1/log_groups"):
@@ -162,30 +172,49 @@ def reap_servicewatch(c):
     if base is None:
         print("  servicewatch: no log-group list endpoint reachable; skipping")
         return 0
-    groups = [g for g in items(c.get(base, service=svc).body)
-              if isinstance(g, dict) and is_test(name_of(g)) and old_enough(g)]
-    ids = [g["id"] for g in groups if g.get("id")]
-    print(f"  servicewatch: {len(ids)} log group(s) to reap: "
-          + ", ".join(f"{name_of(g)}({g.get('id')})" for g in groups))
-    if not ids:
-        return 0
-    # 1) try bulk delete on the collection, trying a few plausible id-field names.
-    for body in ({"ids": ids}, {"logGroupIds": ids}, {"log_group_ids": ids}):
-        if delete(c, svc, base, json=body) in (200, 202, 204):
-            return len(ids)
-    # 2) fall back to per-id delete; if a group 409s, clear its log streams first.
-    for gid in ids:
-        st = delete(c, svc, f"{base}/{gid}")
-        if st == 409:
-            for spath in (f"{base}/{gid}/log-streams", f"{base}/{gid}/logstreams"):
-                streams = items(c.get(spath, service=svc).body)
-                sids = [s["id"] for s in streams if isinstance(s, dict) and s.get("id")]
-                if sids:
-                    delete(c, svc, spath, json={"ids": sids})
-                    break
-            st = delete(c, svc, f"{base}/{gid}")
-        if st in (200, 202, 204, 404):
-            n += 1
+    prev_ids = set()
+    for round_i in range(50):
+        groups = _sw_groups(c, base)
+        if not groups:
+            print(f"  servicewatch: all clear after {round_i} round(s)")
+            break
+        ids = [g["id"] for g in groups]
+        cur = set(ids)
+        if cur == prev_ids:
+            # bulk delete returned ok but removed nothing — these are pinned
+            # (e.g. a still-terminating parent cluster) or need per-id. Try per-id
+            # once; if that also can't shift them, dump a sample + body and stop.
+            print(f"  servicewatch: {len(ids)} not removed by bulk — trying per-id")
+            progressed = False
+            for gid in ids:
+                if delete(c, svc, f"{base}/{gid}") in (200, 202, 204, 404):
+                    progressed = True
+                    n += 1
+            if not progressed:
+                print(f"  servicewatch: {len(ids)} STUCK (likely pinned to a live "
+                      f"parent / not yet deletable). sample:")
+                for g in groups[:25]:
+                    print(f"    STUCK {name_of(g)} ({g['id']})")
+                print(f"  DIAG sample body: {c.get(f'{base}/{ids[0]}', service=svc).body}")
+                break
+            prev_ids = set()
+            continue
+        prev_ids = cur
+        print(f"  servicewatch round {round_i}: {len(ids)} log group(s) remaining; deleting")
+        for i in range(0, len(ids), 50):
+            chunk = ids[i:i + 50]
+            r = c.delete(base, service=svc, json={"ids": chunk})
+            print(f"  DELETE {svc}{base} x{len(chunk)} -> {r.status} {str(r.body)[:160]}")
+            if r.status in (200, 202, 204):
+                n += len(chunk)
+            else:
+                # alternate id-field names some SCP bulk endpoints expect
+                for fld in ("logGroupIds", "log_group_ids"):
+                    if c.delete(base, service=svc, json={fld: chunk}).status in (200, 202, 204):
+                        n += len(chunk)
+                        break
+    remaining = len(_sw_groups(c, base))
+    print(f"  servicewatch: done, {remaining} log group(s) still present")
     return n
 
 
