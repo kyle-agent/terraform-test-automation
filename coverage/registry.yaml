@@ -787,14 +787,11 @@ virtualserver_image:
   family: virtualserver
   import: false
   issues:
-  - 'blocked: OBS bucket CREATE forbidden for the test key (ForbidCreateBucketException,
-    run 27124795518) -> cannot stage a real image. Platform import contract now known
-    (probe runs): URL must end .qcow2, os_distro in allow-list (ubuntu ok), and a
-    fetchable OBS URL. Needs a pre-existing writable OBS bucket (set OBS_BUCKET) or a
-    CreateBucket grant. See docs/findings/virtualserver-image-obs.md.'
+  - 'retry: operator pre-created an OBS bucket; helper now reuses an existing bucket
+    (list_buckets fallback). URL .qcow2 + os_distro=ubuntu already satisfied (see #86).'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: none

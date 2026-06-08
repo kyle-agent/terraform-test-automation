@@ -92,31 +92,55 @@ def _code(e):
 
 
 def ensure_bucket(s3, bucket):
-    """Ensure the bucket is usable: reuse it if it already exists, create only if
-    missing. OBS may FORBID bucket creation for the test key
-    (ForbidCreateBucketException) — in that case the caller must supply an EXISTING
-    writable bucket via --bucket / OBS_BUCKET."""
+    """Return a USABLE bucket name. Reuse `bucket` if it already exists; else try to
+    create it; if creation is forbidden (ForbidCreateBucketException — the OBS key
+    can't create buckets), fall back to an EXISTING bucket discovered via list_buckets
+    (the operator may have pre-created one). Exits only if nothing is usable.
+
+    Returns the bucket name to actually upload into (may differ from `bucket` when a
+    fallback is used)."""
     try:
         s3.head_bucket(Bucket=bucket)
         print(f"upload_image_to_obs: reusing existing bucket {bucket}", file=sys.stderr)
-        return
+        return bucket
     except ClientError:
         pass  # not present / not headable -> attempt to create below
     try:
         s3.create_bucket(Bucket=bucket)
         print(f"upload_image_to_obs: created bucket {bucket}", file=sys.stderr)
+        return bucket
     except ClientError as e:
         code = _code(e)
         if code in ("BucketAlreadyOwnedByYou", "BucketAlreadyExists"):
             print(f"upload_image_to_obs: bucket {bucket} already exists (ok)", file=sys.stderr)
-        elif code in ("ForbidCreateBucketException", "AccessDenied", "AllAccessDisabled"):
-            sys.exit(
-                f"upload_image_to_obs: cannot create bucket {bucket} ({code}); the OBS key "
-                f"is not permitted to create buckets. Pass an EXISTING writable bucket via "
-                f"--bucket / OBS_BUCKET."
-            )
-        else:
+            return bucket
+        if code not in ("ForbidCreateBucketException", "AccessDenied", "AllAccessDisabled"):
             raise
+        # Creation forbidden for this key -> reuse a pre-created bucket if one exists.
+        print(
+            f"upload_image_to_obs: cannot create bucket {bucket} ({code}); "
+            f"searching for an existing bucket to reuse...",
+            file=sys.stderr,
+        )
+        try:
+            existing = [b["Name"] for b in s3.list_buckets().get("Buckets", [])]
+        except ClientError as le:
+            existing = []
+            print(f"upload_image_to_obs: list_buckets failed ({_code(le)})", file=sys.stderr)
+        if bucket in existing:
+            print(f"upload_image_to_obs: reusing existing bucket {bucket}", file=sys.stderr)
+            return bucket
+        if existing:
+            chosen = existing[0]
+            print(
+                f"upload_image_to_obs: reusing existing bucket {chosen} (available: {existing})",
+                file=sys.stderr,
+            )
+            return chosen
+        sys.exit(
+            f"upload_image_to_obs: cannot create bucket {bucket} ({code}) and no existing "
+            f"bucket is visible; pre-create a writable bucket and pass it via --bucket / OBS_BUCKET."
+        )
 
 
 def resolve_image(local_path, source_url):
@@ -204,9 +228,9 @@ def main(argv):
         if not key:
             sys.exit("upload_image_to_obs: could not derive object key; pass --key")
 
-        ensure_bucket(s3, args.bucket)
-        upload(s3, args.bucket, key, path)
-        url = public_url(endpoint, args.bucket, key)
+        bucket = ensure_bucket(s3, args.bucket)
+        upload(s3, bucket, key, path)
+        url = public_url(endpoint, bucket, key)
         # The URL goes to stdout ALONE so it can be captured into TF_VAR_image_url;
         # all status/logging above is on stderr.
         print(url)
