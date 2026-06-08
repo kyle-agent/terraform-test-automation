@@ -428,56 +428,55 @@ import_smoke:
 loadbalancer_basic:
   cost: heavy
   depends_on: []
-  exclude_reason: 'provider #77 (LB destroy leak)'
   family: loadbalancer
   import: false
   issues:
-  - '#77 destroy-leak (apply/replan OK; leaks LB on destroy -> pool subnet/VPC 409)'
+  - '#77 destroy-leak (apply/replan OK; leaks LB on destroy -> pool subnet/VPC 409); reap after sweep'
   needs:
   - subnet_id
   - vpc_id
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
 loadbalancer_lb_health_check:
   cost: heavy
   depends_on: []
-  exclude_reason: 'provider #77 (LB destroy leak)'
   family: loadbalancer
   import: false
-  issues: []
+  issues:
+  - 'un-excluded: self-standing fixture; #77 destroy-leak family -> reap after sweep'
   needs:
   - subnet_id
   - vpc_id
   parallel: normal
-  status: excluded
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
 loadbalancer_lb_listener:
   cost: heavy
   depends_on: []
-  exclude_reason: 'provider #77 (LB destroy leak)'
   family: loadbalancer
   import: false
-  issues: []
+  issues:
+  - 'un-excluded: creates LB+server_group+listener; #77 destroy-leak family -> reap after sweep'
   needs:
   - subnet_id
   - vpc_id
   parallel: normal
-  status: excluded
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
 loadbalancer_lb_member:
   cost: heavy
   depends_on: []
-  exclude_reason: 'provider #77 (LB destroy leak)'
   family: loadbalancer
   import: false
-  issues: []
+  issues:
+  - 'un-excluded: creates backend server+server_group+member; #77 destroy-leak family -> reap after sweep'
   needs:
   - image_id
   - keypair_name
@@ -485,29 +484,30 @@ loadbalancer_lb_member:
   - subnet_id
   - vpc_id
   parallel: normal
-  status: excluded
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
 loadbalancer_lb_server_group:
   cost: heavy
   depends_on: []
-  exclude_reason: 'provider #77 (LB destroy leak)'
   family: loadbalancer
   import: false
-  issues: []
+  issues:
+  - 'un-excluded: self-standing fixture; #77 destroy-leak family -> reap after sweep'
   needs:
   - subnet_id
   - vpc_id
   parallel: normal
-  status: excluded
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
 loadbalancer_loadbalancer_private_nat_ip:
   cost: heavy
   depends_on: []
-  exclude_reason: 'provider #77 (LB destroy leak)'
+  exclude_reason: 'needs an externally-supplied loadbalancer_id + private_nat_id (no pool
+    plumbing); not self-standing. Revisit with a self-contained LB+private-NAT fixture.'
   family: loadbalancer
   import: false
   issues: []
@@ -520,16 +520,16 @@ loadbalancer_loadbalancer_private_nat_ip:
 loadbalancer_loadbalancer_public_nat_ip:
   cost: heavy
   depends_on: []
-  exclude_reason: 'provider #77 (LB destroy leak)'
   family: loadbalancer
   import: false
-  issues: []
+  issues:
+  - 'un-excluded: creates LB + public NAT IP; #77 destroy-leak family -> reap after sweep'
   needs:
   - publicip_id
   - subnet_id
   - vpc_id
   parallel: normal
-  status: excluded
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
@@ -1084,12 +1084,14 @@ vpc_vpc_endpoint:
   family: vpc
   import: false
   issues:
-  - 'retest: OBS endpoint fixture; prior 400 ''VPC Endpoint Type Subnet not found'' may be server-side'
+  - 'platform-side 400 ''VPC Endpoint Type Subnet not found'' even with a real pool
+    subnet_id (run 27121247070); OBS endpoint type not creatable on this subnet -
+    not a fixture defect, blocked pending platform/AZ endpoint-type support'
   needs:
   - subnet_id
   - vpc_id
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool
