@@ -94,6 +94,20 @@ own console payloads):
 ### Reaper triggered (commit 38921bf)
 - Touched `api-reaper.yml` to fire a sweep and reclaim a leaked pool VPC (see §4).
 
+### Reaper gap fixed — ServiceWatch log groups (commit 845ca07)
+- The reaper covered **no** ServiceWatch resources, so log groups (and nested log
+  streams) accumulated every run. Added `reap_servicewatch()` to `sweep_all.py`:
+  self-discovers the collection path (`/v1/log-groups` on host
+  `servicewatch.kr-west1.e.samsungsdscloud.com`), **bulk-deletes** via
+  `DELETE /v1/log-groups {"ids":[...]}`, with id-field + per-id/stream-clear
+  fallbacks. Now part of every sweep.
+- Confirmed by reaper run `27115120403`: found **20** log groups
+  (ske/mysql/mariadb/scf `slowlog`·`alertlog` auto-created groups) and deleted all
+  in one bulk call (`DELETE … -> 200`, `sweep_all done: 32 deleted`).
+- NOTE: many of these are **auto-created by other services** (DBaaS/SKE/SCF), not
+  just the servicewatch fixtures — they reappear whenever those resources run, so
+  the recurring reaper sweep (not a one-off) is what keeps them clear.
+
 ---
 
 ## 4. Batch-1 run results — run `27095226766` (commit 137282e)
@@ -125,11 +139,15 @@ not trust job-level "success"; always check the teardown step + matrix.
 > (#77 confirmed); the leaked pool VPC was reclaimed.** No leaked private-nat was
 > found, so `vpc_private_nat_ip` did not leak.
 >
-> ⚠️ **Residual leftover for next session:** one older VPC `257aca2c…` still 409s
-> on delete — pinned by a stray subnet `regrsub6a25…` + an unnamed port
-> `acbb5f5e-…`. The reaper's per-type sweep didn't clear that port. Either delete
-> the port then the subnet/VPC by id (scp-api skill), or extend the reaper to
-> delete vpc-scoped ports before the subnet pass.
+> ⚠️ **Residual leftover for next session:** a few older VPCs still 409 on delete,
+> each pinned by an ACTIVE `regrsub*` subnet that itself won't delete (run
+> `27115120403` showed VPCs `1ffe9883…`/`c54babfe…` blocked by subnets
+> `regrsub6a263eb9`/`regrsub6a260c25`; an earlier pass showed `257aca2c…` blocked
+> by a subnet + an unnamed port `acbb5f5e…`). The reaper retries the subnet 6×
+> then the VPC 6× and still 409s, so something the per-type sweep doesn't
+> enumerate is pinning these subnets (ports? a VIP/static-nat? check the subnet's
+> SHOW body). These are slowly accumulating — investigate what pins a stuck
+> `regrsub*` subnet and extend the reaper, or delete by id via the scp-api skill.
 
 ### Conclusions
 - **vpn gateway/tunnel were never really broken** — clean-account retest passes.
