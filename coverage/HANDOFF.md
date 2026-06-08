@@ -275,3 +275,23 @@ Reaper (`cmd/api_reaper/sweep_all.py`) was extended; key findings:
   but the platform rejects deletes of resources in a bad/transitional state
   (DBaaS 400 InvalidServiceState, subnet/VPC 409). It now retries transient
   states; genuinely foreign-owned ones (403) can't be deleted with our key.
+
+### Reaper coverage expanded (commit 695afbc) + final cleanup state
+Per user request ("delete block storage + all other resources"). Added sweeps:
+- **block storage volumes** — found at **`virtualserver` host, `/v1/volumes`**
+  (NOT `/v1/block-storages`, which 403s). Last run deleted **13** leaked volumes
+  (202). baremetal-blockstorage/`/v1/block-storages` 403 (no perm/none).
+- eventstreams / vertica / multinodegpucluster clusters (same /v1/clusters +
+  retry). `multinodegpucluster` 403 (not enabled for our key).
+- virtualserver server-groups + custom images (images guarded to test-prefix
+  names so base/public OS images are never deleted).
+- backup (`/v1/vaults`,`/v1/backup-policies`) and gslb (`/v1/gslbs`,`/v1/gslb`):
+  all **403** for our key.
+- **Final state:** the account-id probe returned `unknown/empty` (no
+  VPC/subnet/server/SG left) — core infra is CLEANED. Everything our reaper key
+  can reach is deleted. **Remaining = 403 permission-boundary only:** 2 SCF log
+  groups (`/scp/scf/regrscf*`, owned by SCF principal `bc371a79…`), plus the
+  backup/gslb/baremetal/gpu services our key has no rights on, and ~5 stale
+  `lb-health-checks` that 400. These need the **account owner / console**, or an
+  IAM grant giving the reaper key (`2a579fc…`) delete rights on ServiceWatch/SCF/
+  backup/gslb. The reaper itself can do no more with the current key.
