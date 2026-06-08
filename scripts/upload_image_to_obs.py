@@ -1,0 +1,183 @@
+#!/usr/bin/env python3
+"""upload_image_to_obs.py -- stage a VM image in OBS and print its public URL.
+
+The samsungcloudplatformv2_virtualserver_image resource registers a custom image
+by fetching a URL (its `url` attribute). The platform's image-import service must
+be able to GET that URL itself, so the image file has to live somewhere reachable
+-- OBS (SCP Object Storage, S3-compatible) is the natural home.
+
+This helper:
+  1. resolves a local image file (or downloads one from --source-url),
+  2. ensures an OBS bucket exists,
+  3. uploads the image object,
+  4. makes the object public-read (so the import service can fetch it
+     unauthenticated), and
+  5. prints the resulting public object URL.
+
+Feed that URL to the fixture as TF_VAR_image_url:
+
+    export TF_VAR_image_url="$(python3 scripts/upload_image_to_obs.py \
+        --source-url https://cloud-images.ubuntu.com/.../ubuntu.qcow2 \
+        --bucket regr-vsimage --key ubuntu-22.04.qcow2)"
+
+Auth + endpoint reuse the same env contract as scripts/obs_bucket.py (the SCP
+access/secret key pair). NOTHING is hardcoded:
+  TF_VAR_obs_access_key / OBS_ACCESS_KEY
+  TF_VAR_obs_secret_key / OBS_SECRET_KEY
+  TF_VAR_obs_endpoint   / OBS_ENDPOINT   (default object-store.kr-west1.e...)
+
+This is best-effort and meant to run in CI where OBS creds exist. See
+docs/findings/virtualserver-image-obs.md for the ~600MB-vs-tiny-image tradeoff
+and the timebox / blocked-with-findings recommendation.
+
+NOTE: A real upload of an Ubuntu cloud qcow2 is ~600MB. This script does NOT run
+as part of `terraform validate`; it is invoked explicitly in an integration job.
+"""
+import argparse
+import os
+import sys
+import tempfile
+import urllib.parse
+import urllib.request
+
+import boto3
+from botocore.config import Config
+from botocore.exceptions import ClientError
+
+# Mirror obs_bucket.py so both scripts share one endpoint/region contract.
+DEFAULT_ENDPOINT = "https://object-store.kr-west1.e.samsungsdscloud.com"
+
+
+def _env(*names, default=None):
+    for n in names:
+        v = os.environ.get(n)
+        if v:
+            return v
+    return default
+
+
+def client():
+    """Build the OBS S3 client. Same auth/region quirks as obs_bucket.py:
+    region MUST be us-east-1 so boto3 omits CreateBucketConfiguration's
+    LocationConstraint (OBS rejects any constraint); OBS ignores the signing
+    region anyway. Path-style addressing avoids vhost DNS for the bucket."""
+    ak = _env("TF_VAR_obs_access_key", "OBS_ACCESS_KEY")
+    sk = _env("TF_VAR_obs_secret_key", "OBS_SECRET_KEY")
+    ep = _env("TF_VAR_obs_endpoint", "OBS_ENDPOINT", default=DEFAULT_ENDPOINT)
+    if not ak or not sk:
+        sys.exit("upload_image_to_obs: missing OBS access/secret key in environment")
+    return boto3.client(
+        "s3",
+        endpoint_url=ep,
+        aws_access_key_id=ak,
+        aws_secret_access_key=sk,
+        region_name="us-east-1",
+        config=Config(s3={"addressing_style": "path"}, retries={"max_attempts": 3}),
+    ), ep
+
+
+def _code(e):
+    return e.response.get("Error", {}).get("Code", "") if isinstance(e, ClientError) else ""
+
+
+def ensure_bucket(s3, bucket):
+    """Create the bucket if it does not already exist (idempotent)."""
+    try:
+        s3.create_bucket(Bucket=bucket)
+        print(f"upload_image_to_obs: created bucket {bucket}", file=sys.stderr)
+    except ClientError as e:
+        if _code(e) in ("BucketAlreadyOwnedByYou", "BucketAlreadyExists"):
+            print(f"upload_image_to_obs: bucket {bucket} already exists (ok)", file=sys.stderr)
+        else:
+            raise
+
+
+def resolve_image(local_path, source_url):
+    """Return a path to a local image file. If source_url is given and no local
+    file, download it to a temp file first. Returns (path, cleanup_path_or_None)."""
+    if local_path:
+        if not os.path.isfile(local_path):
+            sys.exit(f"upload_image_to_obs: local image not found: {local_path}")
+        return local_path, None
+    if not source_url:
+        sys.exit("upload_image_to_obs: provide --image PATH or --source-url URL")
+
+    # Stream the (potentially ~600MB) download to a temp file rather than memory.
+    suffix = os.path.splitext(urllib.parse.urlparse(source_url).path)[1] or ".img"
+    fd, tmp = tempfile.mkstemp(suffix=suffix, prefix="obs-image-")
+    os.close(fd)
+    print(f"upload_image_to_obs: downloading {source_url} -> {tmp}", file=sys.stderr)
+    try:
+        with urllib.request.urlopen(source_url) as resp, open(tmp, "wb") as out:
+            while True:
+                chunk = resp.read(1024 * 1024)
+                if not chunk:
+                    break
+                out.write(chunk)
+    except Exception as e:  # noqa: BLE001 - best-effort helper, surface and clean up
+        os.path.exists(tmp) and os.remove(tmp)
+        sys.exit(f"upload_image_to_obs: download failed: {e}")
+    return tmp, tmp
+
+
+def upload(s3, bucket, key, path):
+    """Upload the image and make it public-read. boto3's upload_file multipart-
+    chunks large files automatically, which is what we want for a ~600MB qcow2."""
+    size = os.path.getsize(path)
+    print(
+        f"upload_image_to_obs: uploading {path} ({size/1e6:.1f} MB) -> "
+        f"s3://{bucket}/{key}",
+        file=sys.stderr,
+    )
+    s3.upload_file(path, bucket, key)
+    # Make the object world-readable so the platform import service can GET it
+    # without OBS credentials. If the bucket/account disallows object ACLs this
+    # may fail; a bucket policy or pre-signed URL is the fallback (see findings).
+    try:
+        s3.put_object_acl(Bucket=bucket, Key=key, ACL="public-read")
+    except ClientError as e:
+        print(
+            f"upload_image_to_obs: WARNING could not set public-read ACL "
+            f"({_code(e)}); object may not be fetchable by the import service. "
+            f"Consider a bucket policy or a pre-signed URL.",
+            file=sys.stderr,
+        )
+
+
+def public_url(endpoint, bucket, key):
+    """Path-style public object URL: <endpoint>/<bucket>/<key>."""
+    base = endpoint.rstrip("/")
+    return f"{base}/{bucket}/{urllib.parse.quote(key)}"
+
+
+def main(argv):
+    ap = argparse.ArgumentParser(description="Upload a VM image to OBS and print its public URL.")
+    ap.add_argument("--image", help="path to a local image file (qcow2)")
+    ap.add_argument("--source-url", help="download the image from this URL if --image is not given")
+    ap.add_argument("--bucket", required=True, help="OBS bucket to upload into (created if absent)")
+    ap.add_argument("--key", help="object key; defaults to the source/local filename")
+    args = ap.parse_args(argv[1:])
+
+    s3, endpoint = client()
+
+    path, cleanup = resolve_image(args.image, args.source_url)
+    try:
+        key = args.key or os.path.basename(
+            args.image or urllib.parse.urlparse(args.source_url).path
+        )
+        if not key:
+            sys.exit("upload_image_to_obs: could not derive object key; pass --key")
+
+        ensure_bucket(s3, args.bucket)
+        upload(s3, args.bucket, key, path)
+        url = public_url(endpoint, args.bucket, key)
+        # The URL goes to stdout ALONE so it can be captured into TF_VAR_image_url;
+        # all status/logging above is on stderr.
+        print(url)
+    finally:
+        if cleanup and os.path.exists(cleanup):
+            os.remove(cleanup)
+
+
+if __name__ == "__main__":
+    main(sys.argv)

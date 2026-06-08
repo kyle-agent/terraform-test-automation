@@ -10,18 +10,49 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-variable "firewall_id" {
+# Per-run-unique suffix injected by the harness (TF_VAR_name_suffix).
+variable "name_suffix" {
   type        = string
-  description = "Existing firewall id to attach the rule to. Integration runs override via TF_VAR_firewall_id."
-  default     = "00000000-0000-0000-0000-000000000000"
+  description = "Per-run unique suffix appended to resource names."
+  default     = ""
 }
 
 # Firewall rule fixture guarding firewall coverage: an inbound ALLOW rule with a
 # single TCP service must re-plan cleanly (no spurious update or replacement).
 # Required: firewall_id and the firewall_rule_create object (action, direction,
 # status, source/destination_address lists, and a service list).
+#
+# SELF-CONTAINED: a firewall_id is needed to attach the rule to, but bare
+# firewalls cannot be provisioned directly. Instead we create our own VPC (+
+# subnet) and an Internet Gateway with firewall_enabled=true; the IGW
+# auto-creates a firewall and exposes its id via the computed firewall_id
+# attribute, which we wire into the rule. No externally-provided firewall_id
+# is required.
+resource "samsungcloudplatformv2_vpc_vpc" "regr" {
+  name        = "regrfwvpc${var.name_suffix}"
+  cidr        = "192.168.0.0/24"
+  description = "regr-test firewall rule vpc"
+}
+
+resource "samsungcloudplatformv2_vpc_subnet" "regr" {
+  name            = "regrfwsub${var.name_suffix}"
+  vpc_id          = samsungcloudplatformv2_vpc_vpc.regr.id
+  type            = "GENERAL"
+  cidr            = "192.168.0.0/27"
+  description     = "regr-test firewall rule subnet"
+  dns_nameservers = ["8.8.8.8"]
+}
+
+resource "samsungcloudplatformv2_vpc_internet_gateway" "regr" {
+  type              = "IGW"
+  vpc_id            = samsungcloudplatformv2_vpc_vpc.regr.id
+  description       = "regr-test firewall rule igw"
+  firewall_enabled  = true
+  firewall_loggable = false
+}
+
 resource "samsungcloudplatformv2_firewall_firewall_rule" "regr" {
-  firewall_id = var.firewall_id
+  firewall_id = samsungcloudplatformv2_vpc_internet_gateway.regr.internet_gateway.firewall_id
   firewall_rule_create = {
     action              = "ALLOW"
     direction           = "INBOUND"
