@@ -20,9 +20,13 @@ provider "samsungcloudplatformv2" {}
 # LB listener integration fixture (self-contained, like ske_nodepool builds its
 # own parent cluster). A listener belongs to a load balancer and (for an L4/TCP
 # listener) forwards to a server group, so this scenario provisions the LB + a
-# server group + the listener on top. Only vpc_id/subnet_id come from the
-# dependent-probe bootstrap (TF_VAR_*). All inputs have offline-safe defaults so
-# `terraform validate` passes without credentials.
+# server group + the listener on top.
+#
+# SELF-CONTAINED: the platform allows only ONE load balancer per subnet and
+# rejects a 2nd create while the 1st is still CREATING (409), so LB scenarios
+# cannot share one pool subnet. This fixture creates its OWN VPC + subnet and
+# wires the LB / server group to them via computed refs. All inputs have
+# offline-safe defaults so `terraform validate` passes without credentials.
 
 variable "name_suffix" {
   type        = string
@@ -30,16 +34,19 @@ variable "name_suffix" {
   description = "Per-run unique suffix (injected by the harness as TF_VAR_name_suffix)."
 }
 
-variable "vpc_id" {
-  type        = string
-  default     = "00000000-0000-0000-0000-000000000000"
-  description = "VPC for the load balancer / server group. Integration supplies a real id via TF_VAR_vpc_id."
+resource "samsungcloudplatformv2_vpc_vpc" "regr" {
+  name        = "rlblvpc${var.name_suffix}"
+  cidr        = "192.168.0.0/24"
+  description = "regr-test lb listener vpc"
 }
 
-variable "subnet_id" {
-  type        = string
-  default     = "00000000-0000-0000-0000-000000000000"
-  description = "Subnet for the load balancer / server group. Integration supplies a real id via TF_VAR_subnet_id."
+resource "samsungcloudplatformv2_vpc_subnet" "regr" {
+  name            = "rlblsub${var.name_suffix}"
+  vpc_id          = samsungcloudplatformv2_vpc_vpc.regr.id
+  type            = "GENERAL"
+  cidr            = "192.168.0.0/27"
+  description     = "regr-test lb listener subnet"
+  dns_nameservers = ["8.8.8.8"]
 }
 
 resource "samsungcloudplatformv2_loadbalancer_loadbalancer" "regr" {
@@ -49,8 +56,8 @@ resource "samsungcloudplatformv2_loadbalancer_loadbalancer" "regr" {
     layer_type               = "L4"
     firewall_enabled         = false
     firewall_logging_enabled = false
-    vpc_id                   = var.vpc_id
-    subnet_id                = var.subnet_id
+    vpc_id                   = samsungcloudplatformv2_vpc_vpc.regr.id
+    subnet_id                = samsungcloudplatformv2_vpc_subnet.regr.id
   }
 }
 
@@ -64,8 +71,8 @@ resource "samsungcloudplatformv2_loadbalancer_lb_server_group" "regr" {
     description = "regression-test server group"
     protocol    = "TCP"
     lb_method   = "ROUND_ROBIN"
-    vpc_id      = var.vpc_id
-    subnet_id   = var.subnet_id
+    vpc_id      = samsungcloudplatformv2_vpc_vpc.regr.id
+    subnet_id   = samsungcloudplatformv2_vpc_subnet.regr.id
   }
 }
 

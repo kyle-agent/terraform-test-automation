@@ -20,9 +20,13 @@ provider "samsungcloudplatformv2" {}
 # Guards: a loadbalancer creates cleanly, a subsequent re-plan is idempotent
 # (no spurious diff / replacement), and it destroys cleanly.
 # The resource takes a single nested object attribute `loadbalancer_create`.
-# vpc_id/subnet_id are bound from the dependent-probe bootstrap via TF_VAR_*.
-# All inputs have offline-safe defaults so `terraform validate` passes without
-# credentials. name carries the per-run suffix to avoid cross-run collisions.
+#
+# SELF-CONTAINED: the platform allows only ONE load balancer per subnet and
+# rejects a 2nd create while the 1st is still CREATING (409), so LB scenarios
+# cannot share one pool subnet. This fixture creates its OWN VPC + subnet and
+# wires the LB to them via computed refs. name carries the per-run suffix to
+# avoid cross-run collisions. All inputs have offline-safe defaults so
+# `terraform validate` passes without credentials.
 
 variable "name_suffix" {
   type        = string
@@ -30,16 +34,19 @@ variable "name_suffix" {
   description = "Per-run unique suffix (injected by the harness as TF_VAR_name_suffix)."
 }
 
-variable "vpc_id" {
-  type        = string
-  default     = "00000000-0000-0000-0000-000000000000"
-  description = "VPC for the load balancer. Integration supplies a real id via TF_VAR_vpc_id."
+resource "samsungcloudplatformv2_vpc_vpc" "regr" {
+  name        = "rlbbvpc${var.name_suffix}"
+  cidr        = "192.168.0.0/24"
+  description = "regr-test lb vpc"
 }
 
-variable "subnet_id" {
-  type        = string
-  default     = "00000000-0000-0000-0000-000000000000"
-  description = "Subnet for the load balancer. Integration supplies a real id via TF_VAR_subnet_id."
+resource "samsungcloudplatformv2_vpc_subnet" "regr" {
+  name            = "rlbbsub${var.name_suffix}"
+  vpc_id          = samsungcloudplatformv2_vpc_vpc.regr.id
+  type            = "GENERAL"
+  cidr            = "192.168.0.0/27"
+  description     = "regr-test lb subnet"
+  dns_nameservers = ["8.8.8.8"]
 }
 
 resource "samsungcloudplatformv2_loadbalancer_loadbalancer" "regr" {
@@ -49,7 +56,7 @@ resource "samsungcloudplatformv2_loadbalancer_loadbalancer" "regr" {
     layer_type               = "L4"
     firewall_enabled         = false
     firewall_logging_enabled = false
-    vpc_id                   = var.vpc_id
-    subnet_id                = var.subnet_id
+    vpc_id                   = samsungcloudplatformv2_vpc_vpc.regr.id
+    subnet_id                = samsungcloudplatformv2_vpc_subnet.regr.id
   }
 }
