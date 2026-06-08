@@ -10,6 +10,12 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
+# KNOWN ISSUE -- provider #77 (LB destroy-leak): load balancers APPLY and REPLAN
+# cleanly but LEAK on destroy, and the leaked LB blocks teardown of the pool
+# subnet/VPC (409 Conflict). This scenario is the confirmed leaker. Until #77 is
+# fixed the LB lane relies on the API reaper to sweep leaked LBs before the pool
+# bootstrap is torn down (see docs/findings/loadbalancer-reap-strategy.md).
+
 # Load balancer (the resource itself) integration fixture.
 # Guards: a loadbalancer creates cleanly, a subsequent re-plan is idempotent
 # (no spurious diff / replacement), and it destroys cleanly.

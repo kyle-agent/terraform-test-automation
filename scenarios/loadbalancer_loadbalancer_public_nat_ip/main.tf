@@ -10,6 +10,13 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
+# KNOWN ISSUE -- provider #77 (LB destroy-leak): load balancer family resources
+# APPLY and REPLAN cleanly but LEAK on destroy, and a leaked LB blocks teardown of
+# the pool subnet/VPC (409 Conflict). This fixture creates its own LB, so it leaks
+# too. Until #77 is fixed the LB lane relies on the API reaper to sweep leaked LBs
+# before the pool bootstrap is torn down
+# (see docs/findings/loadbalancer-reap-strategy.md).
+
 # LB public NAT IP integration fixture (self-contained). A public NAT IP attaches
 # a public IP to a load balancer, so this scenario provisions the LB and then the
 # public NAT IP on it. vpc_id/subnet_id and the public IP (publicip_id) come from

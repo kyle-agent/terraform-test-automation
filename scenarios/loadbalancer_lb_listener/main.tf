@@ -10,6 +10,13 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
+# KNOWN ISSUE -- provider #77 (LB destroy-leak): load balancer family resources
+# APPLY and REPLAN cleanly but LEAK on destroy, and a leaked LB blocks teardown of
+# the pool subnet/VPC (409 Conflict). This fixture creates its own LB, so it leaks
+# too. Until #77 is fixed the LB lane relies on the API reaper to sweep leaked LBs
+# before the pool bootstrap is torn down
+# (see docs/findings/loadbalancer-reap-strategy.md).
+
 # LB listener integration fixture (self-contained, like ske_nodepool builds its
 # own parent cluster). A listener belongs to a load balancer and (for an L4/TCP
 # listener) forwards to a server group, so this scenario provisions the LB + a

@@ -10,6 +10,12 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
+# KNOWN ISSUE -- provider #77 (LB destroy-leak): load balancer family resources
+# APPLY and REPLAN cleanly but LEAK on destroy, and a leaked LB blocks teardown of
+# the pool subnet/VPC (409 Conflict). Until #77 is fixed the LB lane relies on the
+# API reaper to sweep leaked LBs before the pool bootstrap is torn down
+# (see docs/findings/loadbalancer-reap-strategy.md).
+
 # LB server group integration fixture. A server group binds directly to a
 # vpc/subnet (independent of a load balancer until a listener references it), so
 # this scenario is self-contained: it only needs vpc_id/subnet_id from the

@@ -10,6 +10,12 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
+# KNOWN ISSUE -- provider #77 (LB destroy-leak): load balancer family resources
+# APPLY and REPLAN cleanly but LEAK on destroy, and a leaked LB blocks teardown of
+# the pool subnet/VPC (409 Conflict). Until #77 is fixed the LB lane relies on the
+# API reaper to sweep leaked LBs before the pool bootstrap is torn down
+# (see docs/findings/loadbalancer-reap-strategy.md).
+
 # LB member integration fixture (self-contained, like ske_nodepool builds its own
 # parent). A member registers a backend behind a server group; an INSTANCE member
 # needs a real compute instance (object_id) and its private IP (member_ip). So this
@@ -94,8 +100,8 @@ resource "samsungcloudplatformv2_loadbalancer_lb_member" "regr" {
     member_ip     = samsungcloudplatformv2_virtualserver_server.regr.networks["nic0"].fixed_ip
     member_port   = 80
     member_weight = 1
-    member_state  = "ENABLED"
+    member_state  = "ENABLE"  # enum: ENABLE | DISABLE
     object_id     = samsungcloudplatformv2_virtualserver_server.regr.id
-    object_type   = "INSTANCE"
+    object_type   = "VM"      # enum: VM | BM | MANUAL | MNGC; VM requires object_id
   }
 }
