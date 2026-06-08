@@ -105,8 +105,8 @@ All 4 jobs green at orchestration level. Per-scenario verdicts:
 | `vpn_vpn_gateway` | self | ✅ **GREEN** — validate→apply→replan→destroy→destroy_verify all ✅ |
 | `vpn_vpn_tunnel` | self | ✅ **GREEN** — all stages ✅ |
 | `servicewatch_log_stream` | none | ✅ green (log_group + log_stream apply/replan/destroy ✅) |
-| `loadbalancer_basic` | pool | ⚠️ applied, but **pool subnet teardown 409'd** (leak) |
-| `vpc_private_nat_ip` | pool | ⚠️ ran in same pool shard; leaker identity TBC (see below) |
+| `loadbalancer_basic` | pool | ❌ applied, but **leaked the LB on destroy (#77)** → pool subnet/VPC teardown 409'd (CONFIRMED leaker) |
+| `vpc_private_nat_ip` | pool | ✅ not the leaker (reaper found no leaked private-nat); treat as passing — re-confirm its matrix |
 
 **The pool bootstrap teardown failed:**
 ```
@@ -119,12 +119,17 @@ left a resource attached**, so the **VPC delete never ran → pool VPC leaked**
 (quota hazard). Teardown uses `|| true`, so the job still reported success — do
 not trust job-level "success"; always check the teardown step + matrix.
 
-> **CONFIRM IN NEW SESSION:** which of `loadbalancer_basic` / `vpc_private_nat_ip`
-> leaked. Strong prior: `loadbalancer_basic` (issue #77 — LB destroy leak). Read
-> **API Reaper run `27106727666`** (commit 38921bf) — its sweep log names every
-> deleted resource: `rlb*` = loadbalancer (→ `loadbalancer_basic` leaked),
-> `regr*`/nat = private nat ip (→ `vpc_private_nat_ip` leaked). That run also
-> **reclaimed the leaked pool VPC** (subnet→VPC). Verify it finished `success`.
+> **RESOLVED:** API Reaper run `27106727666` (commit 38921bf) finished `success`
+> and its sweep log shows it deleted **2 loadbalancers** + the pool subnet
+> `d2b58daf…` + the pool VPC `f32a21d9…` → **`loadbalancer_basic` is the leaker
+> (#77 confirmed); the leaked pool VPC was reclaimed.** No leaked private-nat was
+> found, so `vpc_private_nat_ip` did not leak.
+>
+> ⚠️ **Residual leftover for next session:** one older VPC `257aca2c…` still 409s
+> on delete — pinned by a stray subnet `regrsub6a25…` + an unnamed port
+> `acbb5f5e-…`. The reaper's per-type sweep didn't clear that port. Either delete
+> the port then the subnet/VPC by id (scp-api skill), or extend the reaper to
+> delete vpc-scoped ports before the subnet pass.
 
 ### Conclusions
 - **vpn gateway/tunnel were never really broken** — clean-account retest passes.
