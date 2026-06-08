@@ -75,12 +75,36 @@ against provider mirror v3.3.1.
   (init failed before any resource → **no VPC leaked**). Left `untested` and
   re-pushed to retry (only vpc_vpc_endpoint re-runs).
 
-**Resume:** await the vpc_vpc_endpoint retry verdict; if it still 400s server-side
-(`'VPC Endpoint Type Subnet not found'`) mark blocked-with-findings. Then **Batch 2 =
-loadbalancer family** (un-exclude the 6 self-standing pool LB scenarios; they leak on
-destroy #77 so trigger the API reaper after the LB sweep — out-of-band, in-lane full
-sweep is unsafe under parallel shards). `virtualserver_image` real-upload probe is
-the remaining track-3 item.
+**vpc_vpc_endpoint retry (run 27121247070):** apply ❌ `400 'VPC Endpoint Type Subnet
+not found'` even with a REAL pool subnet_id → **platform/AZ limitation**, not a fixture
+defect. Marked **broken** (blocked-with-findings). Teardown clean, no leak.
+
+**Batch 2 = loadbalancer family (run 27121594571, 6 pool LB scenarios, 1 shard):**
+- `loadbalancer_lb_health_check` → ✅ **GREEN** (full lifecycle).
+- 5 failed on FIXTURE issues (now fixed by an agent, commit WIP 3d1db26):
+  (a) **LB name collision** — all scenarios in a shard share one `TF_VAR_name_suffix`,
+  so `rlb${suffix}` collided across scenarios (`...name(rlb4d39a5) already exists`).
+  Fix: scenario-distinct short stems (`rlbb/rlbl/rlbp/rlbg/rlbm`). (b) `lb_server_group`
+  & `lb_member` need an **LB already in the subnet** — fix: each now creates its own LB
+  first (+depends_on). (c) `lb_member` plan failure was a cascade of (b), object_id
+  wiring was already correct.
+- **`loadbalancer_basic` → broken (#77, provider Create-no-wait):** apply/replan OK but
+  destroy `400 not in a deletable state (CREATING)` — provider `Loadbalancer.Create`
+  returns before ACTIVE and has no wait knob, so quick create→destroy leaks the LB →
+  pinned the pool subnet → **subnet/VPC 409 leak**. Reaper run **27121999759** reclaimed
+  the leaked subnet `8a65f4…`+VPC `b3c1ae…` (`sweep_all done: 5 deleted`) → account clean.
+- **Re-test in flight (run after 2bd103d):** `lb_listener`, `lb_member`,
+  `lb_server_group`, `loadbalancer_public_nat_ip` (fixtures fixed). NOTE: any LB-creating
+  scenario likely hits the same #77 CREATING-state destroy leak → **reap after**.
+
+**Provider #77 is the LB blocker:** Create must wait-for-ACTIVE (or Delete must poll
+until deletable). Until then, the whole LB family gets apply/replan coverage only; clean
+destroy is impossible and every LB run leaks the pool VPC (reaper reclaims out-of-band).
+
+**Resume:** read the re-test verdicts (download the `poolsweep-fast-1-<runid>` artifact's
+`capability-matrix.md`); reap if teardown 409'd; finalize LB registry (apply/replan-OK
+ones → broken#77 with that note, or green if they somehow destroyed clean). Remaining
+track-3 item: `virtualserver_image` real-image OBS upload probe (stays blocked until then).
 
 ---
 
