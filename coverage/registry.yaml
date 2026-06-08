@@ -280,14 +280,13 @@ firewall_firewall_rule:
   depends_on: []
   family: firewall
   import: false
-  issues:
-  - 404 not found (needs firewall target)
+  issues: []
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
-  vpc: pool
+  vpc: self
 gslb_gslb:
   cost: heavy
   depends_on: []
@@ -380,11 +379,10 @@ iam_role_policy_bindings:
   depends_on: []
   family: iam
   import: false
-  issues:
-  - 404 needs own role
+  issues: []
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -1085,12 +1083,12 @@ vpc_vpc_endpoint:
   family: vpc
   import: false
   issues:
-  - 'provider/config: 400 ''VPC Endpoint Type Subnet not found'''
+  - 'retest: OBS endpoint fixture; prior 400 ''VPC Endpoint Type Subnet not found'' may be server-side'
   needs:
   - subnet_id
   - vpc_id
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
