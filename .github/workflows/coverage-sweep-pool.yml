@@ -123,6 +123,8 @@ jobs:
         # download a tiny CirrOS qcow2, upload it to OBS public-read, and export its
         # public URL as TF_VAR_image_url so the fixture registers a REAL image. If the
         # upload fails, the fixture keeps its offline dummy URL (|| true).
+        # Platform import checks so far (probe iterations): URL must end .qcow2 (fixed
+        # via --key) and os_distro must be in the allow-list e.g. ubuntu (fixed in fixture).
         if: contains(needs.plan.outputs.novpc, 'virtualserver_image')
         env:
           TF_VAR_obs_access_key: ${{ secrets.SCP_TF_ACCESS_KEY }}
