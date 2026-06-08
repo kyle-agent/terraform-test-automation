@@ -92,13 +92,29 @@ def _code(e):
 
 
 def ensure_bucket(s3, bucket):
-    """Create the bucket if it does not already exist (idempotent)."""
+    """Ensure the bucket is usable: reuse it if it already exists, create only if
+    missing. OBS may FORBID bucket creation for the test key
+    (ForbidCreateBucketException) — in that case the caller must supply an EXISTING
+    writable bucket via --bucket / OBS_BUCKET."""
+    try:
+        s3.head_bucket(Bucket=bucket)
+        print(f"upload_image_to_obs: reusing existing bucket {bucket}", file=sys.stderr)
+        return
+    except ClientError:
+        pass  # not present / not headable -> attempt to create below
     try:
         s3.create_bucket(Bucket=bucket)
         print(f"upload_image_to_obs: created bucket {bucket}", file=sys.stderr)
     except ClientError as e:
-        if _code(e) in ("BucketAlreadyOwnedByYou", "BucketAlreadyExists"):
+        code = _code(e)
+        if code in ("BucketAlreadyOwnedByYou", "BucketAlreadyExists"):
             print(f"upload_image_to_obs: bucket {bucket} already exists (ok)", file=sys.stderr)
+        elif code in ("ForbidCreateBucketException", "AccessDenied", "AllAccessDisabled"):
+            sys.exit(
+                f"upload_image_to_obs: cannot create bucket {bucket} ({code}); the OBS key "
+                f"is not permitted to create buckets. Pass an EXISTING writable bucket via "
+                f"--bucket / OBS_BUCKET."
+            )
         else:
             raise
 

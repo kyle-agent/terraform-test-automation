@@ -787,10 +787,14 @@ virtualserver_image:
   family: virtualserver
   import: false
   issues:
-  - 'probe: registers a real CirrOS qcow2 staged in OBS by the novpc lane (TF_VAR_image_url)'
+  - 'blocked: OBS bucket CREATE forbidden for the test key (ForbidCreateBucketException,
+    run 27124795518) -> cannot stage a real image. Platform import contract now known
+    (probe runs): URL must end .qcow2, os_distro in allow-list (ubuntu ok), and a
+    fetchable OBS URL. Needs a pre-existing writable OBS bucket (set OBS_BUCKET) or a
+    CreateBucket grant. See docs/findings/virtualserver-image-obs.md.'
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: none

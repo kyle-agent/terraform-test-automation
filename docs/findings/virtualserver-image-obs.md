@@ -127,3 +127,44 @@ Concrete next step, **timeboxed** (suggest ~1-2h in a CI integration job):
 4. If neither is viable within the timebox, **mark the scenario blocked** and
    record the specific rejection error here so the next attempt starts from the
    known failure mode rather than re-discovering it.
+
+## Probe results (2026-06-08) — platform import contract characterized
+
+A CI probe wired the novpc lane to upload a tiny **real CirrOS 0.6.2** qcow2
+(~20MB, the canonical OpenStack/Glance test image) to OBS and pass its URL as
+`TF_VAR_image_url`. Each iteration surfaced exactly one server-side validation;
+two are now solved, one remains:
+
+1. **`400 "URL must end with '.qcow2'"`** (run 27124172026). CirrOS ships as
+   `*-disk.img` (which IS a qcow2). **Fixed** by uploading under a `.qcow2` object
+   key (`--key cirros-0.6.2-x86_64-disk.qcow2`) so the URL satisfies the suffix
+   check.
+2. **`400 "Field \"os_distro\" is invalid. Example: \"alma\""`** (run 27124476579).
+   `os_distro` is validated against a server-side allow-list; `cirros` is rejected.
+   **Fixed** by setting `os_distro = "ubuntu"` (accepted; the account's base images
+   are Ubuntu). os_distro is metadata, so it need not match the staged bits.
+3. **`400 "Object Storage URL for the Image file is invalid."`** (run 27124795518).
+   ROOT CAUSE: the staging step actually **failed to upload** —
+   `ForbidCreateBucketException: Cannot create the bucket` — so `TF_VAR_image_url`
+   was never set and the fixture fell back to its offline dummy URL
+   (`https://example.invalid/...`), which the platform then rejected. **The OBS
+   test key is not permitted to CREATE buckets** (a permission boundary, like the
+   backup/gslb/SCF 403s already documented in HANDOFF §8).
+
+### Net status
+The platform's image-import contract is now fully known: **URL ending `.qcow2`**
+\+ **os_distro in the allow-list (`ubuntu`)** + **a fetchable OBS object URL**. The
+only remaining blocker is staging the object: bucket creation is forbidden.
+
+### Concrete resume steps
+- Provide a **pre-existing writable OBS bucket** and pass it via `--bucket` /
+  `OBS_BUCKET` (the helper now `head_bucket`s first and reuses an existing bucket;
+  it no longer hard-fails the run on create-forbidden, it exits with a clear
+  message). Determine the bucket the OBS probe/`scripts/obs_bucket.py` actually
+  owns, or have the account owner pre-create `regr-obs-image` and grant the key
+  PutObject/PutObjectAcl on it.
+- Re-run; if the object is public-read and the import fetches it, the image should
+  reach `active` and the scenario can go green. If OBS object ACLs are disallowed,
+  use a bucket policy or a pre-signed URL — but note a pre-signed URL's query
+  string may conflict with the `.qcow2` suffix check, so a public object under a
+  `.qcow2` key is preferred.

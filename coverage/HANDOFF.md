@@ -111,9 +111,15 @@ object_id rejected at plan. Net LB result: **lb_health_check green; the other 6 
 excluded** with provider-actionable diagnostics. To make them green later: re-model LB
 scenarios as `vpc: self` (own subnet) + serial, AND land the #77 Create-wait fix.
 
-**Remaining open item:** `virtualserver_image` real-image OBS upload probe (tooling ready
-in `scripts/upload_image_to_obs.py` + `docs/findings/virtualserver-image-obs.md`; needs a
-CI step with OBS creds + a platform-accepted image — stays blocked until run).
+**`virtualserver_image` — probed & characterized (broken/blocked):** wired the novpc lane
+to upload a tiny real **CirrOS** qcow2 to OBS and pass its URL. The probe nailed the
+platform image-import contract in 3 iterations — **URL must end `.qcow2`** (fixed via OBS
+`--key`), **os_distro in allow-list** (`cirros`→**`ubuntu`** fixed), and **a fetchable OBS
+URL**. Final blocker: the OBS test key **cannot create buckets**
+(`ForbidCreateBucketException`, run 27124795518), so staging fails and the dummy URL is
+used. This is a permission boundary (cf. §8). Resume: supply a pre-existing writable OBS
+bucket via `--bucket`/`OBS_BUCKET` (helper now reuses an existing bucket) — see
+`docs/findings/virtualserver-image-obs.md` "Probe results".
 
 ---
 
