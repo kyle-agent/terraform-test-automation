@@ -431,17 +431,14 @@ loadbalancer_basic:
   family: loadbalancer
   import: false
   issues:
-  - '#77 provider Create does not wait for ACTIVE: apply/replan OK but destroy 400
-    ''not in a deletable state (state: CREATING)'' -> leaks LB pinning pool subnet/VPC
-    (run 27121594571). Needs a provider-side wait-for-ACTIVE in Create/Delete.'
-  needs:
-  - subnet_id
-  - vpc_id
+  - 'self-VPC re-test (#77): creates own vpc+subnet (no shared pool subnet). apply/replan
+    expected OK; clean destroy still blocked by provider #77 (Create-no-wait) until fixed.'
+  needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
-  vpc: pool
+  vpc: self
 loadbalancer_lb_health_check:
   cost: heavy
   depends_on: []
@@ -462,17 +459,14 @@ loadbalancer_lb_listener:
   family: loadbalancer
   import: false
   issues:
-  - 'apply 409 (run 27122245554): "only Load Balancer under the subnet is not in ACTIVE
-    state" — platform allows ONE LB per subnet and blocks a 2nd while the 1st is CREATING;
-    incompatible with the shared pool subnet at parallel>1. Needs own subnet + serial + #77.'
-  needs:
-  - subnet_id
-  - vpc_id
+  - 'self-VPC re-test (#77): creates own vpc+subnet (resolves the one-LB-per-subnet 409).
+    apply/replan expected OK; clean destroy still blocked by provider #77 until fixed.'
+  needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
-  vpc: pool
+  vpc: self
 loadbalancer_lb_member:
   cost: heavy
   depends_on: []
@@ -499,17 +493,14 @@ loadbalancer_lb_server_group:
   family: loadbalancer
   import: false
   issues:
-  - 'apply ✅ replan ✅ but destroy ❌ (run 27122245554): "not in a deletable state (CREATING)"
-    — its own LB (created in-subnet) never reached ACTIVE before destroy (#77 Create-no-wait);
-    LB leaked -> pool subnet/VPC 409. apply/replan coverage OK; clean destroy needs provider fix.'
-  needs:
-  - subnet_id
-  - vpc_id
+  - 'self-VPC re-test (#77): creates own vpc+subnet. apply/replan expected OK; clean
+    destroy still blocked by provider #77 (Create-no-wait -> CREATING) until fixed.'
+  needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
-  vpc: pool
+  vpc: self
 loadbalancer_loadbalancer_private_nat_ip:
   cost: heavy
   depends_on: []
@@ -530,18 +521,14 @@ loadbalancer_loadbalancer_public_nat_ip:
   family: loadbalancer
   import: false
   issues:
-  - 'apply 409 (run 27122245554): "only Load Balancer under the subnet is not in ACTIVE state"
-    — same one-LB-per-subnet limit as lb_listener (lost the create race in the shared pool
-    subnet at parallel>1). Needs own subnet + serial + #77.'
-  needs:
-  - publicip_id
-  - subnet_id
-  - vpc_id
+  - 'self-VPC re-test (#77): creates own vpc+subnet+publicip (resolves one-LB-per-subnet 409).
+    apply/replan expected OK; clean destroy still blocked by provider #77 until fixed.'
+  needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
-  vpc: pool
+  vpc: self
 loggingaudit_trail:
   cost: cheap
   depends_on: []

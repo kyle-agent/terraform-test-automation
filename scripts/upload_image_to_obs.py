@@ -195,10 +195,21 @@ def upload(s3, bucket, key, path):
         )
 
 
-def public_url(endpoint, bucket, key):
-    """Path-style public object URL: <endpoint>/<bucket>/<key>."""
+def public_url(endpoint, bucket, key, style="virtual"):
+    """Public object URL for the staged image.
+
+    - virtual-hosted (default): https://<bucket>.<host>/<key>
+    - path-style:               https://<host>/<bucket>/<key>
+
+    SCP's image-import rejected the path-style form with
+    "Object Storage URL for the Image file is invalid" (the object uploads fine),
+    so virtual-hosted is the default; override with --url-style path."""
     base = endpoint.rstrip("/")
-    return f"{base}/{bucket}/{urllib.parse.quote(key)}"
+    qkey = urllib.parse.quote(key)
+    if style == "path":
+        return f"{base}/{bucket}/{qkey}"
+    p = urllib.parse.urlparse(base)
+    return f"{p.scheme}://{bucket}.{p.netloc}/{qkey}"
 
 
 def main(argv):
@@ -216,6 +227,13 @@ def main(argv):
         help=f"OBS bucket to upload into, created if absent (default: {DEFAULT_BUCKET})",
     )
     ap.add_argument("--key", help="object key; defaults to the source/local filename")
+    ap.add_argument(
+        "--url-style",
+        choices=["virtual", "path"],
+        default="virtual",
+        help="public URL form: virtual-hosted (<bucket>.<host>/<key>, default) or path "
+        "(<host>/<bucket>/<key>). SCP image-import rejected path-style.",
+    )
     args = ap.parse_args(argv[1:])
 
     s3, endpoint = client()
@@ -230,7 +248,7 @@ def main(argv):
 
         bucket = ensure_bucket(s3, args.bucket)
         upload(s3, bucket, key, path)
-        url = public_url(endpoint, bucket, key)
+        url = public_url(endpoint, bucket, key, args.url_style)
         # The URL goes to stdout ALONE so it can be captured into TF_VAR_image_url;
         # all status/logging above is on stderr.
         print(url)
