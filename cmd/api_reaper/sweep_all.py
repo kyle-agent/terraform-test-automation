@@ -143,13 +143,35 @@ def vid_field(it):
     return str(it.get("vpc_id") or "")
 
 
+_SW_META_SHOWN = False
+
+
 def _sw_groups(c, base):
-    """List reapable servicewatch log groups. Request a large page (the API
-    paginates — the SDK passes size=MaxInt32) so we don't only see the default
-    first 20."""
-    r = c.get(f"{base}?size=1000", service="servicewatch")
-    return [g for g in items(r.body)
-            if isinstance(g, dict) and is_test(name_of(g)) and g.get("id") and old_enough(g)]
+    """List reapable servicewatch log groups, paging through ALL pages. The list
+    endpoint paginates; relying on one call (even with a big size) undercounts when
+    the server caps page size. Page with size=100 until a short/empty page, dedup
+    by id. Print the raw response metadata once (total_count etc.) so the true
+    total — and any owner-scoping — is visible vs what the console shows."""
+    global _SW_META_SHOWN
+    out = {}
+    for page in range(0, 80):
+        sep = "&" if "?" in base else "?"
+        r = c.get(f"{base}{sep}size=100&page={page}", service="servicewatch")
+        body = r.body if isinstance(r.body, dict) else {}
+        if not _SW_META_SHOWN:
+            meta = {k: (f"[{len(v)} items]" if isinstance(v, list) else v)
+                    for k, v in body.items()} if isinstance(body, dict) else body
+            print(f"  servicewatch list meta (page0 size100): {meta}")
+            _SW_META_SHOWN = True
+        lst = body.get("log_groups")
+        if not isinstance(lst, list):
+            lst = items(body)
+        page_items = [g for g in lst if isinstance(g, dict) and g.get("id")]
+        for g in page_items:
+            out[g["id"]] = g
+        if len(page_items) < 100:
+            break
+    return [g for g in out.values() if is_test(name_of(g)) and old_enough(g)]
 
 
 def reap_servicewatch(c):
