@@ -43,6 +43,47 @@ OBS. Pre-existing leaker decisions already recorded in §4/§6.
 
 ---
 
+## 0a. Session 2026-06-08 (coverage continuation, branch `claude/youthful-cray-608zi`)
+
+Worked the §5 TODO via 5 parallel agents (fixtures only; registry flips batched
+centrally to respect the **VPC quota = 5**). All fixtures pass `terraform validate`
+against provider mirror v3.3.1.
+
+**Fixtures authored (committed, no account impact):**
+- `firewall_firewall_rule` → **self-contained**: creates own VPC+subnet+IGW
+  (`firewall_enabled=true`) and wires `firewall_id` from the IGW's computed
+  **nested** attr `internet_gateway.firewall_id`. Lane pool→**self**.
+- `iam_role_policy_bindings` → self-contained (own iam_role + iam_policy).
+- `vpc_vpc_endpoint` → schema-correct OBS endpoint (resource_type=OBS,
+  endpoint_ip_address `192.168.0.12` inside pool /27).
+- `loadbalancer_*` (7) → all schema-valid + dependency-wired + #77 note. Ready to
+  un-exclude once an always-reap is in place (see `docs/findings/loadbalancer-reap-strategy.md`).
+- `virtualserver_image` → parameterized + `scripts/upload_image_to_obs.py` +
+  `docs/findings/virtualserver-image-obs.md`. **Stays blocked** pending a real
+  image upload test in CI.
+
+**Batch-1 coverage sweep — run `27120875200` (VPC-safe: ≤1 concurrent VPC):**
+- `firewall_firewall_rule` → ✅ **GREEN** (validate→apply→replan→destroy→destroy_verify
+  all ✅, 238s; self-containment confirmed working, no leak).
+- `iam_role_policy_bindings` → ❌ **broken**: apply fails at `iam_role` create with
+  `400 'Input should be a valid list'` — this is **#75** (iam_role create is itself
+  broken; `iam_role` scenario is also #75-broken). Blocked-by-dependency, not a
+  fixture defect. The concrete 400 message is a fresh diagnostic for #75.
+- `vpc_vpc_endpoint` → ⊘ **not exercised**: pool bootstrap `terraform init` hit a
+  **transient `504 Gateway Timeout`** fetching provider v3.3.2 from GitHub (mirror
+  download 504 → direct-registry fallback also 504). NOT a fixture/quota/leak issue
+  (init failed before any resource → **no VPC leaked**). Left `untested` and
+  re-pushed to retry (only vpc_vpc_endpoint re-runs).
+
+**Resume:** await the vpc_vpc_endpoint retry verdict; if it still 400s server-side
+(`'VPC Endpoint Type Subnet not found'`) mark blocked-with-findings. Then **Batch 2 =
+loadbalancer family** (un-exclude the 6 self-standing pool LB scenarios; they leak on
+destroy #77 so trigger the API reaper after the LB sweep — out-of-band, in-lane full
+sweep is unsafe under parallel shards). `virtualserver_image` real-upload probe is
+the remaining track-3 item.
+
+---
+
 ## 1. What this project does
 
 `terraform-test-automation` exercises every resource in the
