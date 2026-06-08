@@ -44,7 +44,7 @@ variable "subnet_id" {
 
 resource "samsungcloudplatformv2_loadbalancer_loadbalancer" "regr" {
   loadbalancer_create = {
-    name                     = "rlb${var.name_suffix}"
+    name                     = "rlbl${var.name_suffix}"
     description              = "regression-test-lb"
     layer_type               = "L4"
     firewall_enabled         = false
@@ -55,8 +55,12 @@ resource "samsungcloudplatformv2_loadbalancer_loadbalancer" "regr" {
 }
 
 resource "samsungcloudplatformv2_loadbalancer_lb_server_group" "regr" {
+  # The API requires a load balancer to already exist in the subnet before a
+  # server group can be created there (400: "the chosen subnet does not contain
+  # a Load Balancer"). The LB above lives in the same subnet, so order the create.
+  depends_on = [samsungcloudplatformv2_loadbalancer_loadbalancer.regr]
   lb_server_group_create = {
-    name        = "rsg${var.name_suffix}"
+    name        = "rlbls${var.name_suffix}"
     description = "regression-test server group"
     protocol    = "TCP"
     lb_method   = "ROUND_ROBIN"
@@ -67,7 +71,7 @@ resource "samsungcloudplatformv2_loadbalancer_lb_server_group" "regr" {
 
 resource "samsungcloudplatformv2_loadbalancer_lb_listener" "regr" {
   lb_listener_create = {
-    name            = "rls${var.name_suffix}"
+    name            = "rlbli${var.name_suffix}"
     description     = "regression-test listener"
     protocol        = "TCP"
     service_port    = 80

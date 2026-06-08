@@ -44,7 +44,7 @@ variable "subnet_id" {
 
 resource "samsungcloudplatformv2_loadbalancer_loadbalancer" "regr" {
   loadbalancer_create = {
-    name                     = "rlb${var.name_suffix}"
+    name                     = "rlbb${var.name_suffix}"
     description              = "regression-test-lb"
     layer_type               = "L4"
     firewall_enabled         = false

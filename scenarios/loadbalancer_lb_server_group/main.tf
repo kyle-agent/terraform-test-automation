@@ -42,9 +42,27 @@ variable "subnet_id" {
   description = "Subnet for the server group. Integration supplies a real id via TF_VAR_subnet_id."
 }
 
+# The API requires a load balancer to already exist in the subnet before a
+# server group can be created there (live 400: "the chosen subnet does not
+# contain a Load Balancer ... Please ensure a Load Balancer exists within the
+# subnet before attempting again."). So this fixture provisions its own LB in
+# the same subnet first, then the server group on top.
+resource "samsungcloudplatformv2_loadbalancer_loadbalancer" "regr" {
+  loadbalancer_create = {
+    name                     = "rlbg${var.name_suffix}"
+    description              = "regression-test-lb"
+    layer_type               = "L4"
+    firewall_enabled         = false
+    firewall_logging_enabled = false
+    vpc_id                   = var.vpc_id
+    subnet_id                = var.subnet_id
+  }
+}
+
 resource "samsungcloudplatformv2_loadbalancer_lb_server_group" "regr" {
+  depends_on = [samsungcloudplatformv2_loadbalancer_loadbalancer.regr]
   lb_server_group_create = {
-    name        = "rsg${var.name_suffix}"
+    name        = "rlbgs${var.name_suffix}"
     description = "regression-test server group"
     protocol    = "TCP"
     lb_method   = "ROUND_ROBIN"
