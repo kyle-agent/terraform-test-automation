@@ -12,9 +12,10 @@ name: Coverage Sweep Pool
 # Selection is controlled by SELECT_STATUS / SELECT_VPC / SELECT_FAMILY (workflow
 # inputs); push defaults to green+untested (skips known-broken and excluded).
 on:
-  # Manual only. Periodic (cron) and push triggers were removed so nothing runs
-  # automatically on the dedicated account — dispatch this from the Actions UI when you
-  # want a coverage run. (SELECT_* are read from these inputs.)
+  # No cron (no periodic runs on the dedicated account). Two manual ways to run:
+  #  - workflow_dispatch from the Actions UI (pick status/lane/family), or
+  #  - a deliberate push to coverage/registry.yaml etc. on a claude/** branch while
+  #    actively expanding coverage. push -> SELECT_STATUS='untested' (discovery).
   workflow_dispatch:
     inputs:
       select_status:
@@ -26,6 +27,13 @@ on:
       select_family:
         description: 'optional comma families filter (blank = all)'
         default: ''
+  push:
+    branches:
+      - 'claude/**'
+    paths:
+      - '.github/workflows/coverage-sweep-pool.yml'
+      - 'coverage/registry.yaml'
+      - 'scripts/plan_matrix.py'
 
 concurrency:
   group: coverage-sweep-pool-${{ github.ref }}

@@ -1,12 +1,3 @@
-# registry.yaml — SINGLE SOURCE OF TRUTH for test scenarios.
-# Generated once by scripts/gen_registry.py from cost_tiers.yaml + live
-# scenario HCL + workflow lane membership; hand-edited thereafter.
-# Consumed by: scripts/plan_matrix.py (workflow matrix), scripts/validate_registry.py,
-# the capability harness, and the dashboard.
-#
-# Fields: family, vpc(none|pool|self), timeout_class(fast|slow), parallel(low|normal),
-# needs(bootstrap outputs), depends_on(scenario names), update/import(stage opt-in), cost, status
-# (green|broken|untested|excluded), issues, [exclude_reason].
 backup_backup:
   cost: cheap
   depends_on: []
@@ -441,12 +432,13 @@ loadbalancer_basic:
   exclude_reason: 'provider #77 (LB destroy leak)'
   family: loadbalancer
   import: false
-  issues: []
+  issues:
+  - '#77 destroy-leak (apply/replan OK; leaks LB on destroy -> pool subnet/VPC 409)'
   needs:
   - subnet_id
   - vpc_id
   parallel: normal
-  status: excluded
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool
@@ -710,11 +702,10 @@ servicewatch_log_stream:
   depends_on: []
   family: servicewatch
   import: false
-  issues:
-  - fixture
+  issues: []
   needs: []
   parallel: normal
-  status: broken
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -919,11 +910,12 @@ vpc_private_nat_ip:
   depends_on: []
   family: vpc
   import: false
-  issues: []
+  issues:
+  - pool teardown 409 leak in run 27095226766 - confirm leaker vs loadbalancer_basic via reaper run 27106727666
   needs:
   - ip_address
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool
@@ -1146,14 +1138,13 @@ vpn_vpn_gateway:
   depends_on: []
   family: vpn
   import: false
-  issues:
-  - VPC-quota cascade from peering leak (not isolate-tested)
+  issues: []
   needs:
   - ip_address
   - ip_id
   - vpc_id
   parallel: normal
-  status: broken
+  status: green
   timeout_class: fast
   update: false
   vpc: self
@@ -1162,11 +1153,10 @@ vpn_vpn_tunnel:
   depends_on: []
   family: vpn
   import: false
-  issues:
-  - VPC-quota cascade from peering leak (not isolate-tested)
+  issues: []
   needs: []
   parallel: normal
-  status: broken
+  status: green
   timeout_class: fast
   update: false
   vpc: self

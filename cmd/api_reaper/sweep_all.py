@@ -143,6 +143,103 @@ def vid_field(it):
     return str(it.get("vpc_id") or "")
 
 
+_SW_META_SHOWN = False
+
+
+def _sw_groups(c, base):
+    """List reapable servicewatch log groups, paging through ALL pages. The list
+    endpoint paginates; relying on one call (even with a big size) undercounts when
+    the server caps page size. Page with size=100 until a short/empty page, dedup
+    by id. Print the raw response metadata once (total_count etc.) so the true
+    total — and any owner-scoping — is visible vs what the console shows."""
+    global _SW_META_SHOWN
+    out = {}
+    for page in range(0, 80):
+        sep = "&" if "?" in base else "?"
+        r = c.get(f"{base}{sep}size=100&page={page}", service="servicewatch")
+        body = r.body if isinstance(r.body, dict) else {}
+        if not _SW_META_SHOWN:
+            meta = {k: (f"[{len(v)} items]" if isinstance(v, list) else v)
+                    for k, v in body.items()} if isinstance(body, dict) else body
+            print(f"  servicewatch list meta (page0 size100): {meta}")
+            _SW_META_SHOWN = True
+        lst = body.get("log_groups")
+        if not isinstance(lst, list):
+            lst = items(body)
+        page_items = [g for g in lst if isinstance(g, dict) and g.get("id")]
+        for g in page_items:
+            out[g["id"]] = g
+        if len(page_items) < 100:
+            break
+    return [g for g in out.values() if is_test(name_of(g)) and old_enough(g)]
+
+
+def reap_servicewatch(c):
+    """ServiceWatch log groups (and nested log streams) are NOT reachable by
+    terraform cleanup or the by-id deletes above, so they accumulate every run —
+    including the slowlog/alertlog groups auto-created by every DBaaS/SKE/SCF
+    resource. Delete is a BULK op: DELETE <collection> {"ids":[...]} (the SDK's
+    DeleteLogGroups). The list paginates (default page 20), so loop: list a large
+    page, chunk-delete, repeat until empty. Detect no-progress (same id set ->
+    bulk isn't actually deleting) and fall back to per-id / dump a diagnostic so a
+    silent 200-no-op or a pinned group can't hide. Region-scoped, VPC-independent."""
+    svc, n = "servicewatch", 0
+    base = None
+    for cand in ("/v1/log-groups", "/v1/loggroups", "/v1/log_groups"):
+        r = c.get(cand, service=svc)
+        print(f"  probe {svc}{cand} -> {getattr(r, 'status', '?')}")
+        if getattr(r, "ok", False):
+            base = cand
+            break
+    if base is None:
+        print("  servicewatch: no log-group list endpoint reachable; skipping")
+        return 0
+    prev_ids = set()
+    for round_i in range(50):
+        groups = _sw_groups(c, base)
+        if not groups:
+            print(f"  servicewatch: all clear after {round_i} round(s)")
+            break
+        ids = [g["id"] for g in groups]
+        cur = set(ids)
+        if cur == prev_ids:
+            # bulk delete returned ok but removed nothing — these are pinned
+            # (e.g. a still-terminating parent cluster) or need per-id. Try per-id
+            # once; if that also can't shift them, dump a sample + body and stop.
+            print(f"  servicewatch: {len(ids)} not removed by bulk — trying per-id")
+            progressed = False
+            for gid in ids:
+                if delete(c, svc, f"{base}/{gid}") in (200, 202, 204, 404):
+                    progressed = True
+                    n += 1
+            if not progressed:
+                print(f"  servicewatch: {len(ids)} STUCK (likely pinned to a live "
+                      f"parent / not yet deletable). sample:")
+                for g in groups[:25]:
+                    print(f"    STUCK {name_of(g)} ({g['id']})")
+                print(f"  DIAG sample body: {c.get(f'{base}/{ids[0]}', service=svc).body}")
+                break
+            prev_ids = set()
+            continue
+        prev_ids = cur
+        print(f"  servicewatch round {round_i}: {len(ids)} log group(s) remaining; deleting")
+        for i in range(0, len(ids), 50):
+            chunk = ids[i:i + 50]
+            r = c.delete(base, service=svc, json={"ids": chunk})
+            print(f"  DELETE {svc}{base} x{len(chunk)} -> {r.status} {str(r.body)[:160]}")
+            if r.status in (200, 202, 204):
+                n += len(chunk)
+            else:
+                # alternate id-field names some SCP bulk endpoints expect
+                for fld in ("logGroupIds", "log_group_ids"):
+                    if c.delete(base, service=svc, json={fld: chunk}).status in (200, 202, 204):
+                        n += len(chunk)
+                        break
+    remaining = len(_sw_groups(c, base))
+    print(f"  servicewatch: done, {remaining} log group(s) still present")
+    return n
+
+
 def main() -> int:
     global SWEEP_ALL
     settings.require_credentials()
@@ -198,11 +295,33 @@ def main() -> int:
             if st in (409, 500):
                 time.sleep(30); continue
             break
-    # 3. dbaas clusters (per engine host) + searchengine
-    for svc in ("mysql", "postgresql", "mariadb", "sqlserver", "epas", "cachestore", "searchengine"):
+    # 3. dbaas clusters (per engine host) + searchengine. These leak hardest: a
+    # failed/half-created cluster often 400s on delete, and while it lives the
+    # managed service keeps its slowlog/alertlog ServiceWatch log groups (owned by
+    # the service principal — so the reaper can't delete those directly) and pins
+    # its subnet/VPC. Surface the cluster state + delete response body so the 400
+    # is diagnosable, retry transitional states, and only count real deletes.
+    for svc in ("mysql", "postgresql", "mariadb", "sqlserver", "epas", "cachestore",
+                "searchengine", "eventstreams", "vertica", "multinodegpucluster"):
         for it in lst(c, svc, "/v1/clusters"):
-            if it.get("id") and delete(c, svc, f"/v1/clusters/{it['id']}"):
-                n += 1
+            cid = it.get("id")
+            if not cid:
+                continue
+            state = it.get("state") or it.get("status") or "?"
+            done = False
+            for attempt in range(6):
+                r = c.delete(f"/v1/clusters/{cid}", service=svc)
+                print(f"  DELETE {svc}/v1/clusters/{cid} (state={state}) -> {r.status} {str(r.body)[:220]}")
+                if r.status in (200, 202, 204, 404):
+                    n += 1; done = True
+                    wait_gone(c, svc, f"/v1/clusters/{cid}", 300, 20)
+                    break
+                if r.status in (400, 409, 500):  # often transitional (CREATING/RESTARTING) — settle
+                    time.sleep(30); continue
+                break
+            if not done:
+                cb = c.get(f"/v1/clusters/{cid}", service=svc).body
+                print(f"  DIAG {svc} cluster {cid} undeletable after retries: {str(cb)[:300]}")
     # 4. loadbalancers — an LB won't delete (409) while it has listeners / server
     # groups / health checks, so tear those down first, then the LB with retries.
     for coll in ("lb-listeners", "lb-server-groups", "lb-health-checks"):
@@ -290,6 +409,40 @@ def main() -> int:
         vid = it.get("volume_id") or it.get("id")
         if vid and delete(c, "filestorage", f"/v1/volumes/{vid}"):
             n += 1
+    # 7a. block storage volumes (VM + baremetal) — servers were deleted above, so the
+    # detached volumes are now removable. SCP exposes these on different hosts; probe
+    # the candidate (host, collection) pairs and delete each by id. Wrong paths just
+    # list-error and skip, so probing is harmless.
+    for svc, path in (("virtualserver", "/v1/block-storages"),
+                      ("virtualserver", "/v1/volumes"),
+                      ("baremetal-blockstorage", "/v1/block-storages"),
+                      ("baremetal-blockstorage", "/v1/volumes"),
+                      ("baremetal", "/v1/block-storages")):
+        for it in lst(c, svc, path):
+            vid = it.get("id") or it.get("volume_id")
+            if vid and delete(c, svc, f"{path}/{vid}") in (200, 202, 204, 404):
+                n += 1
+    # 7b. virtualserver server-groups, then custom images. Images are GUARDED to
+    # test-prefix names only — never delete the account's base/public OS images.
+    for it in lst(c, "virtualserver", "/v1/server-groups"):
+        if it.get("id") and delete(c, "virtualserver", f"/v1/server-groups/{it['id']}") in (200, 202, 204, 404):
+            n += 1
+    try:
+        for it in items(c.get("/v1/images", service="virtualserver").body):
+            nm = name_of(it).lower()
+            if it.get("id") and any(nm.startswith(p) for p in ("regr", "rpv", "rske")):
+                if delete(c, "virtualserver", f"/v1/images/{it['id']}") in (200, 202, 204, 404):
+                    n += 1
+    except Exception as exc:
+        print(f"  images sweep error: {exc}")
+    # 7c. backup + gslb (best-effort; probe collection names, delete by id)
+    for svc, paths in (("backup", ("/v1/backups", "/v1/vaults", "/v1/backup-policies")),
+                       ("gslb", ("/v1/gslbs", "/v1/gslb"))):
+        for path in paths:
+            for it in lst(c, svc, path):
+                rid = it.get("id")
+                if rid and delete(c, svc, f"{path}/{rid}") in (200, 202, 204, 404):
+                    n += 1
     # 8. DNS: private-dns (deletable only when ACTIVE), public-domain (NO delete API)
     for it in lst(c, "dns", "/v1/private-dns"):
         if it.get("id"):
@@ -377,6 +530,9 @@ def main() -> int:
     for it in lst(c, "certificatemanager", "/v1/certificatemanager"):
         if it.get("id") and delete(c, "certificatemanager", f"/v1/certificatemanager/{it['id']}"):
             n += 1
+    # 11. servicewatch log groups (+ nested log streams) — leaked every run, never
+    # reaped before; not VPC-bound so order doesn't matter.
+    n += reap_servicewatch(c)
     print(f"sweep_all done: {n} resource(s) deleted")
     return 0
 
