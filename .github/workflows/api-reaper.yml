@@ -77,3 +77,5 @@ jobs:
           python scripts/obs_bucket.py sweep regrnetlog regr-obs-
 
 # manual sweep trigger: reclaim leaked pool VPC from run 27095226766 (2026-06-07)
+
+# final cleanup sweep 2026-06-08: drain settled DBaaS clusters + free pinned subnets/VPCs

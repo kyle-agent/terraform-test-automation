@@ -239,3 +239,39 @@ coverage run; always confirm pool teardown + reap after.
 - Issue tags referenced: #58 (iam_access_key), #59/#60 (vpc_subnet/cidr), #69
   (virtualserver_volume), #75 (iam_role), #76 (vpc_private_nat/TGW), #77 (LB
   destroy-leak), #81 (no ImportState → reaper), #82 (dns 500), #83 (DBaaS family).
+
+---
+
+## 8. Account cleanup state & reaper findings (2026-06-08)
+
+Triggered by leftovers piling up (ServiceWatch log groups, stuck subnets/VPCs).
+Reaper (`cmd/api_reaper/sweep_all.py`) was extended; key findings:
+
+- **No cron anywhere; nothing auto-runs.** All workflows (coverage-sweep-pool,
+  dbaas-probe, obs-probe, inventory) are push(`claude/**`, path-scoped) or
+  workflow_dispatch only. "Stop all tests" = already true when nothing is
+  in-progress/queued. The producers of the leaked DBaaS resources are
+  `dbaas-probe` (this repo, `cmd/dbaas_probe/probe.py`, creates+deletes clusters)
+  and/or the external `api-test-automation` regression (out of our repo scope).
+- **ServiceWatch reaper added + paginated** (commits 845ca07, 1f29952). Drains
+  every log group OUR key owns. BUT: the list endpoint is **principal-scoped** —
+  it returns only `count: N` groups created by our access key (`2a579fc…`). The
+  ~400 groups seen in the **console are owned by managed-service principals**
+  (e.g. SCF `bc371a79…`, DBaaS `1f0465d2…`): our key gets **403** on delete and
+  can't even list them. **This is an IAM permission boundary, not a reaper bug.**
+  To clear those: delete from the console as the account owner, OR grant the
+  reaper's IAM key ServiceWatch delete perms, OR delete the owning parent
+  resource (SCF function / DB cluster) so the service removes its own log groups.
+- **DBaaS cluster delete `400` diagnosed** (commit c12e1e7): body =
+  `Dbaas.ValidationError.InvalidServiceState` ("Invalid service state") — the
+  cluster was mid-create/terminate. Fix: retry delete with backoff (now in the
+  reaper); confirmed clusters then go 400→404 / →202 and release their pinned
+  subnet/VPC (those were the stuck `regrsub* "API regression"` subnets). So the
+  stuck-subnet mystery = a still-settling DBaaS cluster pinning the subnet.
+- **Still unreapable by our key (need console/owner action):** 2 SCF log groups
+  (`/scp/scf/regrscf6a25917a`, `…6a242ac1`, 403); ~5 stale `lb-health-checks`
+  that 400; and the bulk of the console's ~400 log groups (foreign principals).
+- **"failed resource" deletion:** the reaper deletes by id regardless of status,
+  but the platform rejects deletes of resources in a bad/transitional state
+  (DBaaS 400 InvalidServiceState, subnet/VPC 409). It now retries transient
+  states; genuinely foreign-owned ones (403) can't be deleted with our key.
