@@ -81,11 +81,19 @@ domain.yaml  │ + API-Evaluator │     └────────────
              └─────────────────┘
 ```
 
+### Runnable agent definitions
+Each agent is installed as a **Claude Code subagent** under
+[`.claude/agents/`](.claude/agents/) (git-tracked, so available in every session). Any
+session can invoke one by name (e.g. `scp-orchestrator`, `coverage-regression`,
+`provider-verification`, `api-info-collector`, `api-evaluator`, `issue-registrar`,
+`coverage-dashboard`, `domain-knowledge-curator`). Each definition is a thin launcher
+that points at this file + the full spec in `docs/agents/`.
+
 ### Practical mapping (today)
-The agents are **roles**, not always separate processes. Today most run as Claude Code
-sessions plus GitHub Actions workflows; the role boundaries below define *who is
-responsible for what* and *which files are the contract*, so the system behaves
-identically no matter how many sessions/processes are live.
+The agents are **roles**, not always separate processes. They run as Claude Code
+subagents (`.claude/agents/`) plus GitHub Actions workflows; the role boundaries below
+define *who is responsible for what* and *which files are the contract*, so the system
+behaves identically no matter how many sessions/processes are live.
 - Verification/coverage execution → GitHub Actions: `coverage-sweep-pool.yml`,
   `dbaas-probe.yml`, `api-reaper.yml`, `inventory.yml` (+ `regression.yml`,
   `nightly.yml`, `dynamic-regression.yml`).

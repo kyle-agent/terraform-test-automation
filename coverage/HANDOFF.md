@@ -1,11 +1,39 @@
 # Coverage-expansion session handoff
 
 **Branch:** `claude/youthful-albattani-CzhCZ` (both repos)
-**Last updated:** 2026-06-07
+**Last updated:** 2026-06-08
 **Purpose:** Single source of truth for resuming the Terraform-provider coverage
 expansion work in a fresh session. **Start at [`AGENTS.md`](../AGENTS.md)** (mission +
 multi-agent architecture + session bootstrap), then this file, then
 `coverage/registry.yaml`.
+
+---
+
+## 0. Latest session close (2026-06-08) — what changed & where to resume
+
+**Done this session:**
+- **Account cleanup** (user: "stop all tests + delete all resources"). No cron exists;
+  nothing auto-runs. Extended the API reaper (`cmd/api_reaper/sweep_all.py`) and ran it
+  repeatedly until the account is clean from our key's reach:
+  - ServiceWatch log groups: added paginated bulk-delete; cleared all our-key-owned ones.
+  - DBaaS cluster `400 InvalidServiceState` (mid-create/terminate): fixed via
+    retry-with-backoff → clusters delete and release their pinned subnets/VPCs.
+  - Block storage volumes: found at `virtualserver` host **`/v1/volumes`** (not
+    `/v1/block-storages`); deleted 13. Also added eventstreams/vertica/gpu clusters,
+    server-groups, custom images (test-prefix-guarded), backup, gslb sweeps.
+  - **Final state:** core infra (VPC/subnet/server/SG) empty. Remaining = **403
+    permission-boundary only**: 2 SCF log groups + backup/gslb/baremetal/gpu services
+    our key has no rights on + ~5 stale lb-health-checks (400). These need the account
+    owner/console or an IAM grant — the reaper can do no more with the current key.
+- **Persistent multi-agent + domain-knowledge architecture** authored (so any session
+  continues identically): `AGENTS.md`, `docs/agents/*`, runnable subagents in
+  **`.claude/agents/*`**, `coverage/domain.yaml` + `docs/domain/*`,
+  `docs/PROVIDER_VERIFICATION.md`, `docs/PROVIDER_ISSUES.md`.
+
+**Resume next session by:** reading `AGENTS.md` → this §0 → `docs/roadmap.md`. The
+coverage-expansion TODO is unchanged (see §5 below): firewall_firewall_rule self-contain,
+iam_role_policy_bindings, vpc_vpc_endpoint, the LB ×7 decision, virtualserver_image via
+OBS. Pre-existing leaker decisions already recorded in §4/§6.
 
 ---
 
