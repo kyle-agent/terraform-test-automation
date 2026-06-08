@@ -3,7 +3,9 @@
 **Branch:** `claude/youthful-albattani-CzhCZ` (both repos)
 **Last updated:** 2026-06-07
 **Purpose:** Single source of truth for resuming the Terraform-provider coverage
-expansion work in a fresh session. Read this file first, then `coverage/registry.yaml`.
+expansion work in a fresh session. **Start at [`AGENTS.md`](../AGENTS.md)** (mission +
+multi-agent architecture + session bootstrap), then this file, then
+`coverage/registry.yaml`.
 
 ---
 

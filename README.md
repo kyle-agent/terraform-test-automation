@@ -4,6 +4,10 @@
 
 각 테스트는 보고 이슈(Chapter 1~7 + Deep Audit)와 1:1 또는 1:다로 매핑되며, 픽스가 머지된 뒤에도 회귀가 발생하면 자동으로 GitHub 이슈를 다시 열도록 설계되어 있다.
 
+> **이 프로젝트는 멀티 에이전트로 운영됩니다.** 미션(2축: provider 검증 / 커버리지·회귀),
+> 에이전트 구성, 세션 부트스트랩은 **[`AGENTS.md`](AGENTS.md)** 를 먼저 읽으세요.
+> SCP 도메인 지식은 [`docs/domain/`](docs/domain/) + [`coverage/domain.yaml`](coverage/domain.yaml).
+
 ---
 
 ## 구성요소

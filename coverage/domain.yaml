@@ -1,0 +1,120 @@
+# SCP domain knowledge — MACHINE-READABLE contract for agents.
+#
+# AI-generated, HUMAN-OWNED. Maintained by the Domain-Knowledge-Curator agent
+# (docs/agents/domain-knowledge-curator-agent.md). The human-readable explanation of
+# everything here lives in docs/domain/scp-domain-knowledge.md — keep the two in sync.
+#
+# Each fact carries a source/confidence where it isn't self-evident. Service agents
+# read this to build correct bootstraps, ordering, and cleanup.
+
+schema_version: 1
+last_updated: 2026-06-08
+
+account:
+  # The dedicated single-tenant test account. Destructive ops are guarded by this id.
+  id: 9b13e0d04b7544ad8b66905cd94888bd
+  region: kr-west1
+  env: e            # host scheme uses this letter (see api.host_scheme)
+  vpc_quota: 5      # HARD bottleneck — a leaked VPC blocks all pool runs
+  notes: provider mirror pinned at v3.3.2 (scripts/setup_provider_mirror.sh)
+
+api:
+  # SCP Open API host scheme (used by the reaper + scp-api skill, NOT terraform).
+  host_scheme:
+    regional: "https://<service>.<region>.<env>.samsungsdscloud.com"
+    global:   "https://<service>.<env>.samsungsdscloud.com"
+  global_services: [iam, product, billing, billingplan, budget, resourcemanager, quota, organization, pricing, costexplorer, support]
+  auth: "HMAC: signing_string = METHOD + encodeURI(url) + ts_ms + accessKey + clientType; headers Scp-Accesskey/Scp-Signature/Scp-Timestamp/Scp-ClientType=Openapi"
+
+# ── Prerequisites: to create KEY you must first have [values]. ─────────────────────
+# Drives bootstrap construction and self-contained fixtures. (source: bootstrap/ +
+# registry needs + run evidence)
+prerequisites:
+  vpc: []
+  subnet: [vpc]
+  internet_gateway: [vpc]          # creating an IGW auto-creates a firewall (exposes firewall_id)
+  security_group: [vpc]
+  publicip: []
+  port: [vpc, subnet]
+  nat_gateway: [vpc, subnet]
+  firewall_rule: [firewall]        # firewall comes from an internet_gateway
+  virtualserver_server: [vpc, subnet, security_group, keypair, image, server_type]
+  virtualserver_volume: [virtualserver_server]      # block storage attaches to a server
+  loadbalancer: [vpc, subnet]
+  loadbalancer_lb_listener: [loadbalancer, lb_server_group]
+  loadbalancer_lb_member: [loadbalancer, lb_server_group]
+  loadbalancer_lb_health_check: [loadbalancer]
+  dbaas_cluster: [vpc, subnet]     # mysql/postgresql/mariadb/sqlserver/epas/cachestore/vertica/searchengine/eventstreams
+  ske_cluster: [vpc, subnet]
+  filestorage_volume: []
+  servicewatch_log_stream: [servicewatch_log_group]
+  vpc_endpoint: [vpc, subnet]
+  vpn_gateway: [vpc]               # self-contained scenarios create their own vpc
+  vpn_tunnel: [vpn_gateway]
+
+# ── Create order (parents first). Destroy is the REVERSE. ──────────────────────────
+create_order: [vpc, subnet, internet_gateway, security_group, publicip, port,
+               nat_gateway, keypair, image, virtualserver_server, virtualserver_volume,
+               loadbalancer, dbaas_cluster, ske_cluster]
+
+# ── Cleanup order (children first) — used by the API reaper. ───────────────────────
+# (source: .claude/skills/scp-api/SKILL.md + cmd/api_reaper/sweep_all.py)
+cleanup_order:
+  general: [ske_cluster, dbaas_cluster, virtualserver_server, virtualserver_volume,
+            loadbalancer_children, loadbalancer, ports, nat_gateways, publicips,
+            vpc_peerings, vpc_endpoints, private_nats, subnet_vips, subnets,
+            internet_gateways, vpcs]
+  transit_gateway: [routing_rules, uplink_routing_rules, firewalls, vpc_connections, transit_gateway]
+  loadbalancer: [lb_listeners, lb_server_groups, lb_health_checks, loadbalancer]   # LB 409s while children exist
+  notes:
+    - "public-domain-name has NO delete API -> console/release only"
+    - "VPC delete 409s until ALL children gone; retry"
+    - "block storage volumes (VM) are at virtualserver host /v1/volumes (NOT /v1/block-storages)"
+
+# ── Constraints / behavioural facts the schema doesn't show. ───────────────────────
+constraints:
+  dbaas:
+    creating_trap_minutes: [15, 20]   # cluster non-deletable until ACTIVE; DELETE 400 'InvalidServiceState' meanwhile
+    delete_async: true                # 202 then poll (wait_gone)
+    name_max_length: 9
+    instance_name_prefix_max_length: 8
+    os_block_storage_size_gb: 104     # fixed
+    init_config_required_nonempty: [database_name, database_user_name, database_user_password]
+    service_ip_address: "must be a free IP in the subnet, or omit to auto-assign (never null)"
+    opaque_errors: "provider drops the API body -> 400 value_error names no field (#83); use cmd/dbaas_probe to see it"
+  servicewatch:
+    log_group_list_paginated: true    # ?size=100&page=N ; default page ~20
+    log_group_delete_bulk: 'DELETE /v1/log-groups {"ids":[...]}'
+    list_principal_scoped: true       # our key only sees groups it can act on; service-owned (SCF/DBaaS) -> 403
+    auto_created_by: [dbaas (slowlog/alertlog), ske, scf]   # parents must be deleted for these to clear
+  vpc:
+    delete_conflict_until_children_gone: true
+    subnet_409_if_pinned: "a still-terminating DBaaS cluster pins its subnet -> subnet/VPC 409"
+  permissions_blocked:               # our reaper/test key lacks rights here (403)
+    - scf
+    - backup
+    - gslb
+    - baremetal
+    - multinodegpucluster
+    - iam_user            # 401 HMAC
+    - loggingaudit
+
+# ── Test lanes (axis ②). See docs/TEST_STRATEGY.md. ────────────────────────────────
+lanes:
+  none: "no VPC needed; high parallel (iam/dns/cert/servicewatch/resourcemanager/billing)"
+  pool: "share one bootstrapped VPC+prereqs; max-parallel 2 (VPC quota 5)"
+  self: "scenario creates its own VPC; runs after pool, low parallel"
+
+# ── Known provider issues (cross-ref). Full detail: docs/PROVIDER_ISSUES.md. ───────
+known_issues:
+  "#58": iam_access_key
+  "#59": vpc_subnet post-deploy require
+  "#60": vpc_cidr replan
+  "#69": virtualserver_volume
+  "#75": iam_role
+  "#76": vpc/TGW status-waiter infinite hang
+  "#77": LB create no-wait -> destroy leak
+  "#79": private-dns destroy 409
+  "#81": no ImportState on any resource (reaper compensates)
+  "#82": public-domain-name create 500 leaves orphan (no delete API)
+  "#83": DBaaS opaque 400 value_error (provider drops body)
