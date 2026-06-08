@@ -93,18 +93,27 @@ defect. Marked **broken** (blocked-with-findings). Teardown clean, no leak.
   returns before ACTIVE and has no wait knob, so quick create→destroy leaks the LB →
   pinned the pool subnet → **subnet/VPC 409 leak**. Reaper run **27121999759** reclaimed
   the leaked subnet `8a65f4…`+VPC `b3c1ae…` (`sweep_all done: 5 deleted`) → account clean.
-- **Re-test in flight (run after 2bd103d):** `lb_listener`, `lb_member`,
-  `lb_server_group`, `loadbalancer_public_nat_ip` (fixtures fixed). NOTE: any LB-creating
-  scenario likely hits the same #77 CREATING-state destroy leak → **reap after**.
+- **Re-test (run 27122245554) — fixtures fixed but 3 provider/platform blockers remain;
+  see `docs/findings/loadbalancer-family.md`:**
+  - `lb_server_group` → apply ✅ replan ✅ **destroy ❌** (#77 CREATING leak).
+  - `lb_listener`, `loadbalancer_public_nat_ip` → **apply ❌ 409** "only Load Balancer
+    under the subnet is not in ACTIVE state" = **ONE-LB-per-subnet** limit; the shared
+    pool subnet at `parallel: 4` makes LB scenarios collide.
+  - `lb_member` → **plan ❌** provider rejects a COMPUTED `object_id` (backend server.id,
+    unknown-at-plan) when `object_type=VM` (plan-validation bug).
+  - All 4 marked **broken** with precise per-scenario `issues`. The `lb_server_group` LB
+    leaked → reaper re-fired (run after commit 06fb1cc) to reclaim subnet/VPC.
 
-**Provider #77 is the LB blocker:** Create must wait-for-ACTIVE (or Delete must poll
-until deletable). Until then, the whole LB family gets apply/replan coverage only; clean
-destroy is impossible and every LB run leaks the pool VPC (reaper reclaims out-of-band).
+**Provider #77 + 2 sibling blockers gate the LB family** (documented in
+`docs/findings/loadbalancer-family.md`): (1) Create doesn't wait for ACTIVE → CREATING
+destroy leak; (2) one-LB-per-subnet vs shared-pool-parallel; (3) lb_member computed
+object_id rejected at plan. Net LB result: **lb_health_check green; the other 6 broken/
+excluded** with provider-actionable diagnostics. To make them green later: re-model LB
+scenarios as `vpc: self` (own subnet) + serial, AND land the #77 Create-wait fix.
 
-**Resume:** read the re-test verdicts (download the `poolsweep-fast-1-<runid>` artifact's
-`capability-matrix.md`); reap if teardown 409'd; finalize LB registry (apply/replan-OK
-ones → broken#77 with that note, or green if they somehow destroyed clean). Remaining
-track-3 item: `virtualserver_image` real-image OBS upload probe (stays blocked until then).
+**Remaining open item:** `virtualserver_image` real-image OBS upload probe (tooling ready
+in `scripts/upload_image_to_obs.py` + `docs/findings/virtualserver-image-obs.md`; needs a
+CI step with OBS creds + a platform-accepted image — stays blocked until run).
 
 ---
 
