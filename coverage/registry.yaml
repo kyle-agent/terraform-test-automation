@@ -305,10 +305,11 @@ iam_access_key:
   family: iam
   import: false
   issues:
-  - 're-test #58 after reaper freed the access-key quota slot (orphaned key reclaimed)'
+  - 'GREEN with patched provider #58 (Delete disables an enabled key before deleting); full lifecycle
+    ok once the account access-key quota slot was freed (run 27241816399). Requires patched provider.'
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -998,10 +999,11 @@ vpc_transit_gateway:
   family: vpc
   import: false
   issues:
-  - 'un-excluded: re-test with #76 TGW status-waiter fix (waiter no longer hangs)'
+  - 'GREEN with patched provider #76 (TGW status-waiter no longer hangs); full lifecycle incl clean destroy
+    (run 27241816399). Requires patched provider.'
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -1012,10 +1014,12 @@ vpc_transit_gateway_firewall:
   family: vpc
   import: false
   issues:
-  - 'un-excluded: re-test with #76 TGW status-waiter fix (waiter no longer hangs)'
+  - apply 404 "Not found with ID 00000000-0000-0000-0000-000000000000" (run 27241816399) - fixture passes
+    an unset required dependency id (TGW firewall); needs a valid TGW-firewall dependency wired in the
+    scenario.
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: none
@@ -1026,10 +1030,12 @@ vpc_transit_gateway_firewall_connection:
   family: vpc
   import: false
   issues:
-  - 'un-excluded: re-test with #76 TGW status-waiter fix (waiter no longer hangs)'
+  - apply 404 "Not found with ID 00000000-0000-0000-0000-000000000000" (run 27241816399) - fixture passes
+    an unset required dependency id (TGW firewall); needs a valid TGW-firewall dependency wired in the
+    scenario.
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: none
@@ -1040,11 +1046,13 @@ vpc_transit_gateway_rule:
   family: vpc
   import: false
   issues:
-  - 'un-excluded: re-test with #76 TGW status-waiter fix (waiter no longer hangs)'
+  - 'apply 400 "no value given for required property created_at / Invalid error data" (run 27241816399)
+    - rule create omits created_at (server-set field treated as required; same API-side pattern as #61).
+    Also destroy-ordering: tgw vpc-connection delete 400 "state not Active (EDITING)".'
   needs:
   - vpc_id
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool
@@ -1055,10 +1063,12 @@ vpc_transit_gateway_uplink_rule:
   family: vpc
   import: false
   issues:
-  - 'un-excluded: re-test with #76 TGW status-waiter fix (waiter no longer hangs)'
+  - apply 404 "Not found with ID 00000000-0000-0000-0000-000000000000" (run 27241816399) - fixture passes
+    an unset required dependency id (TGW firewall); needs a valid TGW-firewall dependency wired in the
+    scenario.
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: none
@@ -1069,11 +1079,12 @@ vpc_transit_gateway_vpc_connection:
   family: vpc
   import: false
   issues:
-  - 'un-excluded: re-test with #76 TGW status-waiter fix (waiter no longer hangs)'
+  - 'GREEN with patched provider #76 (TGW waiter); full lifecycle incl clean destroy (run 27241816399).
+    Requires patched provider.'
   needs:
   - vpc_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
