@@ -367,10 +367,10 @@ iam_role:
   family: iam
   import: false
   issues:
-  - '#75'
+  - 're-test with patched provider #75 (CreateRole policy_ids now serializes as [] not null)'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -380,10 +380,10 @@ iam_role_policy_bindings:
   family: iam
   import: false
   issues:
-  - '#75 blocked-by-dep: iam_role create 400 ''Input should be a valid list'' (run 27120875200)'
+  - 're-test with patched provider #75 (CreateRole policy_ids now serializes as [] not null)'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
