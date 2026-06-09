@@ -112,3 +112,6 @@ class ApiClient:
 
     def post(self, path, service=None, json=None, **kw):
         return self._do("POST", path, service, json=json)
+
+    def put(self, path, service=None, json=None, **kw):
+        return self._do("PUT", path, service, json=json)

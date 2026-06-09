@@ -246,6 +246,46 @@ def reap_servicewatch(c):
     return n
 
 
+def reap_access_keys(c):
+    """Reap ONLY test-created IAM access keys, never the CI's own auth key.
+
+    Two independent safety gates — a key is deleted only if BOTH hold:
+      1) its public id (`access_key`) != the live SCP_ACCESS_KEY used to authenticate, and
+      2) its description marks it as test-created (== 'regr-access-key' or starts with 'regr').
+    The CI auth key fails both, so it can never be touched. Access keys are GLOBAL (iam)
+    and reaped regardless of SWEEP_ALL/age (they don't carry a name/created_at we scope on,
+    and the description gate is strict). Disable (PUT is_enabled=false) before delete because
+    the API refuses to delete an enabled key (the #58 root cause)."""
+    n = 0
+    live_key = os.environ.get("SCP_ACCESS_KEY", "")
+    try:
+        body = c.get("/v1/access-keys", service="iam").body
+    except Exception as exc:
+        print(f"  access-keys list error: {exc}"); return 0
+    for k in items(body):
+        if not isinstance(k, dict):
+            continue
+        kid = k.get("id")
+        pub = str(k.get("access_key") or "")
+        desc = str(k.get("description") or "")
+        if not kid:
+            continue
+        if live_key and pub == live_key:
+            print(f"  access-key {kid}: SKIP (live auth key)"); continue
+        if not (desc == "regr-access-key" or desc.lower().startswith("regr")):
+            print(f"  access-key {kid}: SKIP (non-test description {desc!r})"); continue
+        print(f"  access-key {kid}: TEST (desc={desc!r}, enabled={k.get('is_enabled')}) -> reaping")
+        if k.get("is_enabled"):
+            try:
+                r = c.put(f"/v1/access-keys/{kid}", service="iam", json={"is_enabled": False})
+                print(f"    disable -> {r.status}")
+            except Exception as exc:
+                print(f"    disable error: {exc}")
+        if delete(c, "iam", f"/v1/access-keys/{kid}"):
+            n += 1
+    return n
+
+
 def main() -> int:
     global SWEEP_ALL
     settings.require_credentials()
@@ -539,6 +579,11 @@ def main() -> int:
     # 11. servicewatch log groups (+ nested log streams) — leaked every run, never
     # reaped before; not VPC-bound so order doesn't matter.
     n += reap_servicewatch(c)
+    # 12. IAM access keys: the iam_access_key fixture creates a key on the CURRENT
+    # principal (no user arg), and the pre-#58-fix bug left enabled keys undeletable.
+    # The principal caps at 2 keys, so one orphan blocks iam_access_key forever. Reap
+    # ONLY test keys (description regr*), and NEVER the CI's own auth key.
+    n += reap_access_keys(c)
     print(f"sweep_all done: {n} resource(s) deleted")
     return 0
 
