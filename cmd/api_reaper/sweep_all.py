@@ -575,3 +575,6 @@ if __name__ == "__main__":
 
 # Manual sweep 2026-06-09: reclaim 4 self-VPC LBs leaked in patched-provider re-test
 # (run 27210071644: #77 Create-wait works; Delete needs wait-for-gone -> subnet 409).
+
+# Manual sweep 2026-06-09 (2): reclaim lb_listener + public_nat_ip leaks from full-patch
+# re-test (run 27212070186); basic + lb_server_group destroyed clean (no leak).
