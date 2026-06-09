@@ -367,10 +367,11 @@ iam_role:
   family: iam
   import: false
   issues:
-  - 're-test with patched provider #75 (CreateRole policy_ids now serializes as [] not null)'
+  - 'GREEN with patched provider #75 (CreateRole policy_ids -> [] not null); full lifecycle ok (run 27233487205).
+    Requires patched provider.'
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -380,10 +381,11 @@ iam_role_policy_bindings:
   family: iam
   import: false
   issues:
-  - 're-test with patched provider #75 (CreateRole policy_ids now serializes as [] not null)'
+  - 'GREEN with patched provider #75 (depends on iam_role create); full lifecycle ok (run 27233487205).
+    Requires patched provider.'
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -473,9 +475,7 @@ loadbalancer_lb_member:
   family: loadbalancer
   import: false
   issues:
-  - "plan \u274C (run 27122245554): \"Missing object_id ... required when object_type is VM\" \u2014 provider\
-    \ rejects a COMPUTED object_id (= backend server.id, unknown at plan) instead of tolerating unknown-at-plan.\
-    \ Provider plan-validation bug; also one-LB-per-subnet + #77."
+  - 're-test with patched provider #85 (lb_member computed object_id) + #67 (server state) + #77 (LB waits)'
   needs:
   - image_id
   - keypair_name
@@ -483,7 +483,7 @@ loadbalancer_lb_member:
   - subnet_id
   - vpc_id
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
@@ -521,12 +521,11 @@ loadbalancer_loadbalancer_public_nat_ip:
   family: loadbalancer
   import: false
   issues:
-  - 'apply/replan OK with #77 patch + IGW fix; destroy 409: publicip "not in deletable state (ATTACHED)"
-    + LB "associated resources" (run 27212070186). Destroy-ordering: the public NAT/publicip detach is
-    not awaited before LB/publicip delete - provider Delete gap (public_nat_ip / publicip).'
+  - 're-test with patched provider: public_nat Delete now waits for NAT removed (avoid publicip ATTACHED
+    409) + #77'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: self
@@ -910,11 +909,11 @@ vpc_private_nat_ip:
   family: vpc
   import: false
   issues:
-  - pool teardown 409 leak in run 27095226766 - confirm leaker vs loadbalancer_basic via reaper run 27106727666
+  - 're-test with patched provider #76 (TGW/nat waiters fixed)'
   needs:
   - ip_address
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
