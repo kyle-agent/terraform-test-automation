@@ -581,3 +581,5 @@ if __name__ == "__main__":
 
 # Manual sweep 2026-06-09 (3): reclaim lb_member + vpc_private_nat leaks (run 27233794315);
 # public_nat_ip destroyed clean (GREEN).
+
+# Manual sweep 2026-06-09 (4): clean leaks before peering/subnet/cidr re-test batch.
