@@ -1107,9 +1107,11 @@ vpc_vpc_peering:
   family: vpc
   import: false
   issues:
-  - '#61 STILL "no value given for required property approver_vpc_name" even with fixture setting it explicitly
-    (run 27238242719) - provider does not serialize approver_vpc_name on the create request; serialization
-    path bug. Leaks VPCs on partial-create.'
+  - '#61: provider now CORRECTLY serializes approver_vpc_name (verified: local json.Marshal of VpcPeeringCreateRequest
+    emits "approver_vpc_name"; remote branch SDK + source-build confirmed), set from explicit fixture
+    value, yet API still returns 400 "no value given for required property approver_vpc_name / Reason:
+    Invalid error data" (run 27238242719). Not provider-fixable - API-side contract issue; needs vendor/API
+    investigation.'
   needs: []
   parallel: normal
   status: broken
@@ -1122,9 +1124,11 @@ vpc_vpc_peering_approval:
   family: vpc
   import: false
   issues:
-  - '#61 STILL "no value given for required property approver_vpc_name" even with fixture setting it explicitly
-    (run 27238242719) - provider does not serialize approver_vpc_name on the create request; serialization
-    path bug. Leaks VPCs on partial-create.'
+  - '#61: provider now CORRECTLY serializes approver_vpc_name (verified: local json.Marshal of VpcPeeringCreateRequest
+    emits "approver_vpc_name"; remote branch SDK + source-build confirmed), set from explicit fixture
+    value, yet API still returns 400 "no value given for required property approver_vpc_name / Reason:
+    Invalid error data" (run 27238242719). Not provider-fixable - API-side contract issue; needs vendor/API
+    investigation.'
   needs: []
   parallel: normal
   status: broken
@@ -1137,9 +1141,11 @@ vpc_vpc_peering_rule:
   family: vpc
   import: false
   issues:
-  - '#61 STILL "no value given for required property approver_vpc_name" even with fixture setting it explicitly
-    (run 27238242719) - provider does not serialize approver_vpc_name on the create request; serialization
-    path bug. Leaks VPCs on partial-create.'
+  - '#61: provider now CORRECTLY serializes approver_vpc_name (verified: local json.Marshal of VpcPeeringCreateRequest
+    emits "approver_vpc_name"; remote branch SDK + source-build confirmed), set from explicit fixture
+    value, yet API still returns 400 "no value given for required property approver_vpc_name / Reason:
+    Invalid error data" (run 27238242719). Not provider-fixable - API-side contract issue; needs vendor/API
+    investigation.'
   needs: []
   parallel: normal
   status: broken
