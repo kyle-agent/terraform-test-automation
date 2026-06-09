@@ -305,10 +305,10 @@ iam_access_key:
   family: iam
   import: false
   issues:
-  - '#58'
+  - 're-test #58 (Delete disables enabled key first)'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -845,11 +845,11 @@ vpc_cidr:
   family: vpc
   import: false
   issues:
-  - '#60'
+  - 're-test #60 (real Read -> idempotent)'
   needs:
   - vpc_id
   parallel: low
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
@@ -939,11 +939,11 @@ vpc_subnet:
   family: vpc
   import: false
   issues:
-  - '#59'
+  - 're-test #59 (dns_nameservers types.List)'
   needs:
   - vpc_id
   parallel: low
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
@@ -966,13 +966,12 @@ vpc_subnet_vip_nat_ip:
   family: vpc
   import: false
   issues:
-  - 'provider: destroy fails ''SUBNET not a valid PublicipAttachedResourceType'' (apply ok w/ dedicated
-    publicip)'
+  - re-test (publicip-detach wait on destroy)
   needs:
   - publicip_id
   - subnet_id
   parallel: low
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
@@ -1104,10 +1103,10 @@ vpc_vpc_peering:
   family: vpc
   import: false
   issues:
-  - 'provider: API requires approver_vpc_name but schema omits it (+destroy 409 leak)'
+  - 're-test #61 (approver_vpc_name derived/sent + destroy 404-wait)'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: self
@@ -1117,10 +1116,10 @@ vpc_vpc_peering_approval:
   family: vpc
   import: false
   issues:
-  - depends on vpc_vpc_peering (provider approver_vpc_name gap)
+  - 're-test #61 (depends on vpc_vpc_peering)'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: self
@@ -1130,10 +1129,10 @@ vpc_vpc_peering_rule:
   family: vpc
   import: false
   issues:
-  - depends on vpc_vpc_peering (provider approver_vpc_name gap)
+  - 're-test #61 (depends on vpc_vpc_peering)'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: self
