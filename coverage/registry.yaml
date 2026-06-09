@@ -476,9 +476,7 @@ loadbalancer_lb_member:
   family: loadbalancer
   import: false
   issues:
-  - 'apply/replan OK with #85/#67/#77 patch (run 27233794315); destroy 409: lb_server_group stuck EDITING
-    + server "LB Server Group attached" - destroy-ordering gap in lb_server_group/lb_member Delete (next
-    provider fix).'
+  - re-test destroy-ordering (server_group EDITING stabilize + retry)
   needs:
   - image_id
   - keypair_name
@@ -486,7 +484,7 @@ loadbalancer_lb_member:
   - subnet_id
   - vpc_id
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
@@ -846,12 +844,11 @@ vpc_cidr:
   family: vpc
   import: false
   issues:
-  - '#60 Read fixed (apply/replan idempotent) but destroy 400 "VPC CIDR Delete function is not yet implemented"
-    - Delete is a stub; implement Delete (run 27235979211).'
+  - 're-test #60 Delete impl (RemoveVpcCidr)'
   needs:
   - vpc_id
   parallel: low
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
@@ -969,14 +966,12 @@ vpc_subnet_vip_nat_ip:
   family: vpc
   import: false
   issues:
-  - apply/replan OK; destroy still "SUBNET is not a valid PublicipAttachedResourceType" - the vpc_publicip
-    RESOURCE Read uses the v1.1 enum during destroy refresh; needs v1.2 ShowPublicip in publicip Read
-    (run 27235979211).
+  - re-test publicip Read v1.2 (SUBNET enum) on destroy
   needs:
   - publicip_id
   - subnet_id
   parallel: low
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
@@ -1108,12 +1103,10 @@ vpc_vpc_peering:
   family: vpc
   import: false
   issues:
-  - '#61 still "no value given for required property approver_vpc_name" (run 27235979211) - the derive/send
-    fix did not take; peering client likely uses a different SDK vpc version than 1.1. Leaked VPCs (quota
-    hit).'
+  - 're-test #61 (explicit approver_vpc_name in fixture + provider guard)'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: self
@@ -1123,12 +1116,10 @@ vpc_vpc_peering_approval:
   family: vpc
   import: false
   issues:
-  - '#61 still "no value given for required property approver_vpc_name" (run 27235979211) - the derive/send
-    fix did not take; peering client likely uses a different SDK vpc version than 1.1. Leaked VPCs (quota
-    hit).'
+  - 're-test #61 (depends on peering)'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: self
@@ -1138,12 +1129,10 @@ vpc_vpc_peering_rule:
   family: vpc
   import: false
   issues:
-  - '#61 still "no value given for required property approver_vpc_name" (run 27235979211) - the derive/send
-    fix did not take; peering client likely uses a different SDK vpc version than 1.1. Leaked VPCs (quota
-    hit).'
+  - 're-test #61 (depends on peering)'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: self
