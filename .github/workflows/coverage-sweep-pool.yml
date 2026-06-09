@@ -53,6 +53,11 @@ env:
   SCP_DEFAULT_REGION: ${{ vars.SCP_DEFAULT_REGION }}
   SCP_TF_DEFAULT_REGION: ${{ vars.SCP_DEFAULT_REGION }}
   SCP_ACCOUNT_ID: ${{ vars.SCP_ACCOUNT_ID }}
+  # Build the PATCHED provider from the fork (vendored SDK) instead of downloading the
+  # released binary, so provider fixes (e.g. #77 loadbalancer wait-for-ACTIVE) are tested
+  # end-to-end. setup_provider_mirror.sh clones + `go build`s into the mirror.
+  SCP_PROVIDER_SOURCE_BUILD: '1'
+  SCP_PROVIDER_BUILD_REF: claude/youthful-cray-608zi
 
 jobs:
   # ---- Derive the execution plan from registry.yaml ----

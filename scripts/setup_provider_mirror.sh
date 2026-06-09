@@ -47,7 +47,24 @@ echo "  source: ${URL}"
 echo "  dest:   ${DEST}"
 
 mkdir -p "$DEST"
-if ! curl -fsSL --max-time 180 -o "${DEST}/${ASSET}" "$URL"; then
+if [ "${SCP_PROVIDER_SOURCE_BUILD:-0}" = "1" ]; then
+  # Build a PATCHED provider from the kyle-agent fork (vendored SDK -> no token needed)
+  # and stage it in the mirror instead of the released binary. Used to validate provider
+  # fixes (e.g. #77 loadbalancer wait-for-ACTIVE) end-to-end before an upstream release.
+  BUILD_REPO="${SCP_PROVIDER_BUILD_REPO:-kyle-agent/terraform-provider-samsungcloudplatformv2}"
+  BUILD_REF="${SCP_PROVIDER_BUILD_REF:-claude/youthful-cray-608zi}"
+  echo "  SOURCE BUILD: https://github.com/${BUILD_REPO}@${BUILD_REF} (patched provider)"
+  tmp="$(mktemp -d)"
+  if git clone --depth 1 -b "$BUILD_REF" "https://github.com/${BUILD_REPO}.git" "$tmp/p" \
+     && ( cd "$tmp/p" && go build -o "$tmp/terraform-provider-${TYPE}_v${VER}" . ) \
+     && ( cd "$tmp" && zip -q -j "${DEST}/${ASSET}" "terraform-provider-${TYPE}_v${VER}" ); then
+    echo "  built patched provider -> ${DEST}/${ASSET}"
+  else
+    echo "WARNING: provider source build failed; leaving direct registry behavior."
+    rm -f "${DEST}/${ASSET}" 2>/dev/null || true
+    exit 0
+  fi
+elif ! curl -fsSL --max-time 180 -o "${DEST}/${ASSET}" "$URL"; then
   echo "WARNING: could not download provider plugin; leaving direct registry behavior."
   echo "         (terraform init will use registry.terraform.io as usual.)"
   rm -f "${DEST}/${ASSET}" 2>/dev/null || true

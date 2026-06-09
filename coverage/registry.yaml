@@ -436,7 +436,7 @@ loadbalancer_basic:
     CREATING). #77 (Create wait-for-ACTIVE) is now the SOLE blocker.'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: self
@@ -465,7 +465,7 @@ loadbalancer_lb_listener:
     expected OK like basic/server_group; destroy still blocked by provider #77.'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: self
@@ -500,7 +500,7 @@ loadbalancer_lb_server_group:
     blocker.'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: self
@@ -529,7 +529,7 @@ loadbalancer_loadbalancer_public_nat_ip:
     provider does not wait for the LB to be ACTIVE before attaching the NAT IP.'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: self
