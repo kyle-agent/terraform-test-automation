@@ -476,7 +476,8 @@ loadbalancer_lb_member:
   family: loadbalancer
   import: false
   issues:
-  - re-test destroy-ordering (server_group EDITING stabilize + retry)
+  - 'GREEN with patched provider (#85/#67/#77 + lb_member/lb_server_group destroy-ordering: EDITING stabilize-wait
+    + retry); full lifecycle incl clean destroy (run 27238242719). Requires patched provider.'
   needs:
   - image_id
   - keypair_name
@@ -484,7 +485,7 @@ loadbalancer_lb_member:
   - subnet_id
   - vpc_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -844,11 +845,13 @@ vpc_cidr:
   family: vpc
   import: false
   issues:
-  - 're-test #60 Delete impl (RemoveVpcCidr)'
+  - '#60 Read fixed (apply/replan idempotent). Delete now attempts DELETE /v1/vpcs/{id}/cidrs/{cidrId}
+    but server returns 403 "Action definition is not found" - no such remove endpoint/permission; secondary-CIDR
+    removal appears unsupported by the API (run 27238242719).'
   needs:
   - vpc_id
   parallel: low
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool
@@ -966,12 +969,13 @@ vpc_subnet_vip_nat_ip:
   family: vpc
   import: false
   issues:
-  - re-test publicip Read v1.2 (SUBNET enum) on destroy
+  - 'GREEN with patched provider: publicip Read repointed to v1.2 ShowPublicip (SUBNET-aware enum); full
+    lifecycle incl clean destroy (run 27238242719). Requires patched provider.'
   needs:
   - publicip_id
   - subnet_id
   parallel: low
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -1103,10 +1107,12 @@ vpc_vpc_peering:
   family: vpc
   import: false
   issues:
-  - 're-test #61 (explicit approver_vpc_name in fixture + provider guard)'
+  - '#61 STILL "no value given for required property approver_vpc_name" even with fixture setting it explicitly
+    (run 27238242719) - provider does not serialize approver_vpc_name on the create request; serialization
+    path bug. Leaks VPCs on partial-create.'
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: self
@@ -1116,10 +1122,12 @@ vpc_vpc_peering_approval:
   family: vpc
   import: false
   issues:
-  - 're-test #61 (depends on peering)'
+  - '#61 STILL "no value given for required property approver_vpc_name" even with fixture setting it explicitly
+    (run 27238242719) - provider does not serialize approver_vpc_name on the create request; serialization
+    path bug. Leaks VPCs on partial-create.'
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: self
@@ -1129,10 +1137,12 @@ vpc_vpc_peering_rule:
   family: vpc
   import: false
   issues:
-  - 're-test #61 (depends on peering)'
+  - '#61 STILL "no value given for required property approver_vpc_name" even with fixture setting it explicitly
+    (run 27238242719) - provider does not serialize approver_vpc_name on the create request; serialization
+    path bug. Leaks VPCs on partial-create.'
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: self

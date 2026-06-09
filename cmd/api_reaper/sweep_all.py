@@ -585,3 +585,5 @@ if __name__ == "__main__":
 # Manual sweep 2026-06-09 (4): clean leaks before peering/subnet/cidr re-test batch.
 
 # Manual sweep 2026-06-09 (5): reclaim peering-leaked VPCs (run 27235979211, quota hit).
+
+# Manual sweep 2026-06-09 (6): reclaim peering-leaked VPCs (run 27238242719, quota hit again).
