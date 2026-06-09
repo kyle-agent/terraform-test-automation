@@ -305,11 +305,10 @@ iam_access_key:
   family: iam
   import: false
   issues:
-  - '#58 Delete-disable fix in place, but apply now fails (separate blocker before destroy) - needs apply
-    diagnosis (run 27235979211).'
+  - 're-test #58 after reaper freed the access-key quota slot (orphaned key reclaimed)'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -995,80 +994,86 @@ vpc_subnet_vip_port:
 vpc_transit_gateway:
   cost: cheap
   depends_on: []
-  exclude_reason: 'provider #76 (TGW status-waiter hang)'
+  exclude_reason: ''
   family: vpc
   import: false
-  issues: []
+  issues:
+  - 'un-excluded: re-test with #76 TGW status-waiter fix (waiter no longer hangs)'
   needs: []
   parallel: normal
-  status: excluded
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
 vpc_transit_gateway_firewall:
   cost: cheap
   depends_on: []
-  exclude_reason: 'provider #76 (TGW status-waiter hang)'
+  exclude_reason: ''
   family: vpc
   import: false
-  issues: []
+  issues:
+  - 'un-excluded: re-test with #76 TGW status-waiter fix (waiter no longer hangs)'
   needs: []
   parallel: normal
-  status: excluded
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
 vpc_transit_gateway_firewall_connection:
   cost: cheap
   depends_on: []
-  exclude_reason: 'provider #76 (TGW status-waiter hang)'
+  exclude_reason: ''
   family: vpc
   import: false
-  issues: []
+  issues:
+  - 'un-excluded: re-test with #76 TGW status-waiter fix (waiter no longer hangs)'
   needs: []
   parallel: normal
-  status: excluded
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
 vpc_transit_gateway_rule:
   cost: cheap
   depends_on: []
-  exclude_reason: 'provider #76 (TGW status-waiter hang)'
+  exclude_reason: ''
   family: vpc
   import: false
-  issues: []
+  issues:
+  - 'un-excluded: re-test with #76 TGW status-waiter fix (waiter no longer hangs)'
   needs:
   - vpc_id
   parallel: normal
-  status: excluded
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
 vpc_transit_gateway_uplink_rule:
   cost: cheap
   depends_on: []
-  exclude_reason: 'provider #76 (TGW status-waiter hang)'
+  exclude_reason: ''
   family: vpc
   import: false
-  issues: []
+  issues:
+  - 'un-excluded: re-test with #76 TGW status-waiter fix (waiter no longer hangs)'
   needs: []
   parallel: normal
-  status: excluded
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
 vpc_transit_gateway_vpc_connection:
   cost: cheap
   depends_on: []
-  exclude_reason: 'provider #76 (TGW status-waiter hang)'
+  exclude_reason: ''
   family: vpc
   import: false
-  issues: []
+  issues:
+  - 'un-excluded: re-test with #76 TGW status-waiter fix (waiter no longer hangs)'
   needs:
   - vpc_id
   parallel: normal
-  status: excluded
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
