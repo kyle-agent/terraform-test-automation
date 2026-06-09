@@ -572,3 +572,6 @@ if __name__ == "__main__":
 # and zznet LBs deleted async — clear the now-unblocked subnets + vpcs (e404e9e1, fa91b5, a5f229).
 
 # final cleanup after stopping main-branch schedules 2026-06-07T13:04:06Z
+
+# Manual sweep 2026-06-09: reclaim 4 self-VPC LBs leaked in patched-provider re-test
+# (run 27210071644: #77 Create-wait works; Delete needs wait-for-gone -> subnet 409).
