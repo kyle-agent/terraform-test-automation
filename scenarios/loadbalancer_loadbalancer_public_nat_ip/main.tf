@@ -49,6 +49,16 @@ resource "samsungcloudplatformv2_vpc_subnet" "regr" {
   dns_nameservers = ["8.8.8.8"]
 }
 
+# A public NAT IP requires an Internet Gateway in the VPC (run 27210071644 400
+# "No Internet Gateway (IGW) found in the VPC").
+resource "samsungcloudplatformv2_vpc_internet_gateway" "regr" {
+  type              = "IGW"
+  vpc_id            = samsungcloudplatformv2_vpc_vpc.regr.id
+  description       = "regr-test lb public nat ip igw"
+  firewall_enabled  = true
+  firewall_loggable = false
+}
+
 resource "samsungcloudplatformv2_vpc_publicip" "regr" {
   type        = "IGW"
   description = "regr-test lb public nat ip"
@@ -67,6 +77,7 @@ resource "samsungcloudplatformv2_loadbalancer_loadbalancer" "regr" {
 }
 
 resource "samsungcloudplatformv2_loadbalancer_loadbalancer_public_nat_ip" "regr" {
+  depends_on      = [samsungcloudplatformv2_vpc_internet_gateway.regr]
   loadbalancer_id = samsungcloudplatformv2_loadbalancer_loadbalancer.regr.id
   static_nat_create = {
     publicip_id = samsungcloudplatformv2_vpc_publicip.regr.id
