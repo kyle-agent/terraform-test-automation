@@ -10,10 +10,10 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-variable "transit_gateway_id" {
+variable "name_suffix" {
   type        = string
-  description = "Existing transit gateway id to attach the firewall to. Integration runs override via TF_VAR_transit_gateway_id."
-  default     = "00000000-0000-0000-0000-000000000000"
+  description = "Per-run unique suffix appended to resource names."
+  default     = ""
 }
 
 variable "product_type" {
@@ -22,10 +22,18 @@ variable "product_type" {
   default     = "TGW_BM"
 }
 
+# A firewall needs a transit gateway parent (not exported by the bootstrap), so
+# the TGW is created in-line here and the firewall attaches to it. A transit
+# gateway consumes no account VPC quota, so this stays within quota.
+resource "samsungcloudplatformv2_vpc_transit_gateway" "regr" {
+  name        = "regr-tgwfw${var.name_suffix}"
+  description = "regr-test"
+}
+
 # Transit gateway firewall fixture guarding networking coverage: a firewall
 # product attached to a TGW must re-plan cleanly with no spurious update/replace.
 # Required args: product_type, transit_gateway_id.
 resource "samsungcloudplatformv2_vpc_transit_gateway_firewall" "regr" {
   product_type       = var.product_type
-  transit_gateway_id = var.transit_gateway_id
+  transit_gateway_id = samsungcloudplatformv2_vpc_transit_gateway.regr.id
 }

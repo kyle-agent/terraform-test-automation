@@ -10,10 +10,10 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-variable "transit_gateway_id" {
+variable "name_suffix" {
   type        = string
-  description = "Existing transit gateway id owning the uplink rule. Integration runs override via TF_VAR_transit_gateway_id."
-  default     = "00000000-0000-0000-0000-000000000000"
+  description = "Per-run unique suffix appended to resource names."
+  default     = ""
 }
 
 variable "destination_type" {
@@ -28,6 +28,14 @@ variable "destination_cidr" {
   default     = "192.168.40.0/24"
 }
 
+# An uplink rule needs a transit gateway parent (not exported by the bootstrap),
+# so the TGW is created in-line here and the rule attaches to it. A transit
+# gateway consumes no account VPC quota, so this stays within quota.
+resource "samsungcloudplatformv2_vpc_transit_gateway" "regr" {
+  name        = "regr-tgwul${var.name_suffix}"
+  description = "regr-test"
+}
+
 # Transit gateway uplink rule fixture guarding networking coverage: a TGW uplink
 # route must re-plan cleanly with no spurious update or replacement.
 # Required args: destination_cidr, destination_type, transit_gateway_id.
@@ -35,6 +43,6 @@ variable "destination_cidr" {
 resource "samsungcloudplatformv2_vpc_transit_gateway_uplink_rule" "regr" {
   destination_cidr   = var.destination_cidr
   destination_type   = var.destination_type
-  transit_gateway_id = var.transit_gateway_id
+  transit_gateway_id = samsungcloudplatformv2_vpc_transit_gateway.regr.id
   description        = "regr-test"
 }

@@ -832,10 +832,10 @@ virtualserver_volume:
   family: virtualserver
   import: false
   issues:
-  - '#69'
+  - 're-test (suspected stale #69 tag; fixture size already divisible by 8)'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
@@ -900,26 +900,24 @@ vpc_private_nat:
   family: vpc
   import: false
   issues:
-  - 'apply 400 "Transit Gateway not in Connectable state" (run 27233794315) - needs a connectable TGW
-    (fixture/TGW-connection dependency), beyond the #76 waiter fix.'
+  - 'D fixture: in-line vpc_connection makes TGW connectable; now pool (needs TF_VAR_vpc_id) - re-test'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
-  vpc: none
+  vpc: pool
 vpc_private_nat_ip:
   cost: cheap
   depends_on: []
   family: vpc
   import: false
   issues:
-  - 'apply 400 "Transit Gateway not in Connectable state" (run 27233794315) - needs a connectable TGW;
-    beyond the #76 waiter fix.'
+  - 'D fixture: in-line vpc_connection makes TGW connectable - re-test'
   needs:
   - ip_address
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
@@ -1014,12 +1012,10 @@ vpc_transit_gateway_firewall:
   family: vpc
   import: false
   issues:
-  - apply 404 "Not found with ID 00000000-0000-0000-0000-000000000000" (run 27241816399) - fixture passes
-    an unset required dependency id (TGW firewall); needs a valid TGW-firewall dependency wired in the
-    scenario.
+  - 'D fixture: in-line TGW wired (was 00000000 dep) - re-test apply'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -1030,12 +1026,10 @@ vpc_transit_gateway_firewall_connection:
   family: vpc
   import: false
   issues:
-  - apply 404 "Not found with ID 00000000-0000-0000-0000-000000000000" (run 27241816399) - fixture passes
-    an unset required dependency id (TGW firewall); needs a valid TGW-firewall dependency wired in the
-    scenario.
+  - 'D fixture: in-line TGW + in-line firewall + depends_on - re-test'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -1063,12 +1057,10 @@ vpc_transit_gateway_uplink_rule:
   family: vpc
   import: false
   issues:
-  - apply 404 "Not found with ID 00000000-0000-0000-0000-000000000000" (run 27241816399) - fixture passes
-    an unset required dependency id (TGW firewall); needs a valid TGW-firewall dependency wired in the
-    scenario.
+  - 'D fixture: in-line TGW wired - re-test apply'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: none

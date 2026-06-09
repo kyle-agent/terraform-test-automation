@@ -10,15 +10,40 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-variable "transit_gateway_id" {
+variable "name_suffix" {
   type        = string
-  description = "Existing transit gateway id to connect the firewall to. Integration runs override via TF_VAR_transit_gateway_id."
-  default     = "00000000-0000-0000-0000-000000000000"
+  description = "Per-run unique suffix appended to resource names."
+  default     = ""
+}
+
+variable "product_type" {
+  type        = string
+  description = "Transit gateway firewall product type. Valid: TGW_IGW, TGW_GGW, TGW_DGW, TGW_BM."
+  default     = "TGW_BM"
+}
+
+# A firewall connection attaches the TGW's firewall to the TGW, so both a transit
+# gateway and a firewall on it must exist first. The bootstrap exports neither, so
+# the full chain (TGW -> firewall -> firewall connection) is built in-line here. A
+# transit gateway consumes no account VPC quota, so this stays within quota.
+resource "samsungcloudplatformv2_vpc_transit_gateway" "regr" {
+  name        = "regr-tgwfwc${var.name_suffix}"
+  description = "regr-test"
+}
+
+# Firewall registered on the TGW; the connection below attaches it (ATTACHING ->
+# ACTIVE). Without a firewall present the connection can never reach ACTIVE.
+resource "samsungcloudplatformv2_vpc_transit_gateway_firewall" "regr" {
+  product_type       = var.product_type
+  transit_gateway_id = samsungcloudplatformv2_vpc_transit_gateway.regr.id
 }
 
 # Transit gateway firewall connection fixture guarding networking coverage:
 # attaching a firewall to a TGW must re-plan cleanly with no spurious change.
-# Required arg: transit_gateway_id.
+# Required arg: transit_gateway_id. depends_on the firewall so it is registered
+# before the connection waits for ATTACHING -> ACTIVE.
 resource "samsungcloudplatformv2_vpc_transit_gateway_firewall_connection" "regr" {
-  transit_gateway_id = var.transit_gateway_id
+  transit_gateway_id = samsungcloudplatformv2_vpc_transit_gateway.regr.id
+
+  depends_on = [samsungcloudplatformv2_vpc_transit_gateway_firewall.regr]
 }
