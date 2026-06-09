@@ -431,9 +431,8 @@ loadbalancer_basic:
   family: loadbalancer
   import: false
   issues:
-  - 'self-VPC CONFIRMED apply ✅ replan ✅ (run 27171780178) — the re-model resolves the
-    one-LB-per-subnet collision; only destroy ❌ provider #77 (400 not-in-a-deletable-state
-    CREATING). #77 (Create wait-for-ACTIVE) is now the SOLE blocker.'
+  - re-test with fully-patched provider (#77 Create wait-for-ACTIVE + Delete wait-for-gone) + fixture
+    fixes (session_duration_time / IGW)
   needs: []
   parallel: normal
   status: untested
@@ -460,9 +459,8 @@ loadbalancer_lb_listener:
   family: loadbalancer
   import: false
   issues:
-  - 'self-VPC: fixed listener routing_action enum (ROUNDROBIN -> LB_SERVER_GROUP; run
-    27171780178 apply 400 "Input should be LB_SERVER_GROUP or URL_REDIRECT"). apply now
-    expected OK like basic/server_group; destroy still blocked by provider #77.'
+  - re-test with fully-patched provider (#77 Create wait-for-ACTIVE + Delete wait-for-gone) + fixture
+    fixes (session_duration_time / IGW)
   needs: []
   parallel: normal
   status: untested
@@ -475,9 +473,9 @@ loadbalancer_lb_member:
   family: loadbalancer
   import: false
   issues:
-  - 'plan ❌ (run 27122245554): "Missing object_id ... required when object_type is VM" —
-    provider rejects a COMPUTED object_id (= backend server.id, unknown at plan) instead of
-    tolerating unknown-at-plan. Provider plan-validation bug; also one-LB-per-subnet + #77.'
+  - "plan \u274C (run 27122245554): \"Missing object_id ... required when object_type is VM\" \u2014 provider\
+    \ rejects a COMPUTED object_id (= backend server.id, unknown at plan) instead of tolerating unknown-at-plan.\
+    \ Provider plan-validation bug; also one-LB-per-subnet + #77."
   needs:
   - image_id
   - keypair_name
@@ -495,9 +493,8 @@ loadbalancer_lb_server_group:
   family: loadbalancer
   import: false
   issues:
-  - 'self-VPC CONFIRMED apply ✅ replan ✅ (run 27171780178) — creates LB+server_group in
-    its own subnet; only destroy ❌ provider #77 (leaked LB -> subnet 409). #77 is the SOLE
-    blocker.'
+  - re-test with fully-patched provider (#77 Create wait-for-ACTIVE + Delete wait-for-gone) + fixture
+    fixes (session_duration_time / IGW)
   needs: []
   parallel: normal
   status: untested
@@ -507,8 +504,8 @@ loadbalancer_lb_server_group:
 loadbalancer_loadbalancer_private_nat_ip:
   cost: heavy
   depends_on: []
-  exclude_reason: 'needs an externally-supplied loadbalancer_id + private_nat_id (no pool
-    plumbing); not self-standing. Revisit with a self-contained LB+private-NAT fixture.'
+  exclude_reason: needs an externally-supplied loadbalancer_id + private_nat_id (no pool plumbing); not
+    self-standing. Revisit with a self-contained LB+private-NAT fixture.
   family: loadbalancer
   import: false
   issues: []
@@ -524,9 +521,8 @@ loadbalancer_loadbalancer_public_nat_ip:
   family: loadbalancer
   import: false
   issues:
-  - 'self-VPC: apply ❌ (run 27171780178) — public NAT attach needs the LB ACTIVE first
-    ("Unable to update loadbalancer in current state CREATING"), i.e. #77-dependent: the
-    provider does not wait for the LB to be ACTIVE before attaching the NAT IP.'
+  - re-test with fully-patched provider (#77 Create wait-for-ACTIVE + Delete wait-for-gone) + fixture
+    fixes (session_duration_time / IGW)
   needs: []
   parallel: normal
   status: untested
@@ -778,11 +774,10 @@ virtualserver_image:
   family: virtualserver
   import: false
   issues:
-  - 'staging now SUCCEEDS (CirrOS 21.4MB uploaded to OBS bucket regr-obs-image), but the
-    platform rejects the image URL with "Object Storage URL ... is invalid" for BOTH
-    path-style and virtual-hosted forms (runs 27171440897 / 27171780178). Remaining
-    unknown = object public-access + the OBS URL form the import service expects (#86);
-    needs operator input.'
+  - staging now SUCCEEDS (CirrOS 21.4MB uploaded to OBS bucket regr-obs-image), but the platform rejects
+    the image URL with "Object Storage URL ... is invalid" for BOTH path-style and virtual-hosted forms
+    (runs 27171440897 / 27171780178). Remaining unknown = object public-access + the OBS URL form the
+    import service expects (#86); needs operator input.
   needs: []
   parallel: normal
   status: broken
@@ -1088,9 +1083,9 @@ vpc_vpc_endpoint:
   family: vpc
   import: false
   issues:
-  - 'platform-side 400 ''VPC Endpoint Type Subnet not found'' even with a real pool
-    subnet_id (run 27121247070); OBS endpoint type not creatable on this subnet -
-    not a fixture defect, blocked pending platform/AZ endpoint-type support'
+  - platform-side 400 'VPC Endpoint Type Subnet not found' even with a real pool subnet_id (run 27121247070);
+    OBS endpoint type not creatable on this subnet - not a fixture defect, blocked pending platform/AZ
+    endpoint-type support
   needs:
   - subnet_id
   - vpc_id
