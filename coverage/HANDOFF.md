@@ -411,3 +411,42 @@ Per user request ("delete block storage + all other resources"). Added sweeps:
   `lb-health-checks` that 400. These need the **account owner / console**, or an
   IAM grant giving the reaper key (`2a579fc…`) delete rights on ServiceWatch/SCF/
   backup/gslb. The reaper itself can do no more with the current key.
+
+## 0c. Session 2026-06-09 — provider #77 fixed, built, and proven (LB greens)
+
+Pivoted to **fixing the provider** (the dominant coverage blocker). Key arc:
+
+- **SDK build blocker solved.** The public provider depends on the PRIVATE
+  `terraform-sdk-samsungcloudplatformv2` module (404 without org access; the fork has no
+  GH_ACCESS_TOKEN). The operator supplied the SDK; it is **MIT-licensed**, so it was
+  **vendored in-repo** at `third_party/terraform-sdk-samsungcloudplatformv2/` (trimmed to
+  *.go+go.mod, ~61MB) with a `go.mod replace`. Now `go build ./...` works with **no token**
+  (fixes provider #50). Provider `build-check` CI is green.
+- **#77 fix implemented** in `service/loadbalancer/loadbalancer.go` (provider repo,
+  branch `claude/youthful-cray-608zi`): `Create` waits for ACTIVE (new
+  `waitForLoadbalancerStatus`, mirrors vpngateway) then re-Reads; `Delete` waits until the
+  LB is gone before returning (so dependent subnet delete doesn't 409). Compiles locally + CI.
+- **Harness runs the PATCHED provider.** `scripts/setup_provider_mirror.sh` gained a
+  `SCP_PROVIDER_SOURCE_BUILD=1` mode: it clones the fork (`SCP_PROVIDER_BUILD_REF`) and
+  `go build`s the provider into the filesystem mirror instead of downloading the release.
+  Enabled via env in `coverage-sweep-pool.yml`. (Keep ON to retain the LB greens; the
+  released provider lacks #77.)
+- **Result (run 27212070186, patched provider):**
+  - `loadbalancer_basic` -> **GREEN** (full lifecycle, clean destroy, no leak).
+  - `loadbalancer_lb_server_group` -> **GREEN** (full lifecycle).
+  - `loadbalancer_loadbalancer_public_nat_ip` -> apply/replan OK (IGW fixture fix worked);
+    **destroy 409** — publicip "not deletable (ATTACHED)" + LB "associated resources":
+    a destroy-ordering gap (public NAT / publicip detach not awaited). Next provider fix.
+  - `loadbalancer_lb_listener` -> **apply 500 ISE** "Failed to create listener (code 104)"
+    (after session_duration_time + routing_action fixture fixes) — platform-side; timebox.
+  - Fixture fixes committed: lb_listener `routing_action=LB_SERVER_GROUP` + `session_duration_time=120`;
+    public_nat_ip adds an IGW (+depends_on).
+
+**Pipeline proven end-to-end:** provider source fix -> vendored tokenless build -> source-built
+mirror -> coverage sweep -> green. The remaining 22 provider-blocked scenarios (#76 TGW ×7,
+#75 iam ×2, #59/#60/#67/#69/#74/#82/#85 …) can be unblocked the same way: patch the provider
+on this branch, the source-built mirror picks it up, re-test.
+
+**Resume:** confirm reaper run after 27212070186 reclaimed the lb_listener/public_nat leaks;
+then either (a) fix the next provider bug (e.g. public_nat destroy-ordering, or #76 TGW), or
+(b) retry lb_listener (transient 500?). Source-build stays enabled in coverage-sweep-pool.yml.

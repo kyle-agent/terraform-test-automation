@@ -431,11 +431,11 @@ loadbalancer_basic:
   family: loadbalancer
   import: false
   issues:
-  - re-test with fully-patched provider (#77 Create wait-for-ACTIVE + Delete wait-for-gone) + fixture
-    fixes (session_duration_time / IGW)
+  - 'GREEN with patched provider #77 (Create wait-for-ACTIVE + Delete wait-for-gone): full lifecycle validate->apply->replan->destroy
+    ok (run 27212070186). Requires the patched provider (source-built mirror).'
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: self
@@ -459,11 +459,11 @@ loadbalancer_lb_listener:
   family: loadbalancer
   import: false
   issues:
-  - re-test with fully-patched provider (#77 Create wait-for-ACTIVE + Delete wait-for-gone) + fixture
-    fixes (session_duration_time / IGW)
+  - 'apply 500 ISE "Failed to create listener (code: 104)" (run 27212070186) - platform-side error after
+    session_duration_time/routing_action fixes; not provider/fixture. Retry/timebox.'
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: self
@@ -493,11 +493,11 @@ loadbalancer_lb_server_group:
   family: loadbalancer
   import: false
   issues:
-  - re-test with fully-patched provider (#77 Create wait-for-ACTIVE + Delete wait-for-gone) + fixture
-    fixes (session_duration_time / IGW)
+  - 'GREEN with patched provider #77: creates LB+server_group in own subnet, full lifecycle ok (run 27212070186).
+    Requires patched provider.'
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: self
@@ -521,11 +521,12 @@ loadbalancer_loadbalancer_public_nat_ip:
   family: loadbalancer
   import: false
   issues:
-  - re-test with fully-patched provider (#77 Create wait-for-ACTIVE + Delete wait-for-gone) + fixture
-    fixes (session_duration_time / IGW)
+  - 'apply/replan OK with #77 patch + IGW fix; destroy 409: publicip "not in deletable state (ATTACHED)"
+    + LB "associated resources" (run 27212070186). Destroy-ordering: the public NAT/publicip detach is
+    not awaited before LB/publicip delete - provider Delete gap (public_nat_ip / publicip).'
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: self
