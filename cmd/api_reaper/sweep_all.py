@@ -578,3 +578,6 @@ if __name__ == "__main__":
 
 # Manual sweep 2026-06-09 (2): reclaim lb_listener + public_nat_ip leaks from full-patch
 # re-test (run 27212070186); basic + lb_server_group destroyed clean (no leak).
+
+# Manual sweep 2026-06-09 (3): reclaim lb_member + vpc_private_nat leaks (run 27233794315);
+# public_nat_ip destroyed clean (GREEN).
