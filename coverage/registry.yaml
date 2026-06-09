@@ -305,10 +305,11 @@ iam_access_key:
   family: iam
   import: false
   issues:
-  - 're-test #58 (Delete disables enabled key first)'
+  - '#58 Delete-disable fix in place, but apply now fails (separate blocker before destroy) - needs apply
+    diagnosis (run 27235979211).'
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: none
@@ -845,11 +846,12 @@ vpc_cidr:
   family: vpc
   import: false
   issues:
-  - 're-test #60 (real Read -> idempotent)'
+  - '#60 Read fixed (apply/replan idempotent) but destroy 400 "VPC CIDR Delete function is not yet implemented"
+    - Delete is a stub; implement Delete (run 27235979211).'
   needs:
   - vpc_id
   parallel: low
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool
@@ -939,11 +941,12 @@ vpc_subnet:
   family: vpc
   import: false
   issues:
-  - 're-test #59 (dns_nameservers types.List)'
+  - 'GREEN with patched provider #59 (dns_nameservers []string->types.List); full lifecycle ok (run 27235979211).
+    Requires patched provider.'
   needs:
   - vpc_id
   parallel: low
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -966,12 +969,14 @@ vpc_subnet_vip_nat_ip:
   family: vpc
   import: false
   issues:
-  - re-test (publicip-detach wait on destroy)
+  - apply/replan OK; destroy still "SUBNET is not a valid PublicipAttachedResourceType" - the vpc_publicip
+    RESOURCE Read uses the v1.1 enum during destroy refresh; needs v1.2 ShowPublicip in publicip Read
+    (run 27235979211).
   needs:
   - publicip_id
   - subnet_id
   parallel: low
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool
@@ -1103,10 +1108,12 @@ vpc_vpc_peering:
   family: vpc
   import: false
   issues:
-  - 're-test #61 (approver_vpc_name derived/sent + destroy 404-wait)'
+  - '#61 still "no value given for required property approver_vpc_name" (run 27235979211) - the derive/send
+    fix did not take; peering client likely uses a different SDK vpc version than 1.1. Leaked VPCs (quota
+    hit).'
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: self
@@ -1116,10 +1123,12 @@ vpc_vpc_peering_approval:
   family: vpc
   import: false
   issues:
-  - 're-test #61 (depends on vpc_vpc_peering)'
+  - '#61 still "no value given for required property approver_vpc_name" (run 27235979211) - the derive/send
+    fix did not take; peering client likely uses a different SDK vpc version than 1.1. Leaked VPCs (quota
+    hit).'
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: self
@@ -1129,10 +1138,12 @@ vpc_vpc_peering_rule:
   family: vpc
   import: false
   issues:
-  - 're-test #61 (depends on vpc_vpc_peering)'
+  - '#61 still "no value given for required property approver_vpc_name" (run 27235979211) - the derive/send
+    fix did not take; peering client likely uses a different SDK vpc version than 1.1. Leaked VPCs (quota
+    hit).'
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: self
