@@ -912,11 +912,12 @@ vpc_private_nat_ip:
   family: vpc
   import: false
   issues:
-  - 're-test with patched provider #76 (TGW/nat waiters fixed)'
+  - 'apply 400 "Transit Gateway not in Connectable state" (run 27233794315) - needs a connectable TGW;
+    beyond the #76 waiter fix.'
   needs:
   - ip_address
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool
