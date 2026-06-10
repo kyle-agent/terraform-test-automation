@@ -776,13 +776,10 @@ virtualserver_image:
   family: virtualserver
   import: false
   issues:
-  - staging now SUCCEEDS (CirrOS 21.4MB uploaded to OBS bucket regr-obs-image), but the platform rejects
-    the image URL with "Object Storage URL ... is invalid" for BOTH path-style and virtual-hosted forms
-    (runs 27171440897 / 27171780178). Remaining unknown = object public-access + the OBS URL form the
-    import service expects (#86); needs operator input.
+  - 're-test #86 with path-style OBS object URL (operator-provided object-store endpoint)'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -901,11 +898,10 @@ vpc_private_nat:
   family: vpc
   import: false
   issues:
-  - blocked by account TGW quota "exceed the maximum size(3)" when TGW scenarios run concurrently (run
-    27243446403); fixture is correct (validate ok) - needs serialized re-test within the 3-TGW limit.
+  - 're-test: in-line vpc_connection makes TGW connectable, within 3-TGW quota'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
@@ -1064,11 +1060,10 @@ vpc_transit_gateway_uplink_rule:
   family: vpc
   import: false
   issues:
-  - blocked by account TGW quota "exceed the maximum size(3)" when TGW scenarios run concurrently (run
-    27243446403); fixture is correct (validate ok) - needs serialized re-test within the 3-TGW limit.
+  - 're-test: in-line TGW fixture, within 3-TGW quota (low concurrency)'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
