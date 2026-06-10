@@ -776,11 +776,12 @@ virtualserver_image:
   family: virtualserver
   import: false
   issues:
-  - 're-test #86 with account-namespaced OBS path URL: object-store.../{account_id}:terraform-vmimage-test/<key>.qcow2
-    (operator-provided exact path)'
+  - 'GREEN (run 27257742108): the OBS image URL must be the ACCOUNT-NAMESPACED path form object-store.../{account_id}:{bucket}/{key}.qcow2
+    (operator-provided). Full lifecycle ok. #86 was an undocumented URL-form constraint, not a provider
+    bug.'
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
