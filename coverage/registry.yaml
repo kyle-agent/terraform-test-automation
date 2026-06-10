@@ -832,10 +832,11 @@ virtualserver_volume:
   family: virtualserver
   import: false
   issues:
-  - 're-test (suspected stale #69 tag; fixture size already divisible by 8)'
+  - 'GREEN (run 27243446403): the #69 tag was stale - fixture size is already divisible by 8; full lifecycle
+    ok. No provider change needed.'
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -900,10 +901,11 @@ vpc_private_nat:
   family: vpc
   import: false
   issues:
-  - 'D fixture: in-line vpc_connection makes TGW connectable; now pool (needs TF_VAR_vpc_id) - re-test'
+  - blocked by account TGW quota "exceed the maximum size(3)" when TGW scenarios run concurrently (run
+    27243446403); fixture is correct (validate ok) - needs serialized re-test within the 3-TGW limit.
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool
@@ -913,11 +915,12 @@ vpc_private_nat_ip:
   family: vpc
   import: false
   issues:
-  - 'D fixture: in-line vpc_connection makes TGW connectable - re-test'
+  - blocked by account TGW quota "exceed the maximum size(3)" when TGW scenarios run concurrently (run
+    27243446403); fixture is correct (validate ok) - needs serialized re-test within the 3-TGW limit.
   needs:
   - ip_address
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool
@@ -1012,10 +1015,12 @@ vpc_transit_gateway_firewall:
   family: vpc
   import: false
   issues:
-  - 'D fixture: in-line TGW wired (was 00000000 dep) - re-test apply'
+  - Transit Gateway Firewall connection state is not Active (INACTIVE) on firewall create (run 27243446403)
+    - creating a TGW firewall requires the TGW firewall CONNECTION to be ACTIVE first; deeper dependency
+    than in-line TGW.
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: none
@@ -1026,10 +1031,12 @@ vpc_transit_gateway_firewall_connection:
   family: vpc
   import: false
   issues:
-  - 'D fixture: in-line TGW + in-line firewall + depends_on - re-test'
+  - Transit Gateway Firewall connection state is not Active (INACTIVE) on firewall create (run 27243446403)
+    - creating a TGW firewall requires the TGW firewall CONNECTION to be ACTIVE first; deeper dependency
+    than in-line TGW.
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: none
@@ -1057,10 +1064,11 @@ vpc_transit_gateway_uplink_rule:
   family: vpc
   import: false
   issues:
-  - 'D fixture: in-line TGW wired - re-test apply'
+  - blocked by account TGW quota "exceed the maximum size(3)" when TGW scenarios run concurrently (run
+    27243446403); fixture is correct (validate ok) - needs serialized re-test within the 3-TGW limit.
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: none

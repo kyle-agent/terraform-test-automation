@@ -145,7 +145,8 @@ jobs:
           url="$(python3 "${{ github.workspace }}/scripts/upload_image_to_obs.py" \
             --source-url https://download.cirros-cloud.net/0.6.2/cirros-0.6.2-x86_64-disk.img \
             --key cirros-0.6.2-x86_64-disk.qcow2 \
-            --bucket regr-obs-image)" || true
+            --bucket regr-obs-image \
+            --url-style path)" || true
           if [ -n "$url" ]; then
             echo "TF_VAR_image_url=$url" >> "$GITHUB_ENV"
           else

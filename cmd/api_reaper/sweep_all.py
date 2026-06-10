@@ -634,3 +634,5 @@ if __name__ == "__main__":
 # Manual sweep 2026-06-09 (6): reclaim peering-leaked VPCs (run 27238242719, quota hit again).
 
 # Manual sweep 2026-06-09 (7): reclaim TGW vpc-connection leaked by tgw_rule partial create (run 27241816399, EDITING).
+
+# Manual sweep 2026-06-10 (8): reclaim TGWs leaked by D batch (run 27243446403) - account TGW max=3 exhausted.
