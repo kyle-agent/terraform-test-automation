@@ -776,10 +776,13 @@ virtualserver_image:
   family: virtualserver
   import: false
   issues:
-  - 're-test #86 with path-style OBS object URL (operator-provided object-store endpoint)'
+  - '#86 OBS public-URL access: direct GET (no creds) shows path-style is REJECTED by OBS (400 NotFoundBucketNameInPath)
+    and virtual-hosted (bucket.object-store...) does not resolve in public DNS; platform image-import
+    still 400 "Object Storage URL is invalid" (run 27244474565). Needs the platform-documented public-object-URL
+    form + bucket public-access policy - not resolvable by guessing URL form.'
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: none
@@ -898,10 +901,12 @@ vpc_private_nat:
   family: vpc
   import: false
   issues:
-  - 're-test: in-line vpc_connection makes TGW connectable, within 3-TGW quota'
+  - apply 400 "Cannot find the Transit Gateway in Connectable state" even with an in-line vpc_connection
+    + depends_on (run 27244474565) - "Connectable" needs more than a created connection (likely the connection
+    ACTIVE/propagated or another precondition).
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool
@@ -1060,10 +1065,12 @@ vpc_transit_gateway_uplink_rule:
   family: vpc
   import: false
   issues:
-  - 're-test: in-line TGW fixture, within 3-TGW quota (low concurrency)'
+  - apply 400 "Transit Gateway Firewall connection state is not Active (INACTIVE)" (run 27244474565) -
+    uplink rule (like the firewall scenarios) needs an ACTIVE TGW firewall connection first; deep multi-step
+    dependency, not just an in-line TGW.
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: none

@@ -636,3 +636,5 @@ if __name__ == "__main__":
 # Manual sweep 2026-06-09 (7): reclaim TGW vpc-connection leaked by tgw_rule partial create (run 27241816399, EDITING).
 
 # Manual sweep 2026-06-10 (8): reclaim TGWs leaked by D batch (run 27243446403) - account TGW max=3 exhausted.
+
+# Manual sweep 2026-06-10 (9): reclaim private_nat TGW + image bucket (run 27244474565).
