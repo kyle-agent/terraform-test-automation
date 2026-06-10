@@ -776,7 +776,8 @@ virtualserver_image:
   family: virtualserver
   import: false
   issues:
-  - 're-test #86 with operator bucket terraform-vmimage-test + path-style URL (object-store.../terraform-vmimage-test/<key>.qcow2)'
+  - 're-test #86 with bucket terraform-vmimage-test + virtual-hosted URL (terraform-vmimage-test.object-store.../<key>.qcow2);
+    path-style is rejected by the OBS gateway (NotFoundBucketNameInPath)'
   needs: []
   parallel: normal
   status: untested

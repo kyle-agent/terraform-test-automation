@@ -146,7 +146,7 @@ jobs:
             --source-url https://download.cirros-cloud.net/0.6.2/cirros-0.6.2-x86_64-disk.img \
             --key cirros-0.6.2-x86_64-disk.qcow2 \
             --bucket terraform-vmimage-test \
-            --url-style path)" || true
+            --url-style virtual-hosted)" || true
           if [ -n "$url" ]; then
             echo "TF_VAR_image_url=$url" >> "$GITHUB_ENV"
           else
