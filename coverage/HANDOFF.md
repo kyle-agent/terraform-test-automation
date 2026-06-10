@@ -10,7 +10,66 @@ multi-agent architecture + session bootstrap), then this file, then
 
 ---
 
-## 0. Latest session close (2026-06-08) — what changed & where to resume
+## 0Z. Session 2026-06-09/10 (LATEST) — provider-fix verification, green 41→56
+
+**Branch:** `claude/youthful-cray-608zi` (BOTH repos). **Resume:** read this section first.
+**Result:** registry green **41 → 56 (+15)**. All work committed+pushed on the branch in both
+repos; **pending consolidation to `main` via PR** (same pattern as PR #14).
+
+### Provider fixes (fork `kyle-agent/terraform-provider-samsungcloudplatformv2`, branch above)
+Built+verified end-to-end via source-build (`SCP_PROVIDER_SOURCE_BUILD=1`,
+`SCP_PROVIDER_BUILD_REF=claude/youthful-cray-608zi`; vendored SDK under `third_party/` + go.mod
+`replace` → tokenless `go build`). Issues with a verified-green test carry the GitHub label
+**`fix-verified-green`** (filter: `label:fix-verified-green`):
+- **#75** iam_role (CreateRole policy_ids `[]` not null) → iam_role, iam_role_policy_bindings GREEN
+- **#77** loadbalancer Create wait-ACTIVE / Delete wait-gone → loadbalancer_basic, lb_server_group, public_nat_ip GREEN
+- **#67/#85** virtualserver_server needs state=ACTIVE / lb_member object_id → lb_member GREEN
+- **#58** iam_access_key Delete disables an enabled key first → iam_access_key GREEN (after quota freed)
+- **#59** vpc_subnet dns_nameservers `[]string`→`types.List` → vpc_subnet GREEN
+- **#76** TGW status-waiter no longer hangs → vpc_transit_gateway, vpc_transit_gateway_vpc_connection GREEN
+- vpc_publicip Read → v1.2 ShowPublicip (SUBNET enum) → vpc_subnet_vip_nat_ip GREEN
+- lb_member/lb_server_group destroy-ordering (EDITING stabilize + retry) → lb_member clean destroy
+- **#60** vpc_cidr Read implemented (idempotent) — but Delete has NO server API (403 "Action definition is not found"); destroy still fails. Commented on #60.
+- **#61** vpc_vpc_peering: provider now serializes `approver_vpc_name` correctly (proven: local json.Marshal emits it; remote SDK patched) BUT API still 400 "no value given … Invalid error data" → **API-side**, not provider. Commented on #61. peering ×3 stay broken.
+
+### Non-provider GREENs this session
+- virtualserver_volume (#69 tag was STALE — fixture size already ÷8; just needed a re-test)
+- **virtualserver_image (#86)** — OBS image URL must be the **account-namespaced path form**:
+  `https://object-store.kr-west1.e.samsungsdscloud.com/{account_id}:terraform-vmimage-test/<key>.qcow2`
+  (plain bucket path → OBS `NotFoundBucketNameInPath`; virtual-hosted → no public DNS). Staging step
+  now builds `${TF_VAR_obs_endpoint}/${SCP_ACCOUNT_ID}:terraform-vmimage-test/<key>`. Commented on #86.
+
+### KEY platform constraints / gotchas discovered (save for future sessions)
+- **TGW account max = 3.** "Failed to create a Transit Gateway due to exceed the maximum size(3)."
+  Running >3 TGW-creating scenarios concurrently fails. TGW sub-resources (firewall, firewall_connection,
+  uplink_rule) additionally require an **ACTIVE TGW firewall connection** first (multi-step state machine);
+  private_nat needs the TGW in **Connectable** state (a created vpc_connection alone is NOT enough).
+  These TGW-family scenarios remain broken — fixtures are valid (terraform validate ok) but the
+  platform state-machine + 3-TGW cap make them hard; not a provider bug.
+- **OBS path addressing = `{account_id}:{bucket}`** (account-namespaced). Buckets `terraform-vmimage-test`
+  (image) + `regr-obs-*` (sweepable). Reaper now also reaps orphaned **IAM access keys** (test desc
+  `regr-access-key` only; NEVER the live `SCP_ACCESS_KEY` — see `reap_access_keys` in sweep_all.py).
+- **iam_access_key** caps at 2 keys/principal; an orphaned enabled key (pre-#58 bug) blocked it until the
+  reaper reclaimed it. `_client.py` gained a `put` method for the disable-before-delete.
+- **vpc_vpc_peering / vpc_transit_gateway_rule** fail with the same "no value for required property
+  (approver_vpc_name / created_at) … Invalid error data" pattern = **API-side**, provider sends it.
+
+### Remaining broken = platform/account/API (NOT provider-fixable)
+Platform 500/ISE: backup(#80), budget/certificate/dns_public_domain(#82), loadbalancer_lb_listener
+(500 code 104 — re-testing), vpc_vpc_endpoint, DBaaS eventstreams/searchengine/sqlserver(#83).
+Account-perm: iam_group_member, iam_user_policy_bindings, loggingaudit_trail, filestorage_replication.
+API-side: peering×3(#61/#84), tgw_rule(created_at). Platform-dep: vpc_cidr Delete, TGW firewall family,
+private_nat×2, virtualserver_image needs operator OBS (now resolved).
+
+### Dashboard note (IMPORTANT for "reflect on dashboard")
+`docs/index.html` is rendered by `scripts/build_coverage_html.py` from **`coverage/coverage.json`**
+(per-stage results), NOT from `coverage/registry.yaml`. `coverage.json` is updated by
+`scripts/build_coverage.py <capability-matrix.json>` (merges a RUN's matrix) and is currently STALE
+(Jun 8). To make the dashboard show this session's greens: re-run the fixed scenarios, then
+`build_coverage.py` the resulting matrices into `coverage.json`, commit → `pages.yml` publishes.
+
+---
+
 
 **Done this session:**
 - **Account cleanup** (user: "stop all tests + delete all resources"). No cron exists;
