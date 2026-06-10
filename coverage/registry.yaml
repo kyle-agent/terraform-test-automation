@@ -776,14 +776,11 @@ virtualserver_image:
   family: virtualserver
   import: false
   issues:
-  - '#86: upload to operator bucket terraform-vmimage-test succeeds, but image-import returns 400 "Object
-    Storage URL is invalid" for BOTH path-style and virtual-hosted URLs (runs 27256773278/27257141376).
-    URL form ruled out -> object is not readable by the import service (public-access/bucket-policy) OR
-    the service expects a different URL (e.g. presigned). Needs operator: confirm public-read + the exact
-    URL the import expects.'
+  - 're-test #86 with account-namespaced OBS path URL: object-store.../{account_id}:terraform-vmimage-test/<key>.qcow2
+    (operator-provided exact path)'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
