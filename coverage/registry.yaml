@@ -776,11 +776,14 @@ virtualserver_image:
   family: virtualserver
   import: false
   issues:
-  - 're-test #86 with bucket terraform-vmimage-test + virtual-hosted URL (terraform-vmimage-test.object-store.../<key>.qcow2);
-    path-style is rejected by the OBS gateway (NotFoundBucketNameInPath)'
+  - '#86: upload to operator bucket terraform-vmimage-test succeeds, but image-import returns 400 "Object
+    Storage URL is invalid" for BOTH path-style and virtual-hosted URLs (runs 27256773278/27257141376).
+    URL form ruled out -> object is not readable by the import service (public-access/bucket-policy) OR
+    the service expects a different URL (e.g. presigned). Needs operator: confirm public-read + the exact
+    URL the import expects.'
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: none
