@@ -5,6 +5,12 @@ Deletes every resource whose NAME matches our test prefixes, in dependency order
 (children before parents). terraform bootstrap names: rpv (vpc), rps/rpsg
 (subnet/sg), rpkp (keypair), rpfs (filestorage), IGW_/FW_IGW_ (gateway/firewall);
 scenario names: regr*, rske (ske), rlb (loadbalancer), rtgw (transit gateway).
+# Manual sweep 2026-06-08: reclaim pool subnet/VPC leaked by loadbalancer_basic
+# (LB stuck CREATING blocked subnet delete -> 409, run 27121594571 / #77).
+# Manual sweep 2026-06-08 (2): same #77 leak from lb_server_group's LB
+# (id d0520539..., state CREATING) in re-test run 27122245554 -> reclaim again.
+# Manual sweep 2026-06-08 (3): self-VPC LB re-test (run 27171780178) leaked up to 4
+# LBs (CREATING, #77) + their own VPCs/subnets -> reclaim LBs + VPCs.
 
 Scoped strictly to those prefixes so a pre-existing non-test resource is never
 touched. Requires SCP_ALLOW_MUTATIONS=true and SCP_ALLOW_DESTRUCTIVE=true.
@@ -237,6 +243,46 @@ def reap_servicewatch(c):
                         break
     remaining = len(_sw_groups(c, base))
     print(f"  servicewatch: done, {remaining} log group(s) still present")
+    return n
+
+
+def reap_access_keys(c):
+    """Reap ONLY test-created IAM access keys, never the CI's own auth key.
+
+    Two independent safety gates — a key is deleted only if BOTH hold:
+      1) its public id (`access_key`) != the live SCP_ACCESS_KEY used to authenticate, and
+      2) its description marks it as test-created (== 'regr-access-key' or starts with 'regr').
+    The CI auth key fails both, so it can never be touched. Access keys are GLOBAL (iam)
+    and reaped regardless of SWEEP_ALL/age (they don't carry a name/created_at we scope on,
+    and the description gate is strict). Disable (PUT is_enabled=false) before delete because
+    the API refuses to delete an enabled key (the #58 root cause)."""
+    n = 0
+    live_key = os.environ.get("SCP_ACCESS_KEY", "")
+    try:
+        body = c.get("/v1/access-keys", service="iam").body
+    except Exception as exc:
+        print(f"  access-keys list error: {exc}"); return 0
+    for k in items(body):
+        if not isinstance(k, dict):
+            continue
+        kid = k.get("id")
+        pub = str(k.get("access_key") or "")
+        desc = str(k.get("description") or "")
+        if not kid:
+            continue
+        if live_key and pub == live_key:
+            print(f"  access-key {kid}: SKIP (live auth key)"); continue
+        if not (desc == "regr-access-key" or desc.lower().startswith("regr")):
+            print(f"  access-key {kid}: SKIP (non-test description {desc!r})"); continue
+        print(f"  access-key {kid}: TEST (desc={desc!r}, enabled={k.get('is_enabled')}) -> reaping")
+        if k.get("is_enabled"):
+            try:
+                r = c.put(f"/v1/access-keys/{kid}", service="iam", json={"is_enabled": False})
+                print(f"    disable -> {r.status}")
+            except Exception as exc:
+                print(f"    disable error: {exc}")
+        if delete(c, "iam", f"/v1/access-keys/{kid}"):
+            n += 1
     return n
 
 
@@ -533,6 +579,11 @@ def main() -> int:
     # 11. servicewatch log groups (+ nested log streams) — leaked every run, never
     # reaped before; not VPC-bound so order doesn't matter.
     n += reap_servicewatch(c)
+    # 12. IAM access keys: the iam_access_key fixture creates a key on the CURRENT
+    # principal (no user arg), and the pre-#58-fix bug left enabled keys undeletable.
+    # The principal caps at 2 keys, so one orphan blocks iam_access_key forever. Reap
+    # ONLY test keys (description regr*), and NEVER the CI's own auth key.
+    n += reap_access_keys(c)
     print(f"sweep_all done: {n} resource(s) deleted")
     return 0
 
@@ -566,3 +617,26 @@ if __name__ == "__main__":
 # and zznet LBs deleted async — clear the now-unblocked subnets + vpcs (e404e9e1, fa91b5, a5f229).
 
 # final cleanup after stopping main-branch schedules 2026-06-07T13:04:06Z
+
+# Manual sweep 2026-06-09: reclaim 4 self-VPC LBs leaked in patched-provider re-test
+# (run 27210071644: #77 Create-wait works; Delete needs wait-for-gone -> subnet 409).
+
+# Manual sweep 2026-06-09 (2): reclaim lb_listener + public_nat_ip leaks from full-patch
+# re-test (run 27212070186); basic + lb_server_group destroyed clean (no leak).
+
+# Manual sweep 2026-06-09 (3): reclaim lb_member + vpc_private_nat leaks (run 27233794315);
+# public_nat_ip destroyed clean (GREEN).
+
+# Manual sweep 2026-06-09 (4): clean leaks before peering/subnet/cidr re-test batch.
+
+# Manual sweep 2026-06-09 (5): reclaim peering-leaked VPCs (run 27235979211, quota hit).
+
+# Manual sweep 2026-06-09 (6): reclaim peering-leaked VPCs (run 27238242719, quota hit again).
+
+# Manual sweep 2026-06-09 (7): reclaim TGW vpc-connection leaked by tgw_rule partial create (run 27241816399, EDITING).
+
+# Manual sweep 2026-06-10 (8): reclaim TGWs leaked by D batch (run 27243446403) - account TGW max=3 exhausted.
+
+# Manual sweep 2026-06-10 (9): reclaim private_nat TGW + image bucket (run 27244474565).
+
+# Manual sweep 2026-06-10 (10): reclaim lb_listener partial-create leak (run 27258867414, LB server group attached).

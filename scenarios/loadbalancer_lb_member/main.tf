@@ -10,6 +10,12 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
+# KNOWN ISSUE -- provider #77 (LB destroy-leak): load balancer family resources
+# APPLY and REPLAN cleanly but LEAK on destroy, and a leaked LB blocks teardown of
+# the pool subnet/VPC (409 Conflict). Until #77 is fixed the LB lane relies on the
+# API reaper to sweep leaked LBs before the pool bootstrap is torn down
+# (see docs/findings/loadbalancer-reap-strategy.md).
+
 # LB member integration fixture (self-contained, like ske_nodepool builds its own
 # parent). A member registers a backend behind a server group; an INSTANCE member
 # needs a real compute instance (object_id) and its private IP (member_ip). So this
@@ -57,7 +63,7 @@ variable "server_type_id" {
 
 # Backend instance the member points at.
 resource "samsungcloudplatformv2_virtualserver_server" "regr" {
-  name           = "rmsv${var.name_suffix}"
+  name           = "rlbmv${var.name_suffix}"
   keypair_name   = var.keypair_name
   image_id       = var.image_id
   server_type_id = var.server_type_id
@@ -76,9 +82,26 @@ resource "samsungcloudplatformv2_virtualserver_server" "regr" {
   }
 }
 
+# The API requires a load balancer to already exist in the subnet before a
+# server group (and its members) can be created there (400: "the chosen subnet
+# does not contain a Load Balancer"). So this fixture provisions its own LB in
+# the same subnet first, then the server group + member on top.
+resource "samsungcloudplatformv2_loadbalancer_loadbalancer" "regr" {
+  loadbalancer_create = {
+    name                     = "rlbm${var.name_suffix}"
+    description              = "regression-test-lb"
+    layer_type               = "L4"
+    firewall_enabled         = false
+    firewall_logging_enabled = false
+    vpc_id                   = var.vpc_id
+    subnet_id                = var.subnet_id
+  }
+}
+
 resource "samsungcloudplatformv2_loadbalancer_lb_server_group" "regr" {
+  depends_on = [samsungcloudplatformv2_loadbalancer_loadbalancer.regr]
   lb_server_group_create = {
-    name        = "rsg${var.name_suffix}"
+    name        = "rlbms${var.name_suffix}"
     description = "regression-test server group"
     protocol    = "TCP"
     lb_method   = "ROUND_ROBIN"
@@ -90,12 +113,12 @@ resource "samsungcloudplatformv2_loadbalancer_lb_server_group" "regr" {
 resource "samsungcloudplatformv2_loadbalancer_lb_member" "regr" {
   lb_server_group_id = samsungcloudplatformv2_loadbalancer_lb_server_group.regr.id
   lb_member_create = {
-    name          = "rmb${var.name_suffix}"
+    name          = "rlbmb${var.name_suffix}"
     member_ip     = samsungcloudplatformv2_virtualserver_server.regr.networks["nic0"].fixed_ip
     member_port   = 80
     member_weight = 1
-    member_state  = "ENABLED"
+    member_state  = "ENABLE"  # enum: ENABLE | DISABLE
     object_id     = samsungcloudplatformv2_virtualserver_server.regr.id
-    object_type   = "INSTANCE"
+    object_type   = "VM"      # enum: VM | BM | MANUAL | MNGC; VM requires object_id
   }
 }

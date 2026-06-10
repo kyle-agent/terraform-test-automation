@@ -10,7 +10,66 @@ multi-agent architecture + session bootstrap), then this file, then
 
 ---
 
-## 0. Latest session close (2026-06-08) — what changed & where to resume
+## 0Z. Session 2026-06-09/10 (LATEST) — provider-fix verification, green 41→56
+
+**Branch:** `claude/youthful-cray-608zi` (BOTH repos). **Resume:** read this section first.
+**Result:** registry green **41 → 56 (+15)**. All work committed+pushed on the branch in both
+repos; **pending consolidation to `main` via PR** (same pattern as PR #14).
+
+### Provider fixes (fork `kyle-agent/terraform-provider-samsungcloudplatformv2`, branch above)
+Built+verified end-to-end via source-build (`SCP_PROVIDER_SOURCE_BUILD=1`,
+`SCP_PROVIDER_BUILD_REF=claude/youthful-cray-608zi`; vendored SDK under `third_party/` + go.mod
+`replace` → tokenless `go build`). Issues with a verified-green test carry the GitHub label
+**`fix-verified-green`** (filter: `label:fix-verified-green`):
+- **#75** iam_role (CreateRole policy_ids `[]` not null) → iam_role, iam_role_policy_bindings GREEN
+- **#77** loadbalancer Create wait-ACTIVE / Delete wait-gone → loadbalancer_basic, lb_server_group, public_nat_ip GREEN
+- **#67/#85** virtualserver_server needs state=ACTIVE / lb_member object_id → lb_member GREEN
+- **#58** iam_access_key Delete disables an enabled key first → iam_access_key GREEN (after quota freed)
+- **#59** vpc_subnet dns_nameservers `[]string`→`types.List` → vpc_subnet GREEN
+- **#76** TGW status-waiter no longer hangs → vpc_transit_gateway, vpc_transit_gateway_vpc_connection GREEN
+- vpc_publicip Read → v1.2 ShowPublicip (SUBNET enum) → vpc_subnet_vip_nat_ip GREEN
+- lb_member/lb_server_group destroy-ordering (EDITING stabilize + retry) → lb_member clean destroy
+- **#60** vpc_cidr Read implemented (idempotent) — but Delete has NO server API (403 "Action definition is not found"); destroy still fails. Commented on #60.
+- **#61** vpc_vpc_peering: provider now serializes `approver_vpc_name` correctly (proven: local json.Marshal emits it; remote SDK patched) BUT API still 400 "no value given … Invalid error data" → **API-side**, not provider. Commented on #61. peering ×3 stay broken.
+
+### Non-provider GREENs this session
+- virtualserver_volume (#69 tag was STALE — fixture size already ÷8; just needed a re-test)
+- **virtualserver_image (#86)** — OBS image URL must be the **account-namespaced path form**:
+  `https://object-store.kr-west1.e.samsungsdscloud.com/{account_id}:terraform-vmimage-test/<key>.qcow2`
+  (plain bucket path → OBS `NotFoundBucketNameInPath`; virtual-hosted → no public DNS). Staging step
+  now builds `${TF_VAR_obs_endpoint}/${SCP_ACCOUNT_ID}:terraform-vmimage-test/<key>`. Commented on #86.
+
+### KEY platform constraints / gotchas discovered (save for future sessions)
+- **TGW account max = 3.** "Failed to create a Transit Gateway due to exceed the maximum size(3)."
+  Running >3 TGW-creating scenarios concurrently fails. TGW sub-resources (firewall, firewall_connection,
+  uplink_rule) additionally require an **ACTIVE TGW firewall connection** first (multi-step state machine);
+  private_nat needs the TGW in **Connectable** state (a created vpc_connection alone is NOT enough).
+  These TGW-family scenarios remain broken — fixtures are valid (terraform validate ok) but the
+  platform state-machine + 3-TGW cap make them hard; not a provider bug.
+- **OBS path addressing = `{account_id}:{bucket}`** (account-namespaced). Buckets `terraform-vmimage-test`
+  (image) + `regr-obs-*` (sweepable). Reaper now also reaps orphaned **IAM access keys** (test desc
+  `regr-access-key` only; NEVER the live `SCP_ACCESS_KEY` — see `reap_access_keys` in sweep_all.py).
+- **iam_access_key** caps at 2 keys/principal; an orphaned enabled key (pre-#58 bug) blocked it until the
+  reaper reclaimed it. `_client.py` gained a `put` method for the disable-before-delete.
+- **vpc_vpc_peering / vpc_transit_gateway_rule** fail with the same "no value for required property
+  (approver_vpc_name / created_at) … Invalid error data" pattern = **API-side**, provider sends it.
+
+### Remaining broken = platform/account/API (NOT provider-fixable)
+Platform 500/ISE: backup(#80), budget/certificate/dns_public_domain(#82), loadbalancer_lb_listener
+(500 code 104 — re-testing), vpc_vpc_endpoint, DBaaS eventstreams/searchengine/sqlserver(#83).
+Account-perm: iam_group_member, iam_user_policy_bindings, loggingaudit_trail, filestorage_replication.
+API-side: peering×3(#61/#84), tgw_rule(created_at). Platform-dep: vpc_cidr Delete, TGW firewall family,
+private_nat×2, virtualserver_image needs operator OBS (now resolved).
+
+### Dashboard note (IMPORTANT for "reflect on dashboard")
+`docs/index.html` is rendered by `scripts/build_coverage_html.py` from **`coverage/coverage.json`**
+(per-stage results), NOT from `coverage/registry.yaml`. `coverage.json` is updated by
+`scripts/build_coverage.py <capability-matrix.json>` (merges a RUN's matrix) and is currently STALE
+(Jun 8). To make the dashboard show this session's greens: re-run the fixed scenarios, then
+`build_coverage.py` the resulting matrices into `coverage.json`, commit → `pages.yml` publishes.
+
+---
+
 
 **Done this session:**
 - **Account cleanup** (user: "stop all tests + delete all resources"). No cron exists;
@@ -40,6 +99,86 @@ delete branches itself — `403`; deletion was done manually.)
 coverage-expansion TODO is unchanged (see §5 below): firewall_firewall_rule self-contain,
 iam_role_policy_bindings, vpc_vpc_endpoint, the LB ×7 decision, virtualserver_image via
 OBS. Pre-existing leaker decisions already recorded in §4/§6.
+
+---
+
+## 0a. Session 2026-06-08 (coverage continuation, branch `claude/youthful-cray-608zi`)
+
+Worked the §5 TODO via 5 parallel agents (fixtures only; registry flips batched
+centrally to respect the **VPC quota = 5**). All fixtures pass `terraform validate`
+against provider mirror v3.3.1.
+
+**Fixtures authored (committed, no account impact):**
+- `firewall_firewall_rule` → **self-contained**: creates own VPC+subnet+IGW
+  (`firewall_enabled=true`) and wires `firewall_id` from the IGW's computed
+  **nested** attr `internet_gateway.firewall_id`. Lane pool→**self**.
+- `iam_role_policy_bindings` → self-contained (own iam_role + iam_policy).
+- `vpc_vpc_endpoint` → schema-correct OBS endpoint (resource_type=OBS,
+  endpoint_ip_address `192.168.0.12` inside pool /27).
+- `loadbalancer_*` (7) → all schema-valid + dependency-wired + #77 note. Ready to
+  un-exclude once an always-reap is in place (see `docs/findings/loadbalancer-reap-strategy.md`).
+- `virtualserver_image` → parameterized + `scripts/upload_image_to_obs.py` +
+  `docs/findings/virtualserver-image-obs.md`. **Stays blocked** pending a real
+  image upload test in CI.
+
+**Batch-1 coverage sweep — run `27120875200` (VPC-safe: ≤1 concurrent VPC):**
+- `firewall_firewall_rule` → ✅ **GREEN** (validate→apply→replan→destroy→destroy_verify
+  all ✅, 238s; self-containment confirmed working, no leak).
+- `iam_role_policy_bindings` → ❌ **broken**: apply fails at `iam_role` create with
+  `400 'Input should be a valid list'` — this is **#75** (iam_role create is itself
+  broken; `iam_role` scenario is also #75-broken). Blocked-by-dependency, not a
+  fixture defect. The concrete 400 message is a fresh diagnostic for #75.
+- `vpc_vpc_endpoint` → ⊘ **not exercised**: pool bootstrap `terraform init` hit a
+  **transient `504 Gateway Timeout`** fetching provider v3.3.2 from GitHub (mirror
+  download 504 → direct-registry fallback also 504). NOT a fixture/quota/leak issue
+  (init failed before any resource → **no VPC leaked**). Left `untested` and
+  re-pushed to retry (only vpc_vpc_endpoint re-runs).
+
+**vpc_vpc_endpoint retry (run 27121247070):** apply ❌ `400 'VPC Endpoint Type Subnet
+not found'` even with a REAL pool subnet_id → **platform/AZ limitation**, not a fixture
+defect. Marked **broken** (blocked-with-findings). Teardown clean, no leak.
+
+**Batch 2 = loadbalancer family (run 27121594571, 6 pool LB scenarios, 1 shard):**
+- `loadbalancer_lb_health_check` → ✅ **GREEN** (full lifecycle).
+- 5 failed on FIXTURE issues (now fixed by an agent, commit WIP 3d1db26):
+  (a) **LB name collision** — all scenarios in a shard share one `TF_VAR_name_suffix`,
+  so `rlb${suffix}` collided across scenarios (`...name(rlb4d39a5) already exists`).
+  Fix: scenario-distinct short stems (`rlbb/rlbl/rlbp/rlbg/rlbm`). (b) `lb_server_group`
+  & `lb_member` need an **LB already in the subnet** — fix: each now creates its own LB
+  first (+depends_on). (c) `lb_member` plan failure was a cascade of (b), object_id
+  wiring was already correct.
+- **`loadbalancer_basic` → broken (#77, provider Create-no-wait):** apply/replan OK but
+  destroy `400 not in a deletable state (CREATING)` — provider `Loadbalancer.Create`
+  returns before ACTIVE and has no wait knob, so quick create→destroy leaks the LB →
+  pinned the pool subnet → **subnet/VPC 409 leak**. Reaper run **27121999759** reclaimed
+  the leaked subnet `8a65f4…`+VPC `b3c1ae…` (`sweep_all done: 5 deleted`) → account clean.
+- **Re-test (run 27122245554) — fixtures fixed but 3 provider/platform blockers remain;
+  see `docs/findings/loadbalancer-family.md`:**
+  - `lb_server_group` → apply ✅ replan ✅ **destroy ❌** (#77 CREATING leak).
+  - `lb_listener`, `loadbalancer_public_nat_ip` → **apply ❌ 409** "only Load Balancer
+    under the subnet is not in ACTIVE state" = **ONE-LB-per-subnet** limit; the shared
+    pool subnet at `parallel: 4` makes LB scenarios collide.
+  - `lb_member` → **plan ❌** provider rejects a COMPUTED `object_id` (backend server.id,
+    unknown-at-plan) when `object_type=VM` (plan-validation bug).
+  - All 4 marked **broken** with precise per-scenario `issues`. The `lb_server_group` LB
+    leaked → reaper re-fired (run after commit 06fb1cc) to reclaim subnet/VPC.
+
+**Provider #77 + 2 sibling blockers gate the LB family** (documented in
+`docs/findings/loadbalancer-family.md`): (1) Create doesn't wait for ACTIVE → CREATING
+destroy leak; (2) one-LB-per-subnet vs shared-pool-parallel; (3) lb_member computed
+object_id rejected at plan. Net LB result: **lb_health_check green; the other 6 broken/
+excluded** with provider-actionable diagnostics. To make them green later: re-model LB
+scenarios as `vpc: self` (own subnet) + serial, AND land the #77 Create-wait fix.
+
+**`virtualserver_image` — probed & characterized (broken/blocked):** wired the novpc lane
+to upload a tiny real **CirrOS** qcow2 to OBS and pass its URL. The probe nailed the
+platform image-import contract in 3 iterations — **URL must end `.qcow2`** (fixed via OBS
+`--key`), **os_distro in allow-list** (`cirros`→**`ubuntu`** fixed), and **a fetchable OBS
+URL**. Final blocker: the OBS test key **cannot create buckets**
+(`ForbidCreateBucketException`, run 27124795518), so staging fails and the dummy URL is
+used. This is a permission boundary (cf. §8). Resume: supply a pre-existing writable OBS
+bucket via `--bucket`/`OBS_BUCKET` (helper now reuses an existing bucket) — see
+`docs/findings/virtualserver-image-obs.md` "Probe results".
 
 ---
 
@@ -331,3 +470,42 @@ Per user request ("delete block storage + all other resources"). Added sweeps:
   `lb-health-checks` that 400. These need the **account owner / console**, or an
   IAM grant giving the reaper key (`2a579fc…`) delete rights on ServiceWatch/SCF/
   backup/gslb. The reaper itself can do no more with the current key.
+
+## 0c. Session 2026-06-09 — provider #77 fixed, built, and proven (LB greens)
+
+Pivoted to **fixing the provider** (the dominant coverage blocker). Key arc:
+
+- **SDK build blocker solved.** The public provider depends on the PRIVATE
+  `terraform-sdk-samsungcloudplatformv2` module (404 without org access; the fork has no
+  GH_ACCESS_TOKEN). The operator supplied the SDK; it is **MIT-licensed**, so it was
+  **vendored in-repo** at `third_party/terraform-sdk-samsungcloudplatformv2/` (trimmed to
+  *.go+go.mod, ~61MB) with a `go.mod replace`. Now `go build ./...` works with **no token**
+  (fixes provider #50). Provider `build-check` CI is green.
+- **#77 fix implemented** in `service/loadbalancer/loadbalancer.go` (provider repo,
+  branch `claude/youthful-cray-608zi`): `Create` waits for ACTIVE (new
+  `waitForLoadbalancerStatus`, mirrors vpngateway) then re-Reads; `Delete` waits until the
+  LB is gone before returning (so dependent subnet delete doesn't 409). Compiles locally + CI.
+- **Harness runs the PATCHED provider.** `scripts/setup_provider_mirror.sh` gained a
+  `SCP_PROVIDER_SOURCE_BUILD=1` mode: it clones the fork (`SCP_PROVIDER_BUILD_REF`) and
+  `go build`s the provider into the filesystem mirror instead of downloading the release.
+  Enabled via env in `coverage-sweep-pool.yml`. (Keep ON to retain the LB greens; the
+  released provider lacks #77.)
+- **Result (run 27212070186, patched provider):**
+  - `loadbalancer_basic` -> **GREEN** (full lifecycle, clean destroy, no leak).
+  - `loadbalancer_lb_server_group` -> **GREEN** (full lifecycle).
+  - `loadbalancer_loadbalancer_public_nat_ip` -> apply/replan OK (IGW fixture fix worked);
+    **destroy 409** — publicip "not deletable (ATTACHED)" + LB "associated resources":
+    a destroy-ordering gap (public NAT / publicip detach not awaited). Next provider fix.
+  - `loadbalancer_lb_listener` -> **apply 500 ISE** "Failed to create listener (code 104)"
+    (after session_duration_time + routing_action fixture fixes) — platform-side; timebox.
+  - Fixture fixes committed: lb_listener `routing_action=LB_SERVER_GROUP` + `session_duration_time=120`;
+    public_nat_ip adds an IGW (+depends_on).
+
+**Pipeline proven end-to-end:** provider source fix -> vendored tokenless build -> source-built
+mirror -> coverage sweep -> green. The remaining 22 provider-blocked scenarios (#76 TGW ×7,
+#75 iam ×2, #59/#60/#67/#69/#74/#82/#85 …) can be unblocked the same way: patch the provider
+on this branch, the source-built mirror picks it up, re-test.
+
+**Resume:** confirm reaper run after 27212070186 reclaimed the lb_listener/public_nat leaks;
+then either (a) fix the next provider bug (e.g. public_nat destroy-ordering, or #76 TGW), or
+(b) retry lb_listener (transient 500?). Source-build stays enabled in coverage-sweep-pool.yml.

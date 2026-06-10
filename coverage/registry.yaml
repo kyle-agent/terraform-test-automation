@@ -280,14 +280,13 @@ firewall_firewall_rule:
   depends_on: []
   family: firewall
   import: false
-  issues:
-  - 404 not found (needs firewall target)
+  issues: []
   needs: []
   parallel: normal
-  status: broken
+  status: green
   timeout_class: fast
   update: false
-  vpc: pool
+  vpc: self
 gslb_gslb:
   cost: heavy
   depends_on: []
@@ -306,10 +305,11 @@ iam_access_key:
   family: iam
   import: false
   issues:
-  - '#58'
+  - 'GREEN with patched provider #58 (Delete disables an enabled key before deleting); full lifecycle
+    ok once the account access-key quota slot was freed (run 27241816399). Requires patched provider.'
   needs: []
   parallel: normal
-  status: broken
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -368,10 +368,11 @@ iam_role:
   family: iam
   import: false
   issues:
-  - '#75'
+  - 'GREEN with patched provider #75 (CreateRole policy_ids -> [] not null); full lifecycle ok (run 27233487205).
+    Requires patched provider.'
   needs: []
   parallel: normal
-  status: broken
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -381,10 +382,11 @@ iam_role_policy_bindings:
   family: iam
   import: false
   issues:
-  - 404 needs own role
+  - 'GREEN with patched provider #75 (depends on iam_role create); full lifecycle ok (run 27233487205).
+    Requires patched provider.'
   needs: []
   parallel: normal
-  status: broken
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -429,23 +431,20 @@ import_smoke:
 loadbalancer_basic:
   cost: heavy
   depends_on: []
-  exclude_reason: 'provider #77 (LB destroy leak)'
   family: loadbalancer
   import: false
   issues:
-  - '#77 destroy-leak (apply/replan OK; leaks LB on destroy -> pool subnet/VPC 409)'
-  needs:
-  - subnet_id
-  - vpc_id
+  - 'GREEN with patched provider #77 (Create wait-for-ACTIVE + Delete wait-for-gone): full lifecycle validate->apply->replan->destroy
+    ok (run 27212070186). Requires the patched provider (source-built mirror).'
+  needs: []
   parallel: normal
-  status: broken
+  status: green
   timeout_class: fast
   update: false
-  vpc: pool
+  vpc: self
 loadbalancer_lb_health_check:
   cost: heavy
   depends_on: []
-  exclude_reason: 'provider #77 (LB destroy leak)'
   family: loadbalancer
   import: false
   issues: []
@@ -453,32 +452,33 @@ loadbalancer_lb_health_check:
   - subnet_id
   - vpc_id
   parallel: normal
-  status: excluded
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
 loadbalancer_lb_listener:
   cost: heavy
   depends_on: []
-  exclude_reason: 'provider #77 (LB destroy leak)'
   family: loadbalancer
   import: false
-  issues: []
-  needs:
-  - subnet_id
-  - vpc_id
+  issues:
+  - CONFIRMED platform 500 ISE "Failed to create listener (code 104)" on the listener create, even with
+    the patched provider (#77 LB now waits ACTIVE; the LB created fine) - run 27258867414. Platform-side,
+    not provider/fixture.
+  needs: []
   parallel: normal
-  status: excluded
+  status: broken
   timeout_class: fast
   update: false
-  vpc: pool
+  vpc: self
 loadbalancer_lb_member:
   cost: heavy
   depends_on: []
-  exclude_reason: 'provider #77 (LB destroy leak)'
   family: loadbalancer
   import: false
-  issues: []
+  issues:
+  - 'GREEN with patched provider (#85/#67/#77 + lb_member/lb_server_group destroy-ordering: EDITING stabilize-wait
+    + retry); full lifecycle incl clean destroy (run 27238242719). Requires patched provider.'
   needs:
   - image_id
   - keypair_name
@@ -486,29 +486,29 @@ loadbalancer_lb_member:
   - subnet_id
   - vpc_id
   parallel: normal
-  status: excluded
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
 loadbalancer_lb_server_group:
   cost: heavy
   depends_on: []
-  exclude_reason: 'provider #77 (LB destroy leak)'
   family: loadbalancer
   import: false
-  issues: []
-  needs:
-  - subnet_id
-  - vpc_id
+  issues:
+  - 'GREEN with patched provider #77: creates LB+server_group in own subnet, full lifecycle ok (run 27212070186).
+    Requires patched provider.'
+  needs: []
   parallel: normal
-  status: excluded
+  status: green
   timeout_class: fast
   update: false
-  vpc: pool
+  vpc: self
 loadbalancer_loadbalancer_private_nat_ip:
   cost: heavy
   depends_on: []
-  exclude_reason: 'provider #77 (LB destroy leak)'
+  exclude_reason: needs an externally-supplied loadbalancer_id + private_nat_id (no pool plumbing); not
+    self-standing. Revisit with a self-contained LB+private-NAT fixture.
   family: loadbalancer
   import: false
   issues: []
@@ -521,19 +521,17 @@ loadbalancer_loadbalancer_private_nat_ip:
 loadbalancer_loadbalancer_public_nat_ip:
   cost: heavy
   depends_on: []
-  exclude_reason: 'provider #77 (LB destroy leak)'
   family: loadbalancer
   import: false
-  issues: []
-  needs:
-  - publicip_id
-  - subnet_id
-  - vpc_id
+  issues:
+  - 'GREEN with patched provider: full lifecycle incl clean destroy (NAT-detach wait + #77 + IGW fixture),
+    run 27233794315. Requires patched provider.'
+  needs: []
   parallel: normal
-  status: excluded
+  status: green
   timeout_class: fast
   update: false
-  vpc: pool
+  vpc: self
 loggingaudit_trail:
   cost: cheap
   depends_on: []
@@ -779,13 +777,15 @@ virtualserver_image:
   family: virtualserver
   import: false
   issues:
-  - invalid OBS image URL (needs real image file)
+  - 'GREEN (run 27257742108): the OBS image URL must be the ACCOUNT-NAMESPACED path form object-store.../{account_id}:{bucket}/{key}.qcow2
+    (operator-provided). Full lifecycle ok. #86 was an undocumented URL-form constraint, not a provider
+    bug.'
   needs: []
   parallel: normal
-  status: broken
+  status: green
   timeout_class: fast
   update: false
-  vpc: pool
+  vpc: none
 virtualserver_keypair:
   cost: cheap
   depends_on: []
@@ -832,10 +832,11 @@ virtualserver_volume:
   family: virtualserver
   import: false
   issues:
-  - '#69'
+  - 'GREEN (run 27243446403): the #69 tag was stale - fixture size is already divisible by 8; full lifecycle
+    ok. No provider change needed.'
   needs: []
   parallel: normal
-  status: broken
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -845,7 +846,9 @@ vpc_cidr:
   family: vpc
   import: false
   issues:
-  - '#60'
+  - '#60 Read fixed (apply/replan idempotent). Delete now attempts DELETE /v1/vpcs/{id}/cidrs/{cidrId}
+    but server returns 403 "Action definition is not found" - no such remove endpoint/permission; secondary-CIDR
+    removal appears unsupported by the API (run 27238242719).'
   needs:
   - vpc_id
   parallel: low
@@ -898,20 +901,23 @@ vpc_private_nat:
   family: vpc
   import: false
   issues:
-  - TGW not connectable (#76)
+  - apply 400 "Cannot find the Transit Gateway in Connectable state" even with an in-line vpc_connection
+    + depends_on (run 27244474565) - "Connectable" needs more than a created connection (likely the connection
+    ACTIVE/propagated or another precondition).
   needs: []
   parallel: normal
   status: broken
   timeout_class: fast
   update: false
-  vpc: none
+  vpc: pool
 vpc_private_nat_ip:
   cost: cheap
   depends_on: []
   family: vpc
   import: false
   issues:
-  - pool teardown 409 leak in run 27095226766 - confirm leaker vs loadbalancer_basic via reaper run 27106727666
+  - blocked by account TGW quota "exceed the maximum size(3)" when TGW scenarios run concurrently (run
+    27243446403); fixture is correct (validate ok) - needs serialized re-test within the 3-TGW limit.
   needs:
   - ip_address
   parallel: normal
@@ -937,11 +943,12 @@ vpc_subnet:
   family: vpc
   import: false
   issues:
-  - '#59'
+  - 'GREEN with patched provider #59 (dns_nameservers []string->types.List); full lifecycle ok (run 27235979211).
+    Requires patched provider.'
   needs:
   - vpc_id
   parallel: low
-  status: broken
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -964,13 +971,13 @@ vpc_subnet_vip_nat_ip:
   family: vpc
   import: false
   issues:
-  - 'provider: destroy fails ''SUBNET not a valid PublicipAttachedResourceType'' (apply ok w/ dedicated
-    publicip)'
+  - 'GREEN with patched provider: publicip Read repointed to v1.2 ShowPublicip (SUBNET-aware enum); full
+    lifecycle incl clean destroy (run 27238242719). Requires patched provider.'
   needs:
   - publicip_id
   - subnet_id
   parallel: low
-  status: broken
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -990,80 +997,96 @@ vpc_subnet_vip_port:
 vpc_transit_gateway:
   cost: cheap
   depends_on: []
-  exclude_reason: 'provider #76 (TGW status-waiter hang)'
+  exclude_reason: ''
   family: vpc
   import: false
-  issues: []
+  issues:
+  - 'GREEN with patched provider #76 (TGW status-waiter no longer hangs); full lifecycle incl clean destroy
+    (run 27241816399). Requires patched provider.'
   needs: []
   parallel: normal
-  status: excluded
+  status: green
   timeout_class: fast
   update: false
   vpc: none
 vpc_transit_gateway_firewall:
   cost: cheap
   depends_on: []
-  exclude_reason: 'provider #76 (TGW status-waiter hang)'
+  exclude_reason: ''
   family: vpc
   import: false
-  issues: []
+  issues:
+  - Transit Gateway Firewall connection state is not Active (INACTIVE) on firewall create (run 27243446403)
+    - creating a TGW firewall requires the TGW firewall CONNECTION to be ACTIVE first; deeper dependency
+    than in-line TGW.
   needs: []
   parallel: normal
-  status: excluded
+  status: broken
   timeout_class: fast
   update: false
   vpc: none
 vpc_transit_gateway_firewall_connection:
   cost: cheap
   depends_on: []
-  exclude_reason: 'provider #76 (TGW status-waiter hang)'
+  exclude_reason: ''
   family: vpc
   import: false
-  issues: []
+  issues:
+  - Transit Gateway Firewall connection state is not Active (INACTIVE) on firewall create (run 27243446403)
+    - creating a TGW firewall requires the TGW firewall CONNECTION to be ACTIVE first; deeper dependency
+    than in-line TGW.
   needs: []
   parallel: normal
-  status: excluded
+  status: broken
   timeout_class: fast
   update: false
   vpc: none
 vpc_transit_gateway_rule:
   cost: cheap
   depends_on: []
-  exclude_reason: 'provider #76 (TGW status-waiter hang)'
+  exclude_reason: ''
   family: vpc
   import: false
-  issues: []
+  issues:
+  - 'apply 400 "no value given for required property created_at / Invalid error data" (run 27241816399)
+    - rule create omits created_at (server-set field treated as required; same API-side pattern as #61).
+    Also destroy-ordering: tgw vpc-connection delete 400 "state not Active (EDITING)".'
   needs:
   - vpc_id
   parallel: normal
-  status: excluded
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool
 vpc_transit_gateway_uplink_rule:
   cost: cheap
   depends_on: []
-  exclude_reason: 'provider #76 (TGW status-waiter hang)'
+  exclude_reason: ''
   family: vpc
   import: false
-  issues: []
+  issues:
+  - apply 400 "Transit Gateway Firewall connection state is not Active (INACTIVE)" (run 27244474565) -
+    uplink rule (like the firewall scenarios) needs an ACTIVE TGW firewall connection first; deep multi-step
+    dependency, not just an in-line TGW.
   needs: []
   parallel: normal
-  status: excluded
+  status: broken
   timeout_class: fast
   update: false
   vpc: none
 vpc_transit_gateway_vpc_connection:
   cost: cheap
   depends_on: []
-  exclude_reason: 'provider #76 (TGW status-waiter hang)'
+  exclude_reason: ''
   family: vpc
   import: false
-  issues: []
+  issues:
+  - 'GREEN with patched provider #76 (TGW waiter); full lifecycle incl clean destroy (run 27241816399).
+    Requires patched provider.'
   needs:
   - vpc_id
   parallel: normal
-  status: excluded
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -1085,7 +1108,9 @@ vpc_vpc_endpoint:
   family: vpc
   import: false
   issues:
-  - 'provider/config: 400 ''VPC Endpoint Type Subnet not found'''
+  - platform-side 400 'VPC Endpoint Type Subnet not found' even with a real pool subnet_id (run 27121247070);
+    OBS endpoint type not creatable on this subnet - not a fixture defect, blocked pending platform/AZ
+    endpoint-type support
   needs:
   - subnet_id
   - vpc_id
@@ -1100,7 +1125,11 @@ vpc_vpc_peering:
   family: vpc
   import: false
   issues:
-  - 'provider: API requires approver_vpc_name but schema omits it (+destroy 409 leak)'
+  - '#61: provider now CORRECTLY serializes approver_vpc_name (verified: local json.Marshal of VpcPeeringCreateRequest
+    emits "approver_vpc_name"; remote branch SDK + source-build confirmed), set from explicit fixture
+    value, yet API still returns 400 "no value given for required property approver_vpc_name / Reason:
+    Invalid error data" (run 27238242719). Not provider-fixable - API-side contract issue; needs vendor/API
+    investigation.'
   needs: []
   parallel: normal
   status: broken
@@ -1113,7 +1142,11 @@ vpc_vpc_peering_approval:
   family: vpc
   import: false
   issues:
-  - depends on vpc_vpc_peering (provider approver_vpc_name gap)
+  - '#61: provider now CORRECTLY serializes approver_vpc_name (verified: local json.Marshal of VpcPeeringCreateRequest
+    emits "approver_vpc_name"; remote branch SDK + source-build confirmed), set from explicit fixture
+    value, yet API still returns 400 "no value given for required property approver_vpc_name / Reason:
+    Invalid error data" (run 27238242719). Not provider-fixable - API-side contract issue; needs vendor/API
+    investigation.'
   needs: []
   parallel: normal
   status: broken
@@ -1126,7 +1159,11 @@ vpc_vpc_peering_rule:
   family: vpc
   import: false
   issues:
-  - depends on vpc_vpc_peering (provider approver_vpc_name gap)
+  - '#61: provider now CORRECTLY serializes approver_vpc_name (verified: local json.Marshal of VpcPeeringCreateRequest
+    emits "approver_vpc_name"; remote branch SDK + source-build confirmed), set from explicit fixture
+    value, yet API still returns 400 "no value given for required property approver_vpc_name / Reason:
+    Invalid error data" (run 27238242719). Not provider-fixable - API-side contract issue; needs vendor/API
+    investigation.'
   needs: []
   parallel: normal
   status: broken

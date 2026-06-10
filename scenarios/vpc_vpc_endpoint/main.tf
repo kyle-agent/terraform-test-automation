@@ -35,28 +35,39 @@ variable "name_suffix" {
   default     = ""
 }
 
+# resource_type enum, per provider schema/docs (vpc_endpoint.go Schema and
+# docs/resources/vpc_vpc_endpoint.md): "FS | OBS | SCR | DNS".
+# OBS (object storage) is the cheapest/most-available managed endpoint target.
 variable "resource_type" {
   type        = string
   description = "VPC endpoint target resource type. Valid: FS, OBS, SCR, DNS."
   default     = "OBS"
 }
 
+# For FS/OBS the provider docs say resource_key is an IP address ("1.1.1.1").
+# This is the target service IP, NOT an address inside the pool subnet, so it is
+# left as a routable-looking public-ish IP rather than a 192.168.0.0/27 address.
 variable "resource_key" {
   type        = string
-  description = "Endpoint resource key (for OBS this is the target IP)."
-  default     = "192.168.0.5"
+  description = "Endpoint resource key (for FS/OBS this is the target service IP)."
+  default     = "1.1.1.1"
 }
 
+# For OBS the docs say resource_info is the service URL (https://xxx...).
 variable "resource_info" {
   type        = string
   description = "Endpoint resource info (for OBS this is the service URL)."
   default     = "https://object-store.samsungsdscloud.com"
 }
 
+# endpoint_ip_address MUST sit inside the pool subnet CIDR 192.168.0.0/27
+# (usable .1-.30). The bootstrap subnet is 192.168.0.0/27 and other pool
+# scenarios consume low/high addresses (e.g. vip .20, bootstrap-side .30),
+# so .12 is chosen to avoid the .1 gateway and known contended addresses.
 variable "endpoint_ip_address" {
   type        = string
-  description = "IP address assigned to the endpoint inside the subnet CIDR."
-  default     = "192.168.0.30"
+  description = "IP address for the endpoint, inside the pool subnet CIDR 192.168.0.0/27."
+  default     = "192.168.0.12"
 }
 
 # VPC endpoint fixture guarding networking coverage: a private endpoint to a

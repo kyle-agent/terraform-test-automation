@@ -51,6 +51,7 @@ resource "samsungcloudplatformv2_vpc_vpc" "approver" {
 resource "samsungcloudplatformv2_vpc_vpc_peering" "regr" {
   approver_vpc_account_id = samsungcloudplatformv2_vpc_vpc.approver.vpc.account_id
   approver_vpc_id         = samsungcloudplatformv2_vpc_vpc.approver.id
+  approver_vpc_name       = "regrprlapp${var.name_suffix}"
   requester_vpc_id        = samsungcloudplatformv2_vpc_vpc.requester.id
   name                    = "regrprl${var.name_suffix}"
   description             = "regr-test"

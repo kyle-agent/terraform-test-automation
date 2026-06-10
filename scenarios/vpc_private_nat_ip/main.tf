@@ -20,6 +20,12 @@ variable "name_suffix" {
   default     = ""
 }
 
+variable "vpc_id" {
+  type        = string
+  description = "Existing VPC id connected to the transit gateway so it becomes Connectable. Integration runs override via TF_VAR_vpc_id."
+  default     = "00000000-0000-0000-0000-000000000000"
+}
+
 variable "private_nat_cidr" {
   type        = string
   description = "IP range allocated to the private NAT."
@@ -37,12 +43,21 @@ resource "samsungcloudplatformv2_vpc_transit_gateway" "regr" {
   description = "regr-test"
 }
 
+# A freshly created TGW is not "Connectable" until a VPC is attached to it. Attach
+# the bootstrap VPC so the TGW becomes Connectable before the private NAT binds.
+resource "samsungcloudplatformv2_vpc_transit_gateway_vpc_connection" "regr" {
+  transit_gateway_id = samsungcloudplatformv2_vpc_transit_gateway.regr.id
+  vpc_id             = var.vpc_id
+}
+
 resource "samsungcloudplatformv2_vpc_private_nat" "regr" {
   cidr                = var.private_nat_cidr
   name                = "regr-pnatip${var.name_suffix}"
   service_resource_id = samsungcloudplatformv2_vpc_transit_gateway.regr.id
   service_type        = "TRANSIT_GATEWAY"
   description         = "regr-test"
+
+  depends_on = [samsungcloudplatformv2_vpc_transit_gateway_vpc_connection.regr]
 }
 
 # IP reserved under the private NAT (top-level private_nat id used for chaining).
