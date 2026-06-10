@@ -462,11 +462,11 @@ loadbalancer_lb_listener:
   family: loadbalancer
   import: false
   issues:
-  - 'apply 500 ISE "Failed to create listener (code: 104)" (run 27212070186) - platform-side error after
-    session_duration_time/routing_action fixes; not provider/fixture. Retry/timebox.'
+  - re-test with patched provider (#77 LB wait-for-ACTIVE) - prior 500 (run 27212070186) may have been
+    LB-not-ACTIVE timing now fixed
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: self
