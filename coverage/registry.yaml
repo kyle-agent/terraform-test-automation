@@ -776,13 +776,10 @@ virtualserver_image:
   family: virtualserver
   import: false
   issues:
-  - '#86 OBS public-URL access: direct GET (no creds) shows path-style is REJECTED by OBS (400 NotFoundBucketNameInPath)
-    and virtual-hosted (bucket.object-store...) does not resolve in public DNS; platform image-import
-    still 400 "Object Storage URL is invalid" (run 27244474565). Needs the platform-documented public-object-URL
-    form + bucket public-access policy - not resolvable by guessing URL form.'
+  - 're-test #86 with operator bucket terraform-vmimage-test + path-style URL (object-store.../terraform-vmimage-test/<key>.qcow2)'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
