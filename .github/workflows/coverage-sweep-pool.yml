@@ -80,8 +80,7 @@ jobs:
         env:
           # push -> 'untested' (discover unknowns, cheap: no known-green clusters);
           # schedule -> 'green' (regression); dispatch -> input (default green,untested).
-          # TEMP: push pinned to 'green' to trigger full green-56 regression (dispatch API blocked); reverted next commit.
-          SELECT_STATUS: ${{ github.event.inputs.select_status || (github.event_name == 'schedule' && 'green' || github.event_name == 'push' && 'green' || 'green,untested') }}
+          SELECT_STATUS: ${{ github.event.inputs.select_status || (github.event_name == 'schedule' && 'green' || github.event_name == 'push' && 'untested' || 'green,untested') }}
           SELECT_VPC: ${{ github.event.inputs.select_vpc || 'none,pool,self' }}
           SELECT_FAMILY: ${{ github.event.inputs.select_family || '' }}
         run: |
