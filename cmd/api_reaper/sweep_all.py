@@ -638,3 +638,5 @@ if __name__ == "__main__":
 # Manual sweep 2026-06-10 (8): reclaim TGWs leaked by D batch (run 27243446403) - account TGW max=3 exhausted.
 
 # Manual sweep 2026-06-10 (9): reclaim private_nat TGW + image bucket (run 27244474565).
+
+# Manual sweep 2026-06-10 (10): reclaim lb_listener partial-create leak (run 27258867414, LB server group attached).
