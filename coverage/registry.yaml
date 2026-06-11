@@ -72,11 +72,12 @@ cachestore_cluster:
   depends_on: []
   family: cachestore
   import: false
-  issues: []
+  issues:
+  - "400 invalid data (Server type) - server_type_name 'redis1v1m2' (docs example) rejected by platform; valid value only resolvable via cachestore master-data API, no TF data source exists"
   needs:
   - subnet_id
   parallel: normal
-  status: green
+  status: broken
   timeout_class: slow
   update: false
   vpc: pool
@@ -169,7 +170,7 @@ dns_hosted_zone:
   status: green
   timeout_class: fast
   update: false
-  vpc: none
+  vpc: pool
 dns_private_dns:
   cost: cheap
   depends_on: []
@@ -208,7 +209,7 @@ dns_record:
   status: green
   timeout_class: fast
   update: false
-  vpc: none
+  vpc: pool
 epas_cluster:
   cost: heavy
   depends_on: []
@@ -395,10 +396,11 @@ iam_user:
   depends_on: []
   family: iam
   import: false
-  issues: []
+  issues:
+  - 401 Unauthorized [HMAC] HMAC valid fail on user create (other iam_* resources sign OK); reproducible across runs - suspected provider/platform signing issue for iam_user create
   needs: []
   parallel: normal
-  status: green
+  status: broken
   timeout_class: fast
   update: false
   vpc: none
