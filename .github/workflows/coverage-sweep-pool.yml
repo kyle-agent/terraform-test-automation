@@ -80,9 +80,10 @@ jobs:
         env:
           # push -> 'untested' (discover unknowns, cheap: no known-green clusters);
           # schedule -> 'green' (regression); dispatch -> input (default green,untested).
-          SELECT_STATUS: ${{ github.event.inputs.select_status || (github.event_name == 'schedule' && 'green' || github.event_name == 'push' && 'untested' || 'green,untested') }}
+          # TEMP: push pinned to green + dns,loadbalancer to verify the green-56 fixes; reverted next commit.
+          SELECT_STATUS: ${{ github.event.inputs.select_status || (github.event_name == 'schedule' && 'green' || github.event_name == 'push' && 'green' || 'green,untested') }}
           SELECT_VPC: ${{ github.event.inputs.select_vpc || 'none,pool,self' }}
-          SELECT_FAMILY: ${{ github.event.inputs.select_family || '' }}
+          SELECT_FAMILY: ${{ github.event.inputs.select_family || (github.event_name == 'push' && 'dns,loadbalancer' || '') }}
         run: |
           python scripts/plan_matrix.py --github
           echo "----- derived plan -----"
