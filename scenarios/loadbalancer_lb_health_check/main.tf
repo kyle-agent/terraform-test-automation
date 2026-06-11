@@ -10,15 +10,17 @@ terraform {
 
 provider "samsungcloudplatformv2" {}
 
-# LB health check integration fixture. The platform requires a load balancer to
-# already exist in the chosen subnet before a health check can be created there
-# (400: "the chosen subnet does not contain a Load Balancer") -- the earlier
-# assumption that a health check is LB-independent was wrong (confirmed by the
-# green-56 regression). So this fixture provisions its own LB in the same subnet
-# first (same pattern as loadbalancer_lb_member), then the health check on top.
-# vpc_id/subnet_id come from the dependent-probe bootstrap (TF_VAR_*). With the
-# patched provider (#77 wait-for-ACTIVE + clean destroy) the LB applies/destroys
-# cleanly. All inputs have offline-safe defaults so `terraform validate` passes.
+# KNOWN ISSUE -- this scenario is registry status=broken. The platform requires a
+# load balancer to already exist in the chosen subnet before a health check can be
+# created (400: "the chosen subnet does not contain a Load Balancer"). Provisioning
+# an LB inside this fixture DOES satisfy that, but in the shared single-subnet pool
+# lane it creates a SECOND concurrent LB alongside loadbalancer_lb_member, and the
+# two contending LB operations hang terraform for the full 60m go-test budget,
+# poisoning the whole shard (run 68 / 27315496017: go-test 60m timeout, no matrix
+# produced, leaked LB -> bootstrap subnet teardown 409). Re-enabling needs LB
+# scenario isolation (a dedicated subnet per LB scenario, or a serialized LB lane)
+# -- see docs/findings/green-56-regression-and-fixes.md. Until then this fixture is
+# left in its minimal form (no LB) so `terraform validate` passes offline.
 
 variable "name_suffix" {
   type        = string
@@ -38,24 +40,7 @@ variable "subnet_id" {
   description = "Subnet for the health check. Integration supplies a real id via TF_VAR_subnet_id."
 }
 
-# The chosen subnet must contain a load balancer before the health check is
-# created (see header). Provision one in the same subnet first.
-resource "samsungcloudplatformv2_loadbalancer_loadbalancer" "regr" {
-  loadbalancer_create = {
-    name                     = "rhclb${var.name_suffix}"
-    description              = "regression-test-lb for health check"
-    layer_type               = "L4"
-    firewall_enabled         = false
-    firewall_logging_enabled = false
-    vpc_id                   = var.vpc_id
-    subnet_id                = var.subnet_id
-  }
-}
-
 resource "samsungcloudplatformv2_loadbalancer_lb_health_check" "regr" {
-  # Ensure the subnet already contains a load balancer before creating the check.
-  depends_on = [samsungcloudplatformv2_loadbalancer_loadbalancer.regr]
-
   lb_health_check_create = {
     name                  = "rhc${var.name_suffix}"
     description           = "regression-test health check"

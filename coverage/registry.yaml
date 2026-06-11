@@ -449,12 +449,13 @@ loadbalancer_lb_health_check:
   depends_on: []
   family: loadbalancer
   import: false
-  issues: []
+  issues:
+  - "400 'the chosen subnet does not contain a Load Balancer' - health check needs an LB present in its subnet first. Provisioning one in-fixture works in isolation but in the shared single-subnet pool lane it runs a 2nd concurrent LB alongside loadbalancer_lb_member; the contending LB ops hang terraform for the full 60m go-test budget and poison the whole shard (run 68/27315496017: timeout, no matrix, leaked LB -> subnet teardown 409). Needs LB-scenario isolation (dedicated subnet or serialized LB lane) before re-enabling. See docs/findings/green-56-regression-and-fixes.md"
   needs:
   - subnet_id
   - vpc_id
   parallel: normal
-  status: green
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool
