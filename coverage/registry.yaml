@@ -1117,14 +1117,13 @@ vpc_vpc_endpoint:
   family: vpc
   import: false
   issues:
-  - 'chain: ENDPOINT-type subnet ok, .70 IP ok, but resource_key rejected for BOTH 1.1.1.1 and the real
-    OBS IP 112.107.105.22 (run 27406093988) - for OBS the key is likely an internal service KEY/uuid (doc
-    example 07c5364702384471b650147321b52173), not an IP; needs the real OBS resource key from console/vendor.'
+  - 'retry: resource_key = account id (OBS is account-namespaced; doc example key is a 32-hex account-id-shaped
+    value; IPs 400ed)'
   needs:
   - subnet_id
   - vpc_id
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool

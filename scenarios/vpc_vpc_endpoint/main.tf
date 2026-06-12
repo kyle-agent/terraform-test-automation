@@ -44,13 +44,19 @@ variable "resource_type" {
   default     = "OBS"
 }
 
-# For OBS the resource_key is the REAL OBS service IP - the platform validates
-# it ("Resource Key is not valid : 1.1.1.1", run 27401616476). 112.107.105.22 =
-# object-store.kr-west1.e.samsungsdscloud.com as resolved on 2026-06-12.
+# OBS is account-namespaced ({account_id}:{bucket} path form, cf. virtualserver
+# image #86) and the doc example resource_key (07c5364702384471b650147321b52173)
+# is a 32-hex id of the same shape as an account id - so for OBS the resource
+# key is the ACCOUNT ID, not an IP (1.1.1.1 and the real OBS IP both 400ed).
 variable "resource_key" {
   type        = string
-  description = "Endpoint resource key (for OBS: the OBS service IP)."
-  default     = "112.107.105.22"
+  description = "Endpoint resource key (for OBS: the account id). Harness injects TF_VAR_resource_key or account id is used."
+  default     = ""
+}
+
+variable "account_id" {
+  type    = string
+  default = "00000000000000000000000000000000"
 }
 
 # For OBS the docs say resource_info is the service URL (https://xxx...).
@@ -88,7 +94,7 @@ resource "samsungcloudplatformv2_vpc_vpc_endpoint" "regr" {
   endpoint_ip_address = var.endpoint_ip_address
   name                = "${var.endpoint_name}${var.name_suffix}"
   resource_info       = var.resource_info
-  resource_key        = var.resource_key
+  resource_key        = var.resource_key != "" ? var.resource_key : var.account_id
   resource_type       = var.resource_type
   subnet_id           = samsungcloudplatformv2_vpc_subnet.regr_endpoint.id
   vpc_id              = var.vpc_id
