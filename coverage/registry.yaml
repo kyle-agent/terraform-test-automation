@@ -85,11 +85,10 @@ certificate_manager:
   depends_on: []
   family: certificate
   import: false
-  issues:
-  - 500 ISE (platform)
+  issues: []
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -231,7 +230,7 @@ eventstreams_basic:
   needs:
   - subnet_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: slow
   update: false
   vpc: pool
@@ -612,11 +611,13 @@ searchengine_cluster:
   depends_on: []
   family: searchengine
   import: false
-  issues: []
+  issues:
+  - '#83: apply 400 "Invalid License." (run 27399112864) - fixture omits license (SDK NullableString).
+    dbaas_probe searchengine-license mode iterates omitted/""/null/enum variants.'
   needs:
   - subnet_id
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: slow
   update: false
   vpc: pool
@@ -746,11 +747,14 @@ sqlserver_cluster:
   depends_on: []
   family: sqlserver
   import: false
-  issues: []
+  issues:
+  - '#83: apply 400 "Invalid Engine Version." (run 27399112864) - license="" now accepted; the engine-version
+    id picked by the data source (first non-EOS) is rejected. dbaas_probe sqlserver-versions mode iterates
+    every id to find a creatable one.'
   needs:
   - subnet_id
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: slow
   update: false
   vpc: pool
@@ -842,11 +846,15 @@ vpc_cidr:
   depends_on: []
   family: vpc
   import: false
-  issues: []
+  issues:
+  - '#60: Delete (vpc 1.2 DELETE /v1/vpcs/{id}/cidrs/{cidrId}) now reaches the API but returns 403 Forbidden
+    "You do not have permission to Action" (run 27399112864) - endpoint exists; the test key lacks the
+    action permission. Apply/replan idempotent; no leak (pool VPC teardown removes the CIDR). Needs an
+    IAM grant or stays destroy-blocked.'
   needs:
   - vpc_id
   parallel: low
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool
@@ -909,11 +917,14 @@ vpc_private_nat_ip:
   depends_on: []
   family: vpc
   import: false
-  issues: []
+  issues:
+  - apply 400 "Cannot found the Transit Gateway in Connectable state" (run 27399112864, serialized - NOT
+    quota this time; same as vpc_private_nat). Connectable requires an ACTIVE TGW firewall connection
+    (api-test-automation domain knowledge) - platform state-machine constraint.
   needs:
   - ip_address
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool
@@ -1099,15 +1110,12 @@ vpc_vpc_endpoint:
   depends_on: []
   family: vpc
   import: false
-  issues:
-  - platform-side 400 'VPC Endpoint Type Subnet not found' even with a real pool subnet_id (run 27121247070);
-    OBS endpoint type not creatable on this subnet - not a fixture defect, blocked pending platform/AZ
-    endpoint-type support
+  issues: []
   needs:
   - subnet_id
   - vpc_id
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool

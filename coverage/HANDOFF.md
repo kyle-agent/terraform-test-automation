@@ -10,7 +10,54 @@ multi-agent architecture + session bootstrap), then this file, then
 
 ---
 
-## 0Z. Session 2026-06-09/10 (LATEST) — provider-fix verification, green 41→56
+## 0Y. Session 2026-06-12 (LATEST) — domain-knowledge-driven fixes, green 56→57+, #83 cracked for eventstreams
+
+**Branch:** `claude/wonderful-keller-h05ucp` (all 3 repos; provider branch == fork main b5b7197).
+**Method:** multi-agent — inspection (registry/non-green triage), domain research (api-test-automation
+`data/api_docs.json` = scraped FULL API request schemas + `validated-facts`), provider audit (fix presence
++ open issues), plus implementation agents (peering probe, dbaas probe extension).
+
+### Sweep run 27399112864 results (no leaks; all teardowns clean)
+- **eventstreams_basic → GREEN** (#83 CRACKED): the bare 400 value_error was THREE fixture defects found
+  via the scraped API schema: (1) cluster `name` pattern is `^[a-zA-Z]*$` — the old default `regr-evs`
+  hyphen was rejected; (2) `akhq_enabled=true` without akhq creds/node group is an invalid topology → off;
+  (3) v1.1 create requires `service_watch_log_collection`. Full lifecycle green.
+- sqlserver_cluster: `license=""` (was a retail key) got PAST the parse error → now named 400
+  **"Invalid Engine Version"** (data-source first-non-EOS id rejected) → dbaas_probe `sqlserver-versions`
+  mode iterates all ids.
+- searchengine_cluster: named 400 **"Invalid License"** → dbaas_probe `searchengine-license` mode
+  iterates omitted/""/null/OPEN_SOURCE/BASIC/ENTERPRISE.
+- vpc_cidr: Delete impl (vpc 1.2) now reaches the API — 403 changed from "Action definition is not
+  found" to **"You do not have permission to Action"** = endpoint EXISTS, key lacks the IAM action.
+- vpc_private_nat_ip: serialized retest still 400 "TGW not in Connectable state" — same platform
+  state-machine constraint as vpc_private_nat (Connectable = ACTIVE TGW firewall connection).
+
+### Key domain knowledge mined from api-test-automation (USE THIS)
+- `data/api_docs.json` (1372 endpoints, 2306 models) holds the full request schemas incl. required
+  flags + patterns + enums — this is what cracked #83. `data/api_bodies.json` = doc-template bodies.
+- **vpc_peering**: the API suite got create **202** with body {requester_vpc_id, approver_vpc_id,
+  approver_vpc_account_id, name, description, tags:[]} — NO approver_vpc_name — and approval body
+  `{"type":"CREATE_APPROVE"}` (400 while CREATING; retry). Provider sends `description: null` always
+  (SDK NullableString constructor bug), omits tags, header `Scp-API-Version: vpc 1.1`.
+  → `cmd/peering_probe/` bisects 6 variants (a-f) to isolate the 400 trigger (#61).
+- subnet create has `type` enum **GENERAL|LOCAL|VPC_ENDPOINT** → vpc_vpc_endpoint fixture now creates
+  its own VPC_ENDPOINT-type subnet 192.168.0.64/27 in the pool VPC (flip → untested).
+- certificate_manager's "platform 500" happened sending placeholder PEM; API suite proves cert creation
+  works → fixture now generates real self-signed PEM via hashicorp/tls (flip → untested).
+- dns_public_domain_name: deliberately NOT retried — a successful create registers a REAL paid domain
+  with NO delete API.
+
+### In-flight / next
+- Push of this commit triggers: coverage sweep (certificate_manager novpc + vpc_vpc_endpoint pool),
+  peering-probe (2 VPCs, leak-0), dbaas-probe (`sqlserver-versions searchengine-license`; flip the
+  workflow run arg back to `cleanup` after). Read those run logs, apply verdicts to the registry.
+- Remaining broken after this wave = permission (vpc_cidr destroy, iam×2, loggingaudit,
+  filestorage_replication), platform (TGW family ×4 + private_nat ×2, lb_listener 500-104,
+  dns/budget/backup 500, peering ×3 pending probe), DBaaS ×2 pending probe.
+
+---
+
+## 0Z. Session 2026-06-09/10 — provider-fix verification, green 41→56
 
 **Branch:** `claude/youthful-cray-608zi` (BOTH repos). **Resume:** read this section first.
 **Result:** registry green **41 → 56 (+15)**. All work committed+pushed on the branch in both
