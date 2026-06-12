@@ -1113,8 +1113,8 @@ vpc_vpc_endpoint:
   family: vpc
   import: false
   issues:
-  - VPC_ENDPOINT-type subnet fix WORKS (got past "Subnet not found"); .66 rejected "IP already in use"
-    (run 27401023537) - low subnet addresses platform-reserved; retesting with .70.
+  - 'progress chain: VPC_ENDPOINT-type subnet ok -> reserved-IP ok (.70) -> 400 "Resource Key is not valid
+    : 1.1.1.1" (run 27401616476); retrying with the real OBS service IP 112.107.105.22.'
   needs:
   - subnet_id
   - vpc_id
@@ -1128,15 +1128,10 @@ vpc_vpc_peering:
   depends_on: []
   family: vpc
   import: false
-  issues:
-  - '#61: provider now CORRECTLY serializes approver_vpc_name (verified: local json.Marshal of VpcPeeringCreateRequest
-    emits "approver_vpc_name"; remote branch SDK + source-build confirmed), set from explicit fixture
-    value, yet API still returns 400 "no value given for required property approver_vpc_name / Reason:
-    Invalid error data" (run 27238242719). Not provider-fixable - API-side contract issue; needs vendor/API
-    investigation.'
+  issues: []
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: self
@@ -1146,11 +1141,9 @@ vpc_vpc_peering_approval:
   family: vpc
   import: false
   issues:
-  - '#61: provider now CORRECTLY serializes approver_vpc_name (verified: local json.Marshal of VpcPeeringCreateRequest
-    emits "approver_vpc_name"; remote branch SDK + source-build confirmed), set from explicit fixture
-    value, yet API still returns 400 "no value given for required property approver_vpc_name / Reason:
-    Invalid error data" (run 27238242719). Not provider-fixable - API-side contract issue; needs vendor/API
-    investigation.'
+  - '#61 ROOT CAUSE FOUND (peering probe 27401023616): the create 400 was the provider sending "description":
+    null (SDK NullableString) - fixed in provider client vpcv1/vpc.go. Approval itself is UNTESTABLE single-account:
+    platform 400 "Approval is not required for Same Account VPC peering" - needs a second account to exercise.'
   needs: []
   parallel: normal
   status: broken
@@ -1162,15 +1155,10 @@ vpc_vpc_peering_rule:
   depends_on: []
   family: vpc
   import: false
-  issues:
-  - '#61: provider now CORRECTLY serializes approver_vpc_name (verified: local json.Marshal of VpcPeeringCreateRequest
-    emits "approver_vpc_name"; remote branch SDK + source-build confirmed), set from explicit fixture
-    value, yet API still returns 400 "no value given for required property approver_vpc_name / Reason:
-    Invalid error data" (run 27238242719). Not provider-fixable - API-side contract issue; needs vendor/API
-    investigation.'
+  issues: []
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: self

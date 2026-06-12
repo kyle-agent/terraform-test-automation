@@ -55,6 +55,8 @@ ENGINES = {
 
 BODIES_PATHS = [
     os.environ.get("API_BODIES", ""),
+    "/tmp/apitest/data/api_bodies.json",
+    "/tmp/api-test-automation/data/api_bodies.json",
     "/tmp/apitest/framework/api_bodies.json",
     "/tmp/api-test-automation/framework/api_bodies.json",
 ]

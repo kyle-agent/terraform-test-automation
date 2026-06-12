@@ -44,13 +44,13 @@ variable "resource_type" {
   default     = "OBS"
 }
 
-# For FS/OBS the provider docs say resource_key is an IP address ("1.1.1.1").
-# This is the target service IP, NOT an address inside the pool subnet, so it is
-# left as a routable-looking public-ish IP rather than a 192.168.0.0/27 address.
+# For OBS the resource_key is the REAL OBS service IP - the platform validates
+# it ("Resource Key is not valid : 1.1.1.1", run 27401616476). 112.107.105.22 =
+# object-store.kr-west1.e.samsungsdscloud.com as resolved on 2026-06-12.
 variable "resource_key" {
   type        = string
-  description = "Endpoint resource key (for FS/OBS this is the target service IP)."
-  default     = "1.1.1.1"
+  description = "Endpoint resource key (for OBS: the OBS service IP)."
+  default     = "112.107.105.22"
 }
 
 # For OBS the docs say resource_info is the service URL (https://xxx...).

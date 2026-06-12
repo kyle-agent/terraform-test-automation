@@ -57,15 +57,13 @@ resource "samsungcloudplatformv2_vpc_vpc_peering" "regr" {
   description             = "regr-test"
 }
 
-resource "samsungcloudplatformv2_vpc_vpc_peering_approval" "regr" {
-  type           = "CREATE_APPROVE"
-  vpc_peering_id = samsungcloudplatformv2_vpc_vpc_peering.regr.id
-}
-
+# NO approval resource: same-account peering needs none - the platform rejects
+# the approval call outright with 400 "Approval is not required for Same
+# Account VPC peering" (peering probe run 27401023616). The peering goes
+# CREATING -> ACTIVE on its own (~16 min) and the provider Create waits for
+# ACTIVE, so the rule can depend on the peering directly.
 resource "samsungcloudplatformv2_vpc_vpc_peering_rule" "regr" {
   destination_cidr     = var.destination_cidr
   destination_vpc_type = var.destination_vpc_type
   vpc_peering_id       = samsungcloudplatformv2_vpc_vpc_peering.regr.id
-
-  depends_on = [samsungcloudplatformv2_vpc_vpc_peering_approval.regr]
 }
