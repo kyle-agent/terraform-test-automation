@@ -67,7 +67,10 @@ resource "samsungcloudplatformv2_sqlserver_cluster" "regr" {
     database_user_password = "Regr1234!@"
     database_port          = 2866
     database_collation     = "SQL_Latin1_General_CP1_CI_AS"
-    license                = "HMWJ3-KY3J2-NMVD7-KG4JR-X2G8G"
+    # API doc example sends license as an empty string (platform-supplied
+    # license); the retail product key previously here is the prime suspect for
+    # the bare 400 value_error (#83 probe: "likely license").
+    license                = ""
     databases = [
       {
         database_name = "regrdb"
