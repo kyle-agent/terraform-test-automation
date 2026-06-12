@@ -613,11 +613,13 @@ searchengine_cluster:
   depends_on: []
   family: searchengine
   import: false
-  issues: []
+  issues:
+  - '#83 PROGRESS: create ACCEPTED (OpenSearch image + license omitted, probe 202) but cluster provisions
+    to state:FAILED (run 27406093988) - platform-side; pool subnet/VPC pinned by FAILED cluster (reaped).'
   needs:
   - subnet_id
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: slow
   update: false
   vpc: pool
@@ -747,11 +749,14 @@ sqlserver_cluster:
   depends_on: []
   family: sqlserver
   import: false
-  issues: []
+  issues:
+  - '#83 PROGRESS: create now ACCEPTED (base non-KB engine version, probe 27403108280 got 202) but the
+    cluster provisions to state:FAILED on the pool subnet (run 27406093988) - platform-side provisioning
+    failure; teardown left pool subnet/VPC pinned by the FAILED cluster (reaped).'
   needs:
   - subnet_id
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: slow
   update: false
   vpc: pool
@@ -1108,13 +1113,14 @@ vpc_vpc_endpoint:
   family: vpc
   import: false
   issues:
-  - 'progress chain: VPC_ENDPOINT-type subnet ok -> reserved-IP ok (.70) -> 400 "Resource Key is not valid
-    : 1.1.1.1" (run 27401616476); retrying with the real OBS service IP 112.107.105.22.'
+  - 'chain: ENDPOINT-type subnet ok, .70 IP ok, but resource_key rejected for BOTH 1.1.1.1 and the real
+    OBS IP 112.107.105.22 (run 27406093988) - for OBS the key is likely an internal service KEY/uuid (doc
+    example 07c5364702384471b650147321b52173), not an IP; needs the real OBS resource key from console/vendor.'
   needs:
   - subnet_id
   - vpc_id
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool
@@ -1123,10 +1129,14 @@ vpc_vpc_peering:
   depends_on: []
   family: vpc
   import: false
-  issues: []
+  issues:
+  - '#61: STILL "no value given for required property approver_vpc_name / Invalid error data" with the
+    null-description provider fix live AND no synthetic name (run 27406093988) - suspect the provider-side
+    derive/fail-fast guard or another null field; NEXT: read provider vpcpeering.go Create derive path
+    and add a request-body debug log. Partial create leaked VPCs (reaped).'
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: self
@@ -1150,10 +1160,12 @@ vpc_vpc_peering_rule:
   depends_on: []
   family: vpc
   import: false
-  issues: []
+  issues:
+  - 'blocked: VPC quota exhausted by leaked pool VPCs + peering leak during run 27406093988; never reached
+    the rule. Retest after peering create is fixed.'
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: self
