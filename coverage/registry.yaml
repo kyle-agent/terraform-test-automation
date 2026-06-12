@@ -330,9 +330,9 @@ iam_group_member:
   family: iam
   import: false
   issues:
-  - 'STILL BROKEN after depends_on serialization (run 27417604819): apply fails "Error creating user
-    ... Could not create user, unexpected error: 401 Unauthorized Reason: [HMAC] HMAC valid fail" -
-    suspected HMAC signing race in provider for IAM writes persists.'
+  - 'STILL BROKEN after depends_on serialization (run 27417604819): apply fails "Error creating user ...
+    Could not create user, unexpected error: 401 Unauthorized Reason: [HMAC] HMAC valid fail" - suspected
+    HMAC signing race in provider for IAM writes persists.'
   needs: []
   parallel: normal
   status: broken
@@ -539,12 +539,12 @@ loggingaudit_trail:
   family: loggingaudit
   import: false
   issues:
-  - 'STILL BROKEN (run 27417604819): apply fails "Could not create Trail, unexpected error: 409 Conflict
-    Reason: Trail DBDuplicateEntry with ACCOUNT_ID 9b13e0d04b7544ad8b66905cd94888bd TRAIL_NAME regr-audit-trail"
-    - orphaned trail from prior decode-failure run blocks re-create; reap regr-audit-trail then retest.'
+  - 'retest: 409 DBDuplicateEntry was the orphaned trail from the decode-failure run (SDK fix verified
+    - decode error gone); trail_name now per-run unique. Orphan regr-audit-trail needs a reaper/console
+    delete eventually.'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: none

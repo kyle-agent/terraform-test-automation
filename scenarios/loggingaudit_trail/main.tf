@@ -29,6 +29,7 @@ variable "trail_name" {
   type        = string
   description = "Name of the audit trail."
   default     = "regr-audit-trail"
+  # NOTE: overridden below with the per-run suffix to dodge 409 DBDuplicateEntry
 }
 
 # The trail API requires a REAL pre-existing OBS bucket (bucket_name) - create
@@ -65,7 +66,7 @@ resource "samsungcloudplatformv2_loggingaudit_trail" "regr" {
   # Required by the provider schema (run 27409993978 failed validate without
   # it); same account since organization_trail_yn = "N".
   log_archive_account_id = var.account_id
-  trail_name             = var.trail_name
+  trail_name             = "${var.trail_name}${var.suffix}"
   trail_description      = "Regression fixture: organization-wide audit trail."
   bucket_name            = local.trail_bucket
   depends_on             = [terraform_data.trail_bucket]
