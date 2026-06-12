@@ -62,15 +62,15 @@ variable "trail_bucket_region" {
 # and should be overridden via TF_VAR_* for a real integration run.
 resource "samsungcloudplatformv2_loggingaudit_trail" "regr" {
   account_id = var.account_id
-  # log_archive_account_id omitted: only meaningful for organization trails
-  # (organization_trail_yn = "N" here); the provider now omits unset optionals
-  # instead of serializing JSON null.
-  trail_name        = var.trail_name
-  trail_description = "Regression fixture: organization-wide audit trail."
-  bucket_name       = local.trail_bucket
-  depends_on        = [terraform_data.trail_bucket]
-  bucket_region     = var.trail_bucket_region
-  trail_save_type   = "JSON"
+  # Required by the provider schema (run 27409993978 failed validate without
+  # it); same account since organization_trail_yn = "N".
+  log_archive_account_id = var.account_id
+  trail_name             = var.trail_name
+  trail_description      = "Regression fixture: organization-wide audit trail."
+  bucket_name            = local.trail_bucket
+  depends_on             = [terraform_data.trail_bucket]
+  bucket_region          = var.trail_bucket_region
+  trail_save_type        = "JSON"
 
   log_type_total_yn      = "Y"
   log_verification_yn    = "Y"

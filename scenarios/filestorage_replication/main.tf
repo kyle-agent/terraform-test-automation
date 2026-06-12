@@ -18,8 +18,8 @@ variable "replication_name" {
 
 variable "target_region" {
   type        = string
-  description = "Target region for the replica. Integration supplies a real region via TF_VAR_target_region."
-  default     = "kr-west1"
+  description = "Target region for the replica. Same-region replication 400s 'Replication is not available.' (run 27409993978) - default to CROSS-region."
+  default     = "kr-east1"
 }
 
 variable "volume_id" {
