@@ -79,3 +79,5 @@ jobs:
 # manual sweep trigger: reclaim leaked pool VPC from run 27095226766 (2026-06-07)
 
 # final cleanup sweep 2026-06-08: drain settled DBaaS clusters + free pinned subnets/VPCs
+
+# touch 2026-06-12: reap 4 VPCs + partial peerings leaked by run 27402349483 (approver_vpc_name-mismatch 400 left half-created peerings pinning the VPCs)
