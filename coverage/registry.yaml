@@ -241,7 +241,9 @@ filestorage_replication:
   depends_on: []
   family: filestorage
   import: false
-  issues: []
+  issues:
+  - named 400 "Replication is not available." after the cifs_password:null provider fix (run 27409993978)
+    - retrying CROSS-region (kr-west1 volume -> kr-east1 target); same-region replication may be unsupported.
   needs:
   - volume_id
   parallel: normal
@@ -329,7 +331,10 @@ iam_group_member:
   depends_on: []
   family: iam
   import: false
-  issues: []
+  issues:
+  - 'retest: 401 [HMAC] HMAC valid fail happened on the INLINE iam_user create (standalone iam_user scenario
+    is green, fixture identical) - suspected transient/signing race on consecutive IAM writes; if it reproduces,
+    audit the provider request signer for timestamp reuse.'
   needs: []
   parallel: normal
   status: untested
@@ -535,7 +540,10 @@ loggingaudit_trail:
   depends_on: []
   family: loggingaudit
   import: false
-  issues: []
+  issues:
+  - 'retest: provider schema requires log_archive_account_id (validate failed when omitted) - re-added
+    with the injected account id; real OBS bucket + real account_id wired; provider null-optionals fix
+    live.'
   needs: []
   parallel: normal
   status: untested
