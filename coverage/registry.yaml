@@ -251,7 +251,7 @@ filestorage_replication:
   needs:
   - volume_id
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
@@ -343,7 +343,7 @@ iam_group_member:
     workaround: depends_on to serialize the two creates.'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -554,7 +554,7 @@ loggingaudit_trail:
     trail.'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
