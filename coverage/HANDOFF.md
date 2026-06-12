@@ -47,6 +47,23 @@ multi-agent architecture + session bootstrap), then this file, then
 - dns_public_domain_name: deliberately NOT retried — a successful create registers a REAL paid domain
   with NO delete API.
 
+### Mid-session addendum (2026-06-12 ~08:40)
+- **peering residual 400**: with the provider null-description fix live, both peering scenarios STILL
+  fail "no value given ... approver_vpc_name" (run 27402349483) -> cause = fixtures passed a SYNTHETIC
+  approver_vpc_name mismatching the real approver VPC name (probe variant b with the CORRECT name
+  parsed fine). Fixtures now omit it (provider derives from id); retest pending. The failed applies
+  left half-created peerings pinning 4 VPCs; reaper run 27403108300 deleted 12 resources but several
+  VPCs still 409 - one pinned subnet (a7793ccc...) belongs to a STALE pool VPC `rpv273154960170`
+  leaked by an earlier session AND is being used by the in-flight dbaas probe. Re-reap after.
+- **vpc_vpc_endpoint progress chain**: ENDPOINT-type subnet ok -> reserved-IP ok (.70) ->
+  "Resource Key is not valid : 1.1.1.1" -> retry with real OBS IP 112.107.105.22 pending.
+- **dbaas probe v2** (fixture-mirror bodies, fdc0076): sqlserver iterates all 20 engine ids;
+  searchengine iterates 5 versions x {omitted,null} license. Run (push d77ec3b) in_progress ~30min
+  = almost certainly a 202 (CREATING-trap wait before self-delete). Harvest its log for the
+  winning combination, then pin the fixtures accordingly.
+- searchengine string licenses ("", OPEN_SOURCE, ...) are SCHEMA-rejected; omitted/null reach the
+  named InvalidLicense check -> license validity is engine-version-dependent.
+
 ### In-flight / next
 - Push of this commit triggers: coverage sweep (certificate_manager novpc + vpc_vpc_endpoint pool),
   peering-probe (2 VPCs, leak-0), dbaas-probe (`sqlserver-versions searchengine-license`; flip the
