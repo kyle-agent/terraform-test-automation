@@ -29,6 +29,12 @@ resource "samsungcloudplatformv2_iam_group" "regr" {
 resource "samsungcloudplatformv2_iam_user" "regr" {
   user_name   = "regr-gm-user${var.name_suffix}"
   description = "regression-test user for membership"
+
+  # Deterministic 401 [HMAC] "HMAC valid fail" on this create (runs
+  # 27410572244 + 27410597752) while the standalone iam_user scenario is
+  # green. The only difference is that terraform creates the group and the
+  # user CONCURRENTLY here - serialize them to test the signing-race theory.
+  depends_on = [samsungcloudplatformv2_iam_group.regr]
 }
 
 resource "samsungcloudplatformv2_iam_group_member" "regr" {
