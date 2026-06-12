@@ -87,7 +87,7 @@ resource "samsungcloudplatformv2_loadbalancer_lb_listener" "regr" {
     persistence     = "SOURCE_IP"
     # routing_action enum is {LB_SERVER_GROUP, URL_REDIRECT} (run 27171780178 400);
     # ROUNDROBIN is an lb_method, not a listener routing_action.
-    routing_action  = "LB_SERVER_GROUP"
+    routing_action = "LB_SERVER_GROUP"
     # L4 listeners require session_duration_time (run 27210071644 400
     # "session_duration_time is required for L4 protocol").
     session_duration_time = 120

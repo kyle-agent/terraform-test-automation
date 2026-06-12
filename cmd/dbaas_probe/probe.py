@@ -34,8 +34,12 @@ import string
 import sys
 import time
 
-from framework.client import ApiClient, MutationBlocked
-from framework.config import settings
+try:  # api-test-automation pre-restructure layout
+    from framework.client import ApiClient, MutationBlocked
+    from framework.config import settings
+except ModuleNotFoundError:  # post-restructure: framework/ -> core/
+    from core.http_client import ApiClient, MutationBlocked
+    from core.config import settings
 
 # engine -> (service-host name, api_bodies.json create-body key)
 ENGINES = {

@@ -76,8 +76,8 @@ resource "samsungcloudplatformv2_vpc_subnet" "regr_endpoint" {
 
 variable "endpoint_ip_address" {
   type        = string
-  description = "IP address for the endpoint, inside the VPC_ENDPOINT subnet 192.168.0.64/27 (.65 is the gateway)."
-  default     = "192.168.0.66"
+  description = "IP address for the endpoint, inside the VPC_ENDPOINT subnet 192.168.0.64/27 (low addresses .65-.69 are platform-reserved)."
+  default     = "192.168.0.70"
 }
 
 # VPC endpoint fixture guarding networking coverage: a private endpoint to a

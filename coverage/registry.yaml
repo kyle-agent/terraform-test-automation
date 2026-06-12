@@ -85,10 +85,12 @@ certificate_manager:
   depends_on: []
   family: certificate
   import: false
-  issues: []
+  issues:
+  - '#82: apply 500 "Creating certificate has been failed" even with REAL self-signed PEM generated in-fixture
+    via hashicorp/tls (run 27401023537) - placeholder-PEM hypothesis disproven; genuinely platform-side.'
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: none
@@ -1110,7 +1112,9 @@ vpc_vpc_endpoint:
   depends_on: []
   family: vpc
   import: false
-  issues: []
+  issues:
+  - VPC_ENDPOINT-type subnet fix WORKS (got past "Subnet not found"); .66 rejected "IP already in use"
+    (run 27401023537) - low subnet addresses platform-reserved; retesting with .70.
   needs:
   - subnet_id
   - vpc_id

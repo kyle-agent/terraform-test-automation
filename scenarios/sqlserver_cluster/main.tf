@@ -70,7 +70,7 @@ resource "samsungcloudplatformv2_sqlserver_cluster" "regr" {
     # API doc example sends license as an empty string (platform-supplied
     # license); the retail product key previously here is the prime suspect for
     # the bare 400 value_error (#83 probe: "likely license").
-    license                = ""
+    license = ""
     databases = [
       {
         database_name = "regrdb"

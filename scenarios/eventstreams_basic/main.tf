@@ -66,8 +66,8 @@ resource "samsungcloudplatformv2_eventstreams_cluster" "regression" {
   is_combined  = true
   # Required (non-nullable serialization) in the v1.1 create API.
   service_watch_log_collection = true
-  allowable_ip_addresses  = var.allowable_ip_addresses
-  dbaas_engine_version_id = local.eventstreams_engine_version_id
+  allowable_ip_addresses       = var.allowable_ip_addresses
+  dbaas_engine_version_id      = local.eventstreams_engine_version_id
 
   # Required by the provider schema (v3.x). subnet_id is top-level; there is no
   # security_group_id / vpc_id argument on this resource anymore.

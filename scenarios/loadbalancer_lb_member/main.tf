@@ -117,8 +117,8 @@ resource "samsungcloudplatformv2_loadbalancer_lb_member" "regr" {
     member_ip     = samsungcloudplatformv2_virtualserver_server.regr.networks["nic0"].fixed_ip
     member_port   = 80
     member_weight = 1
-    member_state  = "ENABLE"  # enum: ENABLE | DISABLE
+    member_state  = "ENABLE" # enum: ENABLE | DISABLE
     object_id     = samsungcloudplatformv2_virtualserver_server.regr.id
-    object_type   = "VM"      # enum: VM | BM | MANUAL | MNGC; VM requires object_id
+    object_type   = "VM" # enum: VM | BM | MANUAL | MNGC; VM requires object_id
   }
 }
