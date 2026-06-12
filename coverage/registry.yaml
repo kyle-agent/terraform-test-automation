@@ -242,12 +242,16 @@ filestorage_replication:
   family: filestorage
   import: false
   issues:
-  - named 400 "Replication is not available." after the cifs_password:null provider fix (run 27409993978)
-    - retrying CROSS-region (kr-west1 volume -> kr-east1 target); same-region replication may be unsupported.
+  - 'USER WAS RIGHT - not an account feature: cross-region (kr-west1 vol -> kr-east1) made apply+replan
+    GREEN (run 27410597752; same-region was the "Replication is not available" 400). NEW blocker = provider
+    Delete does not implement the required sequence (API: "Delete Replication Policy: paused > delete"
+    before deleting) -> destroy 400 + the orphaned replication pinned the pool volume (leak; reaper may
+    need the pause>delete sequence too). PROVIDER-FIXABLE. Also the teardown hit the #80-pattern SDK decode
+    bug in filestorage ([]ValidationErrorModel).'
   needs:
   - volume_id
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool
@@ -332,12 +336,14 @@ iam_group_member:
   family: iam
   import: false
   issues:
-  - 'retest: 401 [HMAC] HMAC valid fail happened on the INLINE iam_user create (standalone iam_user scenario
-    is green, fixture identical) - suspected transient/signing race on consecutive IAM writes; if it reproduces,
-    audit the provider request signer for timestamp reuse.'
+  - 'DETERMINISTIC (reproduced twice, runs 27410572244+27410597752): inline iam_user create 401 [HMAC]
+    HMAC valid fail while the standalone iam_user scenario (identical resource) is green. Difference =
+    terraform creates iam_group AND iam_user CONCURRENTLY in this fixture -> suspected signing race (shared
+    timestamp/signature state) in the provider request signer for parallel IAM writes. PROVIDER-INVESTIGATE;
+    workaround: depends_on to serialize the two creates.'
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: none
@@ -541,12 +547,14 @@ loggingaudit_trail:
   family: loggingaudit
   import: false
   issues:
-  - 'retest: provider schema requires log_archive_account_id (validate failed when omitted) - re-added
-    with the injected account id; real OBS bucket + real account_id wired; provider null-optionals fix
-    live. (fixture commit landed in follow-up)'
+  - 'progressed validate->apply (real bucket + real account_id + null-optionals fix). NEW blocker: provider/SDK
+    response decode fails "json: unknown field iam_role_id / Invalid error data" - the vendored SDK trail
+    response model is MISSING the iam_role_id field (strict decoder); the trail may actually be created
+    server-side. PROVIDER-FIXABLE (add field to vendored SDK model). Check console/API for an orphaned
+    trail.'
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: none

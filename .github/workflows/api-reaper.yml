@@ -83,3 +83,4 @@ jobs:
 # touch 2026-06-12: reap 4 VPCs + partial peerings leaked by run 27402349483 (approver_vpc_name-mismatch 400 left half-created peerings pinning the VPCs)
 # touch 2026-06-12b: re-reap stale VPCs (rpv273154960170 etc.) now that the dbaas probe clusters are gone
 # touch 2026-06-12c: reap run-27406093988 leaks (2 pool VPCs pinned by FAILED DBaaS clusters + peering VPCs; account at 5/5 quota)
+# touch 2026-06-12d: reap orphaned filestorage replication + pinned pool volume fff1a72c (run 27410597752)
