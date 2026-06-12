@@ -241,12 +241,11 @@ filestorage_replication:
   depends_on: []
   family: filestorage
   import: false
-  issues:
-  - replication not available (account feature)
+  issues: []
   needs:
   - volume_id
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
@@ -330,11 +329,10 @@ iam_group_member:
   depends_on: []
   family: iam
   import: false
-  issues:
-  - iam_user 401 HMAC (account perm)
+  issues: []
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -537,11 +535,10 @@ loggingaudit_trail:
   depends_on: []
   family: loggingaudit
   import: false
-  issues:
-  - 403 forbidden (account perm)
+  issues: []
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -849,10 +846,11 @@ vpc_cidr:
   family: vpc
   import: false
   issues:
-  - '#60: Delete (vpc 1.2 DELETE /v1/vpcs/{id}/cidrs/{cidrId}) now reaches the API but returns 403 Forbidden
-    "You do not have permission to Action" (run 27399112864) - endpoint exists; the test key lacks the
-    action permission. Apply/replan idempotent; no leak (pool VPC teardown removes the CIDR). Needs an
-    IAM grant or stays destroy-blocked.'
+  - '#60 RE-CLASSIFIED (api_docs.json audit): the API documents ONLY POST /v1/vpcs/{id}/cidrs (add) -
+    NO cidr delete endpoint exists; the provider DELETE path is custom-built/guessed and the 403 "no permission
+    to Action" is the gateway rejecting an unmapped action, NOT an IAM gap. Secondary-CIDR removal is
+    unsupported by the platform (removed with the VPC). Provider could degrade Delete to warn+state-remove;
+    until then destroy stays red.'
   needs:
   - vpc_id
   parallel: low
