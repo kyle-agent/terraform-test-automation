@@ -1,0 +1,61 @@
+name: Peering Probe
+
+# Bisects provider issue #61: terraform vpc_vpc_peering create 400s with
+# "no value given for required property approver_vpc_name ... Invalid error data"
+# although the provider serializes approver_vpc_name — while the sister API suite
+# created a peering (202) WITHOUT that field. The probe creates two tiny VPCs
+# (prbpeera/prbpeerb) and POSTs /v1/vpc-peerings with labeled body/header variants
+# (api-suite shape vs the SDK vpc/1.1 exact shape: description null, tags omitted,
+# Scp-API-Version "vpc 1.1") to find the failing difference. Every created peering
+# is deleted again; a cleanup pass ALWAYS runs at the end. Reuses the reaper's
+# stdlib HMAC client (no external deps), same conventions as dbaas-probe.yml.
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'probe | cleanup'
+        default: 'probe'
+  push:
+    branches:
+      - 'claude/**'
+    paths:
+      - 'cmd/peering_probe/**'
+      - '.github/workflows/peering-probe.yml'
+
+concurrency:
+  group: peering-probe-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    environment: scp-integration
+    timeout-minutes: 30
+    env:
+      SCP_REGION: kr-west1
+      SCP_ENV: e
+      SCP_ACCESS_KEY: ${{ secrets.SCP_TF_ACCESS_KEY }}
+      SCP_SECRET_KEY: ${{ secrets.SCP_TF_SECRET_KEY }}
+      SCP_ALLOW_MUTATIONS: 'true'
+      SCP_ALLOW_DESTRUCTIVE: 'true'
+      # Account guard (same rationale as the reaper): the probe CREATES resources,
+      # so it refuses to run unless the live account (decided by the access-key
+      # secret) matches the configured account id.
+      EXPECTED_ACCOUNT_ID: ${{ vars.SCP_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      # One push = one probe run (that's the point of this workflow): the variant
+      # matrix is the deliverable, printed in this step's log.
+      - name: Run peering probe
+        run: python cmd/peering_probe/probe.py ${{ github.event.inputs.action || 'probe' }}
+      # Leak 0: always sweep prbpeer* peerings and the prbpeera/prbpeerb VPCs,
+      # even when the probe step failed mid-way (uses 2 of the 5-VPC quota).
+      - name: Cleanup probe resources
+        if: always()
+        run: python cmd/peering_probe/probe.py cleanup

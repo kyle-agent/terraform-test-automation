@@ -23,6 +23,7 @@ api-test-automation HMAC framework on PYTHONPATH (same as the api-reaper).
 Usage:  python cmd/dbaas_probe/probe.py <engine> [more engines...]
         python cmd/dbaas_probe/probe.py mysql postgresql eventstreams
         python cmd/dbaas_probe/probe.py all
+        python cmd/dbaas_probe/probe.py sqlserver-versions searchengine-license
 """
 from __future__ import annotations
 
@@ -33,8 +34,12 @@ import string
 import sys
 import time
 
-from framework.client import ApiClient, MutationBlocked
-from framework.config import settings
+try:  # api-test-automation pre-restructure layout
+    from framework.client import ApiClient, MutationBlocked
+    from framework.config import settings
+except ModuleNotFoundError:  # post-restructure: framework/ -> core/
+    from core.http_client import ApiClient, MutationBlocked
+    from core.config import settings
 
 # engine -> (service-host name, api_bodies.json create-body key)
 ENGINES = {
@@ -50,6 +55,8 @@ ENGINES = {
 
 BODIES_PATHS = [
     os.environ.get("API_BODIES", ""),
+    "/tmp/apitest/data/api_bodies.json",
+    "/tmp/api-test-automation/data/api_bodies.json",
     "/tmp/apitest/framework/api_bodies.json",
     "/tmp/api-test-automation/framework/api_bodies.json",
 ]
@@ -227,6 +234,265 @@ def probe(c, engine):
     print("-" * 70)
 
 
+# ---------------------------------------------------------------------------
+# Targeted modes for the two NAMED 400s from sweep run 27399112864 (provider
+# built from fork main): sqlserver "Invalid Engine Version." and searchengine
+# "Invalid License.". Distinct letters-only name prefixes so `cleanup` can
+# find anything these modes leak by name (name<=9 ^[a-zA-Z]*$, prefix<=8).
+SQLSERVER_NAME_PREFIX = "prbsqlv"   # + 2 letters = 9
+SEARCHENGINE_NAME_PREFIX = "prbselic"  # + 1 letter = 9
+_OMIT = object()
+
+
+def pick_server_type(c, svc):
+    st, sts, _ = get_items(c, svc, "/v1/server-types")
+    stype = ""
+    if sts:
+        stype = sts[0].get("name") or sts[0].get("server_type_name") or sts[0].get("id") or ""
+    print(f"[{svc}] server-types  -> {st}, picked name={stype!r} ({len(sts)} available)")
+    return stype
+
+
+def pick_server_type_like(c, svc, preferred, prefix):
+    """Pick the FIXTURE's server type (run 27402349428: picking the first of 160
+    sqlserver types gave db1v10m120, not the fixture's db1v2m8 — keep parity).
+
+    Exact `preferred` if listed, else first name starting with `prefix`, else
+    the literal `preferred` (fixture default) as a last resort."""
+    st, sts, _ = get_items(c, svc, "/v1/server-types")
+    names = [s.get("name") or s.get("server_type_name") or s.get("id") or "" for s in sts]
+    if preferred in names:
+        chosen, how = preferred, "exact"
+    else:
+        chosen = next((n for n in names if n.startswith(prefix)), "")
+        how = f"prefix {prefix!r}" if chosen else "literal fallback"
+        chosen = chosen or preferred
+    print(f"[{svc}] server-types  -> {st}, picked name={chosen!r} ({how}; {len(names)} available)")
+    return chosen
+
+
+def pick_subnet(c, tag):
+    subnet_id = os.environ.get("SUBNET_ID", "")
+    st, subs, _ = get_items(c, "vpc", "/v1/subnets")
+    if not subnet_id and subs:
+        subnet_id = subs[0].get("id", "")
+    print(f"[{tag}] subnets       -> {st}, picked id={subnet_id!r} ({len(subs)} available)")
+    return subnet_id
+
+
+def attempt_create(c, svc, payload, tag):
+    """POST one create body, print the raw response, and (leak-0) delete on 2xx.
+
+    Returns the HTTP status (None if mutations are blocked)."""
+    print(f"[{svc}] POST /v1/clusters name={payload.get('name')!r} ({tag})")
+    try:
+        r = c.post("/v1/clusters", service=svc, json=payload)
+    except MutationBlocked as exc:
+        print(f"[{svc}] blocked: {exc}"); return None
+    except Exception as exc:
+        print(f"[{svc}] POST error: {exc}"); return 0
+    body = r.body if isinstance(r.body, str) else json.dumps(r.body, ensure_ascii=False)
+    print(f"[{svc}] ({tag}) >>> STATUS {r.status}  BODY {body}")
+    if 200 <= r.status < 300:
+        cid = None
+        if isinstance(r.body, dict):
+            cid = (r.body.get("id") or (r.body.get("cluster") or {}).get("id")
+                   or (r.body.get("resource") or {}).get("id"))  # 202: {"resource":{"id":...}}
+        if cid:
+            print(f"[{svc}] *** CREATED {cid} ({tag}) — values VALID — deleting for leak-0 ***")
+            delete_cluster(c, svc, cid)
+        else:
+            print(f"[{svc}] !!! 2xx but no id in body — run `probe.py cleanup` (catches by name prefix)")
+    return r.status
+
+
+def sqlserver_fixture_body(name, ev_id, subnet_id, stype):
+    """Field-for-field mirror of scenarios/sqlserver_cluster/main.tf (run
+    27402349428: the canonical-template body fails schema validation EARLIER
+    — bare 400 value_error for all 20 engine ids — while the fixture body
+    reaches the named 'Invalid Engine Version' check, so probe the fixture
+    body). service_ip_address is omitted, like the fixture."""
+    return {
+        "name": name,
+        "dbaas_engine_version_id": ev_id,
+        "ha_enabled": False,
+        "nat_enabled": False,
+        "timezone": "Asia/Seoul",
+        "instance_name_prefix": name[:8],  # prefix max_length 8
+        "allowable_ip_addresses": ["10.0.0.0/24"],
+        "subnet_id": subnet_id,
+        "init_config_option": {
+            "audit_enabled": False,
+            "database_service_name": "Regrsvc",
+            "database_user_name": "regradmin",
+            "database_user_password": "Regr1234!@",
+            "database_port": 2866,
+            "database_collation": "SQL_Latin1_General_CP1_CI_AS",
+            "license": "",
+            "databases": [
+                {"database_name": "regrdb", "drive_letter": "E"},
+            ],
+            "backup_option": {
+                "retention_period_day": "7",
+                "starting_time_hour": "11",
+                "archive_frequency_minute": "30",
+                "full_backup_day_of_week": "SUN",
+            },
+        },
+        "instance_groups": [
+            {
+                "role_type": "ACTIVE",
+                "server_type_name": stype,
+                "block_storage_groups": [
+                    {"role_type": "OS", "size_gb": 104, "volume_type": "SSD"},
+                    {"role_type": "DATA", "size_gb": 200, "volume_type": "SSD"},
+                ],
+                "instances": [
+                    {"role_type": "ACTIVE"},
+                ],
+            },
+        ],
+    }
+
+
+def searchengine_fixture_body(name, ev_id, subnet_id, stype):
+    """Field-for-field mirror of scenarios/searchengine_cluster/main.tf:
+    is_combined, MASTER_DATA (OS+DATA) + KIBANA (OS) groups, port 9201.
+    `license` is left to the caller (that's the variable under test)."""
+    return {
+        "name": name,
+        "dbaas_engine_version_id": ev_id,
+        "nat_enabled": False,
+        "timezone": "Asia/Seoul",
+        "instance_name_prefix": name[:8],  # prefix max_length 8
+        "allowable_ip_addresses": ["10.0.0.0/24"],
+        "subnet_id": subnet_id,
+        "is_combined": True,
+        "init_config_option": {
+            "database_user_name": "regradmin",
+            "database_user_password": "Regr1234!@",
+            "database_port": 9201,
+            "backup_option": {
+                "retention_period_day": "7",
+                "starting_time_hour": "11",
+            },
+        },
+        "instance_groups": [
+            {
+                "role_type": "MASTER_DATA",
+                "server_type_name": stype,
+                "block_storage_groups": [
+                    {"role_type": "OS", "size_gb": 104, "volume_type": "SSD"},
+                    {"role_type": "DATA", "size_gb": 200, "volume_type": "SSD"},
+                ],
+                "instances": [
+                    {"role_type": "MASTER_DATA"},
+                ],
+            },
+            {
+                "role_type": "KIBANA",
+                "server_type_name": stype,
+                "block_storage_groups": [
+                    {"role_type": "OS", "size_gb": 104, "volume_type": "SSD"},
+                ],
+                "instances": [
+                    {"role_type": "KIBANA"},
+                ],
+            },
+        ],
+    }
+
+
+def probe_sqlserver_versions(c):
+    """Resolve the sqlserver 400 'Invalid Engine Version.' (sweep 27399112864).
+
+    Run 27402349428 showed the canonical api_bodies template (first-of-160
+    server type db1v10m120) fails schema validation before the engine-version
+    check — every id got a bare 400 value_error. So mirror the FIXTURE body
+    (server type db1v2m8) instead, log EVERY engine-version entry verbatim,
+    and try once per engine_version_id until one returns 202; delete it."""
+    svc, _ = ENGINES["sqlserver"]
+
+    st, evs, raw = get_items(c, svc, "/v1/engine-versions")
+    print(f"[sqlserver-versions] engine-versions -> {st} ({len(evs)} entries)")
+    if not evs:
+        print(f"[sqlserver-versions] raw body: {raw}"); return
+    for v in evs:
+        print(f"[sqlserver-versions] ENTRY {json.dumps(v, ensure_ascii=False, sort_keys=True)}")
+
+    stype = pick_server_type_like(c, svc, "db1v2m8", "db1v2m")  # fixture's type
+    subnet_id = pick_subnet(c, "sqlserver-versions")
+    results = []
+    for v in evs:
+        ev_id = v.get("id") or v.get("dbaas_engine_version_id") or ""
+        if not ev_id:
+            print(f"[sqlserver-versions] entry without id, skipping: {v}"); continue
+        name = lettername(SQLSERVER_NAME_PREFIX, 2)  # 9 chars, letters-only
+        payload = sqlserver_fixture_body(name, ev_id, subnet_id, stype)
+        tag = f"ev={ev_id} sw={v.get('software_version')!r} eos={v.get('end_of_service')!r}"
+        status = attempt_create(c, svc, payload, tag)
+        results.append((ev_id, status))
+        if status is None:
+            return
+        if status and 200 <= status < 300:
+            print(f"[sqlserver-versions] *** {ev_id} is the CREATABLE engine version — stopping ***")
+            break
+    print("[sqlserver-versions] summary: " +
+          ", ".join(f"{i}->{s}" for i, s in results))
+    print("-" * 70)
+
+
+def probe_searchengine_license(c):
+    """Resolve the searchengine 400 'Invalid License.' (sweep 27399112864).
+
+    Run 27402349428: omitted and explicit-null license both reach the NAMED
+    Dbaas.ValidationError.InvalidLicense; any string ("", OPEN_SOURCE, BASIC,
+    ENTERPRISE) is rejected at the schema (bare value_error) — so strings are
+    out. Hypothesis: license validity depends on the ENGINE VERSION (only
+    contents[0] was tried; some of the 5 versions may be open-source builds
+    needing no license). Iterate ALL engine versions (logged verbatim) x
+    license in {omitted, explicit null}, with the FIXTURE-mirror body, until
+    one returns 202; delete it (leak-0)."""
+    svc, _ = ENGINES["searchengine"]
+
+    st, evs, raw = get_items(c, svc, "/v1/engine-versions")
+    print(f"[searchengine-license] engine-versions -> {st} ({len(evs)} entries)")
+    if not evs:
+        print(f"[searchengine-license] raw body: {raw}"); return
+    for v in evs:
+        print(f"[searchengine-license] ENTRY {json.dumps(v, ensure_ascii=False, sort_keys=True)}")
+
+    stype = pick_server_type_like(c, svc, "ses1v2m4", "ses1v2m")  # fixture's type
+    subnet_id = pick_subnet(c, "searchengine-license")
+    variants = [("omitted", _OMIT), ("explicit null", None)]
+    results = []
+    done = False
+    for v in evs:
+        if done:
+            break
+        ev_id = v.get("id") or v.get("dbaas_engine_version_id") or ""
+        if not ev_id:
+            print(f"[searchengine-license] entry without id, skipping: {v}"); continue
+        evtag = (f"ev={ev_id} name={v.get('name')!r} sw={v.get('software_version')!r} "
+                 f"img={v.get('product_image_type')!r} eos={v.get('end_of_service')!r}")
+        for ltag, val in variants:
+            name = lettername(SEARCHENGINE_NAME_PREFIX, 1)  # 9 chars, letters-only
+            payload = searchengine_fixture_body(name, ev_id, subnet_id, stype)
+            if val is not _OMIT:
+                payload["license"] = val
+            status = attempt_create(c, svc, payload, f"{evtag} license {ltag}")
+            results.append((ev_id, ltag, status))
+            if status is None:
+                return
+            if status and 200 <= status < 300:
+                print(f"[searchengine-license] *** engine {ev_id} + license {ltag!r} ACCEPTED — stopping ***")
+                done = True
+                break
+    print("[searchengine-license] summary: " +
+          ", ".join(f"{i}/{t}->{s}" for i, t, s in results))
+    print("-" * 70)
+
+
 # DBaaS clusters created by probe runs that leaked (202 id is under resource.id,
 # which the first cleanup code missed). `probe.py cleanup` removes these by id.
 LEAKED_IDS = {
@@ -283,12 +549,29 @@ def wait_gone(c, svc, cid, timeout=300, interval=20):
     return False
 
 
+# name prefixes the targeted modes use — cleanup sweeps these per service
+PROBE_NAME_PREFIXES = {
+    "sqlserver":    (SQLSERVER_NAME_PREFIX,),
+    "searchengine": (SEARCHENGINE_NAME_PREFIX,),
+}
+
+
 def cleanup(c):
     print("== DBaaS leak cleanup (by id) ==")
     ok = True
     for svc, ids in LEAKED_IDS.items():
         for cid in ids:
             ok = delete_cluster(c, svc, cid) and ok
+    print("== DBaaS leak cleanup (by probe name prefix) ==")
+    for svc, prefixes in PROBE_NAME_PREFIXES.items():
+        st, cls, _ = get_items(c, svc, "/v1/clusters")
+        print(f"  [{svc}] clusters -> {st} ({len(cls)} listed)")
+        for cl in cls:
+            name = str(cl.get("name") or "")
+            cid = cl.get("id") or cl.get("cluster_id")
+            if cid and any(name.startswith(p) for p in prefixes):
+                print(f"  [{svc}] probe leak {name} ({cid})")
+                ok = delete_cluster(c, svc, cid) and ok
     print("cleanup done" if ok else "cleanup incomplete (some clusters remain)")
     return 0
 
@@ -302,10 +585,16 @@ def main(argv):
         return cleanup(c)
     if args == ["all"]:
         args = list(ENGINES)
+    modes = {"sqlserver-versions": probe_sqlserver_versions,
+             "searchengine-license": probe_searchengine_license}
     for engine in args:
-        if engine not in ENGINES:
-            print(f"unknown engine {engine}; known: {', '.join(ENGINES)}"); continue
-        probe(c, engine)
+        if engine in modes:
+            modes[engine](c)
+        elif engine in ENGINES:
+            probe(c, engine)
+        else:
+            print(f"unknown engine {engine}; known: "
+                  f"{', '.join(list(ENGINES) + list(modes))}, cleanup")
     return 0
 
 

@@ -145,6 +145,53 @@ def reap_tgw(c, tgwid, name):
         return
 
 
+def reap_replications(c):
+    """Filestorage replications pin their volumes: a volume delete 400s with
+    "Cannot delete volume because replication is in use. Delete Replication
+    Policy. -Replication Policy : paused > delete" while one exists (run
+    27410597752 leak). The platform-dictated sequence is pause the policy, THEN
+    delete: PUT /v1/replications/{rid}?volume_id={vid} with
+    {"replication_update_type": "policy", "replication_policy": "paused"},
+    poll until replication_policy == "paused", then DELETE
+    /v1/replications/{rid}?volume_id={vid}. The list endpoint requires a
+    volume_id, so enumerate the test volumes first. Must run BEFORE the volume
+    sweep so the pinned volumes become deletable."""
+    svc, n = "filestorage", 0
+    for vol in lst(c, svc, "/v1/volumes"):
+        vid = vol.get("volume_id") or vol.get("id")
+        if not vid:
+            continue
+        for rep in items(c.get(f"/v1/replications?volume_id={vid}", service=svc).body):
+            rid = rep.get("replication_id") or rep.get("id") if isinstance(rep, dict) else None
+            if not rid:
+                continue
+            policy = str(rep.get("replication_policy") or "")
+            print(f"  replication {rid} (volume {vid}, policy={policy or '?'})")
+            if policy != "paused":
+                try:
+                    r = c.put(f"/v1/replications/{rid}?volume_id={vid}", service=svc,
+                              json={"replication_update_type": "policy",
+                                    "replication_policy": "paused"})
+                    print(f"    pause -> {r.status} {str(r.body)[:160]}")
+                except Exception as exc:
+                    print(f"    pause error: {exc}")
+                for _ in range(20):  # wait until the policy reports paused
+                    b = c.get(f"/v1/replications/{rid}?volume_id={vid}", service=svc).body
+                    if not isinstance(b, dict) or b.get("replication_policy") == "paused":
+                        break
+                    time.sleep(15)
+            for _ in range(6):
+                st = delete(c, svc, f"/v1/replications/{rid}?volume_id={vid}")
+                if st in (200, 202, 204, 404):
+                    n += 1
+                    wait_gone(c, svc, f"/v1/replications/{rid}?volume_id={vid}", 240, 15)
+                    break
+                if st in (400, 409):
+                    time.sleep(15); continue
+                break
+    return n
+
+
 def vid_field(it):
     return str(it.get("vpc_id") or "")
 
@@ -451,6 +498,10 @@ def main() -> int:
     for it in lst(c, "security-group", "/v1/security-groups"):
         if it.get("id") and delete(c, "security-group", f"/v1/security-groups/{it['id']}"):
             n += 1
+    # 7-pre. filestorage replications — a live replication pins both its source and
+    # replica volume (400 "replication is in use ... paused > delete"), so pause +
+    # delete them BEFORE the volume sweep below (run 27410597752 orphan).
+    n += reap_replications(c)
     for it in lst(c, "filestorage", "/v1/volumes"):
         vid = it.get("volume_id") or it.get("id")
         if vid and delete(c, "filestorage", f"/v1/volumes/{vid}"):
@@ -640,3 +691,6 @@ if __name__ == "__main__":
 # Manual sweep 2026-06-10 (9): reclaim private_nat TGW + image bucket (run 27244474565).
 
 # Manual sweep 2026-06-10 (10): reclaim lb_listener partial-create leak (run 27258867414, LB server group attached).
+
+# Manual sweep 2026-06-12: new reap_replications (pause policy -> delete) — reclaim the
+# replication orphaned by run 27410597752, which pins pool volume fff1a72c-bee5-42a9-ad1f-1847597d957f.

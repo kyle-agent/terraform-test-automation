@@ -17,14 +17,14 @@ provider "samsungcloudplatformv2" {}
 # real registrant data via TF_VAR_public_domain_name.
 variable "public_domain_name" {
   type = object({
-    name           = string
-    description    = string
-    address_type   = string
-    auto_extension = bool
+    name             = string
+    description      = string
+    address_type     = string
+    auto_extension   = bool
     register_name_en = string
-    register_email = string
-    register_telno = string
-    postal_code    = string
+    register_email   = string
+    register_telno   = string
+    postal_code      = string
   })
   default = {
     name             = "regr.example.com"

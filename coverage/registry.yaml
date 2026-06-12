@@ -86,7 +86,8 @@ certificate_manager:
   family: certificate
   import: false
   issues:
-  - 500 ISE (platform)
+  - '#82: apply 500 "Creating certificate has been failed" even with REAL self-signed PEM generated in-fixture
+    via hashicorp/tls (run 27401023537) - placeholder-PEM hypothesis disproven; genuinely platform-side.'
   needs: []
   parallel: normal
   status: broken
@@ -227,12 +228,11 @@ eventstreams_basic:
   depends_on: []
   family: eventstreams
   import: false
-  issues:
-  - '#83'
+  issues: []
   needs:
   - subnet_id
   parallel: normal
-  status: broken
+  status: green
   timeout_class: slow
   update: false
   vpc: pool
@@ -241,12 +241,11 @@ filestorage_replication:
   depends_on: []
   family: filestorage
   import: false
-  issues:
-  - replication not available (account feature)
+  issues: []
   needs:
   - volume_id
   parallel: normal
-  status: broken
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -331,7 +330,9 @@ iam_group_member:
   family: iam
   import: false
   issues:
-  - iam_user 401 HMAC (account perm)
+  - 'STILL BROKEN after depends_on serialization (run 27417604819): apply fails "Error creating user ...
+    Could not create user, unexpected error: 401 Unauthorized Reason: [HMAC] HMAC valid fail" - suspected
+    HMAC signing race in provider for IAM writes persists.'
   needs: []
   parallel: normal
   status: broken
@@ -537,11 +538,10 @@ loggingaudit_trail:
   depends_on: []
   family: loggingaudit
   import: false
-  issues:
-  - 403 forbidden (account perm)
+  issues: []
   needs: []
   parallel: normal
-  status: broken
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -614,7 +614,8 @@ searchengine_cluster:
   family: searchengine
   import: false
   issues:
-  - '#83'
+  - '#83 PROGRESS: create ACCEPTED (OpenSearch image + license omitted, probe 202) but cluster provisions
+    to state:FAILED (run 27406093988) - platform-side; pool subnet/VPC pinned by FAILED cluster (reaped).'
   needs:
   - subnet_id
   parallel: normal
@@ -749,7 +750,9 @@ sqlserver_cluster:
   family: sqlserver
   import: false
   issues:
-  - '#83'
+  - '#83 PROGRESS: create now ACCEPTED (base non-KB engine version, probe 27403108280 got 202) but the
+    cluster provisions to state:FAILED on the pool subnet (run 27406093988) - platform-side provisioning
+    failure; teardown left pool subnet/VPC pinned by the FAILED cluster (reaped).'
   needs:
   - subnet_id
   parallel: normal
@@ -846,9 +849,11 @@ vpc_cidr:
   family: vpc
   import: false
   issues:
-  - '#60 Read fixed (apply/replan idempotent). Delete now attempts DELETE /v1/vpcs/{id}/cidrs/{cidrId}
-    but server returns 403 "Action definition is not found" - no such remove endpoint/permission; secondary-CIDR
-    removal appears unsupported by the API (run 27238242719).'
+  - '#60 RE-CLASSIFIED (api_docs.json audit): the API documents ONLY POST /v1/vpcs/{id}/cidrs (add) -
+    NO cidr delete endpoint exists; the provider DELETE path is custom-built/guessed and the 403 "no permission
+    to Action" is the gateway rejecting an unmapped action, NOT an IAM gap. Secondary-CIDR removal is
+    unsupported by the platform (removed with the VPC). Provider could degrade Delete to warn+state-remove;
+    until then destroy stays red.'
   needs:
   - vpc_id
   parallel: low
@@ -916,8 +921,9 @@ vpc_private_nat_ip:
   family: vpc
   import: false
   issues:
-  - blocked by account TGW quota "exceed the maximum size(3)" when TGW scenarios run concurrently (run
-    27243446403); fixture is correct (validate ok) - needs serialized re-test within the 3-TGW limit.
+  - apply 400 "Cannot found the Transit Gateway in Connectable state" (run 27399112864, serialized - NOT
+    quota this time; same as vpc_private_nat). Connectable requires an ACTIVE TGW firewall connection
+    (api-test-automation domain knowledge) - platform state-machine constraint.
   needs:
   - ip_address
   parallel: normal
@@ -1108,9 +1114,9 @@ vpc_vpc_endpoint:
   family: vpc
   import: false
   issues:
-  - platform-side 400 'VPC Endpoint Type Subnet not found' even with a real pool subnet_id (run 27121247070);
-    OBS endpoint type not creatable on this subnet - not a fixture defect, blocked pending platform/AZ
-    endpoint-type support
+  - resource_key rejected for 1.1.1.1, the real OBS IP, AND the account id (runs 27401616476/27406093988/27419601096)
+    - the valid OBS resource key is not derivable from docs; needs the console/vendor value. Subnet-type
+    + reserved-IP findings remain valid.
   needs:
   - subnet_id
   - vpc_id
@@ -1125,11 +1131,10 @@ vpc_vpc_peering:
   family: vpc
   import: false
   issues:
-  - '#61: provider now CORRECTLY serializes approver_vpc_name (verified: local json.Marshal of VpcPeeringCreateRequest
-    emits "approver_vpc_name"; remote branch SDK + source-build confirmed), set from explicit fixture
-    value, yet API still returns 400 "no value given for required property approver_vpc_name / Reason:
-    Invalid error data" (run 27238242719). Not provider-fixable - API-side contract issue; needs vendor/API
-    investigation.'
+  - '#61: STILL "no value given for required property approver_vpc_name / Invalid error data" with the
+    null-description provider fix live AND no synthetic name (run 27406093988) - suspect the provider-side
+    derive/fail-fast guard or another null field; NEXT: read provider vpcpeering.go Create derive path
+    and add a request-body debug log. Partial create leaked VPCs (reaped).'
   needs: []
   parallel: normal
   status: broken
@@ -1142,11 +1147,9 @@ vpc_vpc_peering_approval:
   family: vpc
   import: false
   issues:
-  - '#61: provider now CORRECTLY serializes approver_vpc_name (verified: local json.Marshal of VpcPeeringCreateRequest
-    emits "approver_vpc_name"; remote branch SDK + source-build confirmed), set from explicit fixture
-    value, yet API still returns 400 "no value given for required property approver_vpc_name / Reason:
-    Invalid error data" (run 27238242719). Not provider-fixable - API-side contract issue; needs vendor/API
-    investigation.'
+  - '#61 ROOT CAUSE FOUND (peering probe 27401023616): the create 400 was the provider sending "description":
+    null (SDK NullableString) - fixed in provider client vpcv1/vpc.go. Approval itself is UNTESTABLE single-account:
+    platform 400 "Approval is not required for Same Account VPC peering" - needs a second account to exercise.'
   needs: []
   parallel: normal
   status: broken
@@ -1159,11 +1162,8 @@ vpc_vpc_peering_rule:
   family: vpc
   import: false
   issues:
-  - '#61: provider now CORRECTLY serializes approver_vpc_name (verified: local json.Marshal of VpcPeeringCreateRequest
-    emits "approver_vpc_name"; remote branch SDK + source-build confirmed), set from explicit fixture
-    value, yet API still returns 400 "no value given for required property approver_vpc_name / Reason:
-    Invalid error data" (run 27238242719). Not provider-fixable - API-side contract issue; needs vendor/API
-    investigation.'
+  - 'blocked: VPC quota exhausted by leaked pool VPCs + peering leak during run 27406093988; never reached
+    the rule. Retest after peering create is fixed.'
   needs: []
   parallel: normal
   status: broken

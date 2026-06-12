@@ -44,13 +44,19 @@ variable "resource_type" {
   default     = "OBS"
 }
 
-# For FS/OBS the provider docs say resource_key is an IP address ("1.1.1.1").
-# This is the target service IP, NOT an address inside the pool subnet, so it is
-# left as a routable-looking public-ish IP rather than a 192.168.0.0/27 address.
+# OBS is account-namespaced ({account_id}:{bucket} path form, cf. virtualserver
+# image #86) and the doc example resource_key (07c5364702384471b650147321b52173)
+# is a 32-hex id of the same shape as an account id - so for OBS the resource
+# key is the ACCOUNT ID, not an IP (1.1.1.1 and the real OBS IP both 400ed).
 variable "resource_key" {
   type        = string
-  description = "Endpoint resource key (for FS/OBS this is the target service IP)."
-  default     = "1.1.1.1"
+  description = "Endpoint resource key (for OBS: the account id). Harness injects TF_VAR_resource_key or account id is used."
+  default     = ""
+}
+
+variable "account_id" {
+  type    = string
+  default = "00000000000000000000000000000000"
 }
 
 # For OBS the docs say resource_info is the service URL (https://xxx...).
@@ -60,14 +66,24 @@ variable "resource_info" {
   default     = "https://object-store.samsungsdscloud.com"
 }
 
-# endpoint_ip_address MUST sit inside the pool subnet CIDR 192.168.0.0/27
-# (usable .1-.30). The bootstrap subnet is 192.168.0.0/27 and other pool
-# scenarios consume low/high addresses (e.g. vip .20, bootstrap-side .30),
-# so .12 is chosen to avoid the .1 gateway and known contended addresses.
+# The platform rejects endpoints on a GENERAL subnet with 400 "VPC Endpoint
+# Type Subnet not found" (run 27121247070): the subnet create API takes a
+# type enum (GENERAL | LOCAL | VPC_ENDPOINT), and an endpoint requires a
+# VPC_ENDPOINT-type subnet. Create a dedicated one in the pool VPC
+# (192.168.0.0/24; bootstrap occupies 192.168.0.0/27) instead of reusing the
+# GENERAL pool subnet.
+resource "samsungcloudplatformv2_vpc_subnet" "regr_endpoint" {
+  name        = "regrepsub${var.name_suffix}"
+  cidr        = "192.168.0.64/27"
+  type        = "VPC_ENDPOINT"
+  vpc_id      = var.vpc_id
+  description = "regr vpc-endpoint-type subnet"
+}
+
 variable "endpoint_ip_address" {
   type        = string
-  description = "IP address for the endpoint, inside the pool subnet CIDR 192.168.0.0/27."
-  default     = "192.168.0.12"
+  description = "IP address for the endpoint, inside the VPC_ENDPOINT subnet 192.168.0.64/27 (low addresses .65-.69 are platform-reserved)."
+  default     = "192.168.0.70"
 }
 
 # VPC endpoint fixture guarding networking coverage: a private endpoint to a
@@ -78,9 +94,9 @@ resource "samsungcloudplatformv2_vpc_vpc_endpoint" "regr" {
   endpoint_ip_address = var.endpoint_ip_address
   name                = "${var.endpoint_name}${var.name_suffix}"
   resource_info       = var.resource_info
-  resource_key        = var.resource_key
+  resource_key        = var.resource_key != "" ? var.resource_key : var.account_id
   resource_type       = var.resource_type
-  subnet_id           = var.subnet_id
+  subnet_id           = samsungcloudplatformv2_vpc_subnet.regr_endpoint.id
   vpc_id              = var.vpc_id
   description         = "regr-test"
 }

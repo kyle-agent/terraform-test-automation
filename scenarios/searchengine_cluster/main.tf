@@ -39,7 +39,10 @@ data "samsungcloudplatformv2_searchengine_engine_version" "regr" {}
 locals {
   searchengine_engine_versions_available = [
     for v in data.samsungcloudplatformv2_searchengine_engine_version.regr.contents :
-    v if !v.end_of_service
+    v if !v.end_of_service && v.product_image_type == "OpenSearch"
+    # probe 27403108280: "Elasticsearch Enterprise" versions all 400
+    # InvalidLicense (a real license is required); "OpenSearch" versions
+    # (e.g. 3.4.0, id d1efc4a9...) create with license OMITTED.
   ]
   searchengine_engine_version_id = var.dbaas_engine_version_id != "" ? var.dbaas_engine_version_id : (
     length(local.searchengine_engine_versions_available) > 0 ?

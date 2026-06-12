@@ -39,9 +39,11 @@ locals {
     data.samsungcloudplatformv2_eventstreams_engine_version.regr.contents[0].id
   )
 }
+# API name pattern is ^[a-zA-Z]*$ (letters ONLY, no hyphen/digits) — a hyphen
+# here is rejected as a bare 400 value_error (#83).
 variable "cluster_name" {
   type    = string
-  default = "regr-evs"
+  default = "regrevs"
 }
 
 # Multiple allowable IPs to exercise Chapter 4 #14 (list-order regression).
@@ -57,11 +59,15 @@ variable "allowable_ip_addresses" {
 }
 
 resource "samsungcloudplatformv2_eventstreams_cluster" "regression" {
-  name                    = var.cluster_name
-  akhq_enabled            = true
-  is_combined             = true
-  allowable_ip_addresses  = var.allowable_ip_addresses
-  dbaas_engine_version_id = local.eventstreams_engine_version_id
+  name = var.cluster_name
+  # akhq_enabled=true without akhq_id/akhq_password (and no AKHQ node group) is
+  # an inconsistent topology — keep AKHQ off (provider docs example default).
+  akhq_enabled = false
+  is_combined  = true
+  # Required (non-nullable serialization) in the v1.1 create API.
+  service_watch_log_collection = true
+  allowable_ip_addresses       = var.allowable_ip_addresses
+  dbaas_engine_version_id      = local.eventstreams_engine_version_id
 
   # Required by the provider schema (v3.x). subnet_id is top-level; there is no
   # security_group_id / vpc_id argument on this resource anymore.

@@ -21,7 +21,7 @@ variable "volume_id" {
 # (day/hour) and a retention count, exercising the single nested
 # snapshot_schedule block.
 resource "samsungcloudplatformv2_filestorage_snapshot_schedule" "regr" {
-  volume_id               = var.volume_id
+  volume_id                = var.volume_id
   snapshot_retention_count = 4
 
   # day_of_week pattern: ^(SUN|MON|TUE|WED|THU|FRI|SAT)$

@@ -51,3 +51,28 @@ polls and retries to handle this, and `probe.py cleanup` removes leaked ids.
 `cleanup` (safe/idempotent). Flip the run arg to `mysql` / `all` /
 `"sqlserver searchengine eventstreams"` for one push to probe, then flip back.
 Created clusters self-delete (202 id is under `resource.id`).
+
+## Targeted modes for sweep 27399112864's NAMED 400s
+
+The coverage sweep (run 27399112864, provider source-built from fork main)
+turned the former bare `value_error`s into *named* errors:
+
+* **sqlserver** apply → 400 `"Invalid Engine Version."` — the fixture resolves
+  `dbaas_engine_version_id` via the `samsungcloudplatformv2_sqlserver_engine_version`
+  data source, first non-`end_of_service` entry (license now `""`), so that
+  pick is apparently not creatable. **`probe.py sqlserver-versions`** logs every
+  `/v1/engine-versions` entry verbatim (id, name, software_version,
+  major_version, os_type, product_image_type, end_of_service), then tries the
+  proven create body once per engine_version_id (license `""`) until one 202s,
+  and deletes it. Most attempts 400 fast; the summary line maps id -> status.
+* **searchengine** apply → 400 `"Invalid License."` — the fixture omits
+  `license` entirely (SDK field is NullableString + omitempty), while the API
+  doc example shows `license: ""`. **`probe.py searchengine-license`** resolves
+  a live engine version + server type, then iterates license variants in order:
+  omitted, `""`, explicit `null`, then `OPEN_SOURCE` / `BASIC` / `ENTERPRISE`;
+  stops at the first 202 and deletes the cluster.
+
+Both modes stay leak-0 via `delete_cluster()` (retry-while-CREATING) and use
+distinct letters-only names — `prbsqlv` + 2 letters / `prbselic` + 1 letter
+(name<=9 `^[a-zA-Z]*$`, prefix<=8) — which `probe.py cleanup` now also sweeps
+by name prefix, in addition to the hardcoded leaked ids.
