@@ -613,13 +613,11 @@ searchengine_cluster:
   depends_on: []
   family: searchengine
   import: false
-  issues:
-  - '#83: apply 400 "Invalid License." (run 27399112864) - fixture omits license (SDK NullableString).
-    dbaas_probe searchengine-license mode iterates omitted/""/null/enum variants.'
+  issues: []
   needs:
   - subnet_id
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: slow
   update: false
   vpc: pool
@@ -749,14 +747,11 @@ sqlserver_cluster:
   depends_on: []
   family: sqlserver
   import: false
-  issues:
-  - '#83: apply 400 "Invalid Engine Version." (run 27399112864) - license="" now accepted; the engine-version
-    id picked by the data source (first non-EOS) is rejected. dbaas_probe sqlserver-versions mode iterates
-    every id to find a creatable one.'
+  issues: []
   needs:
   - subnet_id
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: slow
   update: false
   vpc: pool
