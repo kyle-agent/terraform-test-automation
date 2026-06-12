@@ -539,9 +539,8 @@ loggingaudit_trail:
   family: loggingaudit
   import: false
   issues:
-  - 'retest: 409 DBDuplicateEntry was the orphaned trail from the decode-failure run (SDK fix verified
-    - decode error gone); trail_name now per-run unique. Orphan regr-audit-trail needs a reaper/console
-    delete eventually.'
+  - 'retest: trail_name max 26 chars - regr-audit-trail+suffix was 28 (run 27419601096); base now regrtrail
+    (21 with suffix)'
   needs: []
   parallel: normal
   status: untested
@@ -1117,13 +1116,14 @@ vpc_vpc_endpoint:
   family: vpc
   import: false
   issues:
-  - 'retry: resource_key = account id (OBS is account-namespaced; doc example key is a 32-hex account-id-shaped
-    value; IPs 400ed)'
+  - resource_key rejected for 1.1.1.1, the real OBS IP, AND the account id (runs 27401616476/27406093988/27419601096)
+    - the valid OBS resource key is not derivable from docs; needs the console/vendor value. Subnet-type
+    + reserved-IP findings remain valid.
   needs:
   - subnet_id
   - vpc_id
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool

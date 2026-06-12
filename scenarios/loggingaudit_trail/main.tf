@@ -28,7 +28,7 @@ variable "suffix" {
 variable "trail_name" {
   type        = string
   description = "Name of the audit trail."
-  default     = "regr-audit-trail"
+  default     = "regrtrail"
   # NOTE: overridden below with the per-run suffix to dodge 409 DBDuplicateEntry
 }
 
