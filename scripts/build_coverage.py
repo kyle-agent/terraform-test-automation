@@ -92,6 +92,12 @@ def normalize_stages(raw):
         if v in (None, "", "-"):
             v = "skip"
         out[s] = v
+    # update/import are real (currently gated-off) matrix stages: keep them on
+    # the dashboard axis as "skip" instead of stripping them (the columns
+    # vanished from the published dashboard after the 2026-06-12 merge).
+    for extra in ("update", "import"):
+        v = (raw or {}).get(extra)
+        out[extra] = "skip" if v in (None, "", "-") else v
     return out
 
 
