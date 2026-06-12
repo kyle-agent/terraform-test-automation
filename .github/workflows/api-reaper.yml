@@ -81,3 +81,4 @@ jobs:
 # final cleanup sweep 2026-06-08: drain settled DBaaS clusters + free pinned subnets/VPCs
 
 # touch 2026-06-12: reap 4 VPCs + partial peerings leaked by run 27402349483 (approver_vpc_name-mismatch 400 left half-created peerings pinning the VPCs)
+# touch 2026-06-12b: re-reap stale VPCs (rpv273154960170 etc.) now that the dbaas probe clusters are gone

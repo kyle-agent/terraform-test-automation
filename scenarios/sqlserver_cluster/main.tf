@@ -40,7 +40,10 @@ data "samsungcloudplatformv2_sqlserver_engine_version" "regr" {}
 locals {
   sqlserver_engine_versions_available = [
     for v in data.samsungcloudplatformv2_sqlserver_engine_version.regr.contents :
-    v if !v.end_of_service
+    v if !v.end_of_service && !strcontains(v.software_version, "KB")
+    # probe 27403108280: every "-KBxxxxxxx" patched engine version is rejected
+    # with 400 "Invalid Engine Version"; only the BASE versions (e.g.
+    # "2022 Enterprise ENG", id bcadfcd6...) create successfully.
   ]
   sqlserver_engine_version_id = var.dbaas_engine_version_id != "" ? var.dbaas_engine_version_id : (
     length(local.sqlserver_engine_versions_available) > 0 ?
