@@ -23,6 +23,7 @@ api-test-automation HMAC framework on PYTHONPATH (same as the api-reaper).
 Usage:  python cmd/dbaas_probe/probe.py <engine> [more engines...]
         python cmd/dbaas_probe/probe.py mysql postgresql eventstreams
         python cmd/dbaas_probe/probe.py all
+        python cmd/dbaas_probe/probe.py sqlserver-versions searchengine-license
 """
 from __future__ import annotations
 
@@ -227,6 +228,146 @@ def probe(c, engine):
     print("-" * 70)
 
 
+# ---------------------------------------------------------------------------
+# Targeted modes for the two NAMED 400s from sweep run 27399112864 (provider
+# built from fork main): sqlserver "Invalid Engine Version." and searchengine
+# "Invalid License.". Distinct letters-only name prefixes so `cleanup` can
+# find anything these modes leak by name (name<=9 ^[a-zA-Z]*$, prefix<=8).
+SQLSERVER_NAME_PREFIX = "prbsqlv"   # + 2 letters = 9
+SEARCHENGINE_NAME_PREFIX = "prbselic"  # + 1 letter = 9
+_OMIT = object()
+
+
+def pick_server_type(c, svc):
+    st, sts, _ = get_items(c, svc, "/v1/server-types")
+    stype = ""
+    if sts:
+        stype = sts[0].get("name") or sts[0].get("server_type_name") or sts[0].get("id") or ""
+    print(f"[{svc}] server-types  -> {st}, picked name={stype!r} ({len(sts)} available)")
+    return stype
+
+
+def pick_subnet(c, tag):
+    subnet_id = os.environ.get("SUBNET_ID", "")
+    st, subs, _ = get_items(c, "vpc", "/v1/subnets")
+    if not subnet_id and subs:
+        subnet_id = subs[0].get("id", "")
+    print(f"[{tag}] subnets       -> {st}, picked id={subnet_id!r} ({len(subs)} available)")
+    return subnet_id
+
+
+def attempt_create(c, svc, payload, tag):
+    """POST one create body, print the raw response, and (leak-0) delete on 2xx.
+
+    Returns the HTTP status (None if mutations are blocked)."""
+    print(f"[{svc}] POST /v1/clusters name={payload.get('name')!r} ({tag})")
+    try:
+        r = c.post("/v1/clusters", service=svc, json=payload)
+    except MutationBlocked as exc:
+        print(f"[{svc}] blocked: {exc}"); return None
+    except Exception as exc:
+        print(f"[{svc}] POST error: {exc}"); return 0
+    body = r.body if isinstance(r.body, str) else json.dumps(r.body, ensure_ascii=False)
+    print(f"[{svc}] ({tag}) >>> STATUS {r.status}  BODY {body}")
+    if 200 <= r.status < 300:
+        cid = None
+        if isinstance(r.body, dict):
+            cid = (r.body.get("id") or (r.body.get("cluster") or {}).get("id")
+                   or (r.body.get("resource") or {}).get("id"))  # 202: {"resource":{"id":...}}
+        if cid:
+            print(f"[{svc}] *** CREATED {cid} ({tag}) — values VALID — deleting for leak-0 ***")
+            delete_cluster(c, svc, cid)
+        else:
+            print(f"[{svc}] !!! 2xx but no id in body — run `probe.py cleanup` (catches by name prefix)")
+    return r.status
+
+
+def probe_sqlserver_versions(c):
+    """Resolve sweep 27399112864's sqlserver 400 'Invalid Engine Version.'.
+
+    The fixture picks the first non-end_of_service /v1/engine-versions entry —
+    apparently not actually creatable. Log EVERY engine-version entry verbatim,
+    then try the proven create body once per engine_version_id (license "")
+    until one returns 202; delete it immediately."""
+    svc, body_key = ENGINES["sqlserver"]
+    template = load_bodies()[body_key]
+
+    st, evs, raw = get_items(c, svc, "/v1/engine-versions")
+    print(f"[sqlserver-versions] engine-versions -> {st} ({len(evs)} entries)")
+    if not evs:
+        print(f"[sqlserver-versions] raw body: {raw}"); return
+    for v in evs:
+        print(f"[sqlserver-versions] ENTRY {json.dumps(v, ensure_ascii=False, sort_keys=True)}")
+
+    stype = pick_server_type(c, svc)
+    subnet_id = pick_subnet(c, "sqlserver-versions")
+    results = []
+    for v in evs:
+        ev_id = v.get("id") or v.get("dbaas_engine_version_id") or ""
+        if not ev_id:
+            print(f"[sqlserver-versions] entry without id, skipping: {v}"); continue
+        name = lettername(SQLSERVER_NAME_PREFIX, 2)  # 9 chars, letters-only
+        payload = fill(template, name=name, engine_version_id=ev_id, subnet_id=subnet_id,
+                       server_type_name=stype, service_ip="", engine="sqlserver")
+        # fixture under test sends license "" (SDK NullableString); keep it
+        payload.setdefault("init_config_option", {})["license"] = ""
+        tag = f"ev={ev_id} sw={v.get('software_version')!r} eos={v.get('end_of_service')!r}"
+        status = attempt_create(c, svc, payload, tag)
+        results.append((ev_id, status))
+        if status is None:
+            return
+        if status and 200 <= status < 300:
+            print(f"[sqlserver-versions] *** {ev_id} is the CREATABLE engine version — stopping ***")
+            break
+    print("[sqlserver-versions] summary: " +
+          ", ".join(f"{i}->{s}" for i, s in results))
+    print("-" * 70)
+
+
+def probe_searchengine_license(c):
+    """Resolve sweep 27399112864's searchengine 400 'Invalid License.'.
+
+    The fixture omits `license` entirely (SDK NullableString, omitempty); the
+    API doc example shows license: "". Try create with license omitted, "",
+    explicit null, then known tier names, until one returns 202; delete it."""
+    svc, body_key = ENGINES["searchengine"]
+    template = load_bodies()[body_key]
+
+    st, evs, raw = get_items(c, svc, "/v1/engine-versions")
+    ev_id = ""
+    for v in evs:
+        if not v.get("end_of_service"):
+            ev_id = v.get("id") or v.get("dbaas_engine_version_id") or ""
+            break
+    if not ev_id and evs:
+        ev_id = evs[0].get("id", "")
+    print(f"[searchengine-license] engine-versions -> {st}, picked id={ev_id!r} ({len(evs)} available)")
+
+    stype = pick_server_type(c, svc)
+    subnet_id = pick_subnet(c, "searchengine-license")
+    variants = [("omitted", _OMIT), ('empty ""', ""), ("explicit null", None),
+                ("OPEN_SOURCE", "OPEN_SOURCE"), ("BASIC", "BASIC"), ("ENTERPRISE", "ENTERPRISE")]
+    results = []
+    for tag, val in variants:
+        name = lettername(SEARCHENGINE_NAME_PREFIX, 1)  # 9 chars, letters-only
+        payload = fill(template, name=name, engine_version_id=ev_id, subnet_id=subnet_id,
+                       server_type_name=stype, service_ip="", engine="searchengine")
+        if val is _OMIT:
+            payload.pop("license", None)
+        else:
+            payload["license"] = val
+        status = attempt_create(c, svc, payload, f"license {tag}")
+        results.append((tag, status))
+        if status is None:
+            return
+        if status and 200 <= status < 300:
+            print(f"[searchengine-license] *** license variant {tag!r} ACCEPTED — stopping ***")
+            break
+    print("[searchengine-license] summary: " +
+          ", ".join(f"{t}->{s}" for t, s in results))
+    print("-" * 70)
+
+
 # DBaaS clusters created by probe runs that leaked (202 id is under resource.id,
 # which the first cleanup code missed). `probe.py cleanup` removes these by id.
 LEAKED_IDS = {
@@ -283,12 +424,29 @@ def wait_gone(c, svc, cid, timeout=300, interval=20):
     return False
 
 
+# name prefixes the targeted modes use — cleanup sweeps these per service
+PROBE_NAME_PREFIXES = {
+    "sqlserver":    (SQLSERVER_NAME_PREFIX,),
+    "searchengine": (SEARCHENGINE_NAME_PREFIX,),
+}
+
+
 def cleanup(c):
     print("== DBaaS leak cleanup (by id) ==")
     ok = True
     for svc, ids in LEAKED_IDS.items():
         for cid in ids:
             ok = delete_cluster(c, svc, cid) and ok
+    print("== DBaaS leak cleanup (by probe name prefix) ==")
+    for svc, prefixes in PROBE_NAME_PREFIXES.items():
+        st, cls, _ = get_items(c, svc, "/v1/clusters")
+        print(f"  [{svc}] clusters -> {st} ({len(cls)} listed)")
+        for cl in cls:
+            name = str(cl.get("name") or "")
+            cid = cl.get("id") or cl.get("cluster_id")
+            if cid and any(name.startswith(p) for p in prefixes):
+                print(f"  [{svc}] probe leak {name} ({cid})")
+                ok = delete_cluster(c, svc, cid) and ok
     print("cleanup done" if ok else "cleanup incomplete (some clusters remain)")
     return 0
 
@@ -302,10 +460,16 @@ def main(argv):
         return cleanup(c)
     if args == ["all"]:
         args = list(ENGINES)
+    modes = {"sqlserver-versions": probe_sqlserver_versions,
+             "searchengine-license": probe_searchengine_license}
     for engine in args:
-        if engine not in ENGINES:
-            print(f"unknown engine {engine}; known: {', '.join(ENGINES)}"); continue
-        probe(c, engine)
+        if engine in modes:
+            modes[engine](c)
+        elif engine in ENGINES:
+            probe(c, engine)
+        else:
+            print(f"unknown engine {engine}; known: "
+                  f"{', '.join(list(ENGINES) + list(modes))}, cleanup")
     return 0
 
 

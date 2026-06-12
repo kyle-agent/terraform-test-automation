@@ -29,7 +29,9 @@ jobs:
   probe:
     runs-on: ubuntu-latest
     environment: scp-integration
-    timeout-minutes: 40
+    # Up to two 202 creates (one per mode), each needing the ~15-20min
+    # CREATING-trap wait before DELETE works (delete_cluster polls 25min max).
+    timeout-minutes: 80
     env:
       SCP_REGION: kr-west1
       SCP_ENV: e
@@ -46,9 +48,11 @@ jobs:
         run: git clone --depth 1 https://github.com/kyle-agent/api-test-automation /tmp/apitest
       - name: Install deps
         run: pip install -r /tmp/apitest/requirements.txt
-      # Default to 'cleanup' so a push never accidentally CREATES clusters (creates
-      # take ~20min to become deletable — a CREATING-trap). To probe engines, flip
-      # this to e.g. 'mysql' / 'all' / 'sqlserver searchengine eventstreams' for one
-      # push, then flip back. 'cleanup' is idempotent (GONE ids just report gone).
+      # Safe default is 'cleanup' (idempotent; never CREATES — creates take ~20min
+      # to become deletable, a CREATING-trap). Flipped for ONE push to the two
+      # targeted modes resolving sweep 27399112864's named 400s — sqlserver
+      # "Invalid Engine Version." and searchengine "Invalid License." (each 202
+      # self-deletes; cleanup also catches their prbsqlv*/prbselic* names by
+      # prefix). Flip back to 'cleanup' after this run.
       - name: Probe / cleanup DBaaS
-        run: PYTHONPATH=/tmp/apitest python cmd/dbaas_probe/probe.py ${{ github.event.inputs.engines || 'cleanup' }}
+        run: PYTHONPATH=/tmp/apitest python cmd/dbaas_probe/probe.py ${{ github.event.inputs.engines || 'sqlserver-versions searchengine-license' }}
