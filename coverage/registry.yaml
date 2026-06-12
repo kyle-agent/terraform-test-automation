@@ -538,12 +538,10 @@ loggingaudit_trail:
   depends_on: []
   family: loggingaudit
   import: false
-  issues:
-  - 'retest: trail_name max 26 chars - regr-audit-trail+suffix was 28 (run 27419601096); base now regrtrail
-    (21 with suffix)'
+  issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none

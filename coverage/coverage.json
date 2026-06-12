@@ -195,13 +195,13 @@
     }
   },
   "samsungcloudplatformv2_filestorage_replication": {
-    "highest_stage": "replan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27410597752",
-    "last_seen": "2026-06-12T13:05:23Z",
-    "note": "destroy failed: Error: Error Delete Replication Could not Delete Replication, unexpected error : 400 Bad Request Reason: Cannot delete volume because replication is in use. Delete Replication Policy. -Replication Policy : paused > delete",
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27417604819",
+    "last_seen": "2026-06-12T15:31:48Z",
+    "note": "",
     "stages": {
       "apply": "ok",
-      "destroy": "fail",
+      "destroy": "ok",
       "plan": "ok",
       "replan": "ok",
       "validate": "ok"
@@ -274,8 +274,8 @@
   },
   "samsungcloudplatformv2_iam_group": {
     "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27410597752",
-    "last_seen": "2026-06-12T13:05:23Z",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27417604819",
+    "last_seen": "2026-06-12T15:31:48Z",
     "note": "Error: Error creating user with samsungcloudplatformv2_iam_user.regr, on main.tf line 29, in resource \"samsungcloudplatformv2_iam_user\" \"regr\": 29: resource \"samsungcloudplatformv2_iam_user\" \"regr\" { Could not create user, unexpected error: 401 Unauthorized Reason: [HMAC] HMAC valid fail",
     "stages": {
       "apply": "fail",
@@ -390,15 +390,15 @@
     }
   },
   "samsungcloudplatformv2_loggingaudit_trail": {
-    "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27410597752",
-    "last_seen": "2026-06-12T13:05:23Z",
-    "note": "Error: Error creating Trail with samsungcloudplatformv2_loggingaudit_trail.regr, on main.tf line 63, in resource \"samsungcloudplatformv2_loggingaudit_trail\" \"regr\": 63: resource \"samsungcloudplatformv2_loggingaudit_trail\" \"regr\" { Could not create Trail, unexpected error: json: unknown field \"iam_role_id\" Reason: Invalid error data",
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27425274451",
+    "last_seen": "2026-06-12T15:31:51Z",
+    "note": "",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
+      "apply": "ok",
+      "destroy": "ok",
       "plan": "ok",
-      "replan": "skip",
+      "replan": "ok",
       "validate": "ok"
     }
   },
@@ -768,9 +768,9 @@
   },
   "samsungcloudplatformv2_vpc_subnet": {
     "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27406093988",
-    "last_seen": "2026-06-12T13:05:23Z",
-    "note": "Error: Error creating vpc endpoint with samsungcloudplatformv2_vpc_vpc_endpoint.regr, on main.tf line 87, in resource \"samsungcloudplatformv2_vpc_vpc_endpoint\" \"regr\": 87: resource \"samsungcloudplatformv2_vpc_vpc_endpoint\" \"regr\" { Could not create vpc endpoint, unexpected error: 400 Bad Request Reason: Resource Key is not valid : 112.107.105.22",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27419601096",
+    "last_seen": "2026-06-12T15:31:50Z",
+    "note": "Error: Error creating vpc endpoint with samsungcloudplatformv2_vpc_vpc_endpoint.regr, on main.tf line 93, in resource \"samsungcloudplatformv2_vpc_vpc_endpoint\" \"regr\": 93: resource \"samsungcloudplatformv2_vpc_vpc_endpoint\" \"regr\" { Could not create vpc endpoint, unexpected error: 400 Bad Request Reason: Resource Key is not valid : 9b13e0d04b7544ad8b66905cd94888bd",
     "stages": {
       "apply": "fail",
       "destroy": "skip",
