@@ -253,6 +253,24 @@ def pick_server_type(c, svc):
     return stype
 
 
+def pick_server_type_like(c, svc, preferred, prefix):
+    """Pick the FIXTURE's server type (run 27402349428: picking the first of 160
+    sqlserver types gave db1v10m120, not the fixture's db1v2m8 — keep parity).
+
+    Exact `preferred` if listed, else first name starting with `prefix`, else
+    the literal `preferred` (fixture default) as a last resort."""
+    st, sts, _ = get_items(c, svc, "/v1/server-types")
+    names = [s.get("name") or s.get("server_type_name") or s.get("id") or "" for s in sts]
+    if preferred in names:
+        chosen, how = preferred, "exact"
+    else:
+        chosen = next((n for n in names if n.startswith(prefix)), "")
+        how = f"prefix {prefix!r}" if chosen else "literal fallback"
+        chosen = chosen or preferred
+    print(f"[{svc}] server-types  -> {st}, picked name={chosen!r} ({how}; {len(names)} available)")
+    return chosen
+
+
 def pick_subnet(c, tag):
     subnet_id = os.environ.get("SUBNET_ID", "")
     st, subs, _ = get_items(c, "vpc", "/v1/subnets")
@@ -288,15 +306,112 @@ def attempt_create(c, svc, payload, tag):
     return r.status
 
 
-def probe_sqlserver_versions(c):
-    """Resolve sweep 27399112864's sqlserver 400 'Invalid Engine Version.'.
+def sqlserver_fixture_body(name, ev_id, subnet_id, stype):
+    """Field-for-field mirror of scenarios/sqlserver_cluster/main.tf (run
+    27402349428: the canonical-template body fails schema validation EARLIER
+    — bare 400 value_error for all 20 engine ids — while the fixture body
+    reaches the named 'Invalid Engine Version' check, so probe the fixture
+    body). service_ip_address is omitted, like the fixture."""
+    return {
+        "name": name,
+        "dbaas_engine_version_id": ev_id,
+        "ha_enabled": False,
+        "nat_enabled": False,
+        "timezone": "Asia/Seoul",
+        "instance_name_prefix": name[:8],  # prefix max_length 8
+        "allowable_ip_addresses": ["10.0.0.0/24"],
+        "subnet_id": subnet_id,
+        "init_config_option": {
+            "audit_enabled": False,
+            "database_service_name": "Regrsvc",
+            "database_user_name": "regradmin",
+            "database_user_password": "Regr1234!@",
+            "database_port": 2866,
+            "database_collation": "SQL_Latin1_General_CP1_CI_AS",
+            "license": "",
+            "databases": [
+                {"database_name": "regrdb", "drive_letter": "E"},
+            ],
+            "backup_option": {
+                "retention_period_day": "7",
+                "starting_time_hour": "11",
+                "archive_frequency_minute": "30",
+                "full_backup_day_of_week": "SUN",
+            },
+        },
+        "instance_groups": [
+            {
+                "role_type": "ACTIVE",
+                "server_type_name": stype,
+                "block_storage_groups": [
+                    {"role_type": "OS", "size_gb": 104, "volume_type": "SSD"},
+                    {"role_type": "DATA", "size_gb": 200, "volume_type": "SSD"},
+                ],
+                "instances": [
+                    {"role_type": "ACTIVE"},
+                ],
+            },
+        ],
+    }
 
-    The fixture picks the first non-end_of_service /v1/engine-versions entry —
-    apparently not actually creatable. Log EVERY engine-version entry verbatim,
-    then try the proven create body once per engine_version_id (license "")
-    until one returns 202; delete it immediately."""
-    svc, body_key = ENGINES["sqlserver"]
-    template = load_bodies()[body_key]
+
+def searchengine_fixture_body(name, ev_id, subnet_id, stype):
+    """Field-for-field mirror of scenarios/searchengine_cluster/main.tf:
+    is_combined, MASTER_DATA (OS+DATA) + KIBANA (OS) groups, port 9201.
+    `license` is left to the caller (that's the variable under test)."""
+    return {
+        "name": name,
+        "dbaas_engine_version_id": ev_id,
+        "nat_enabled": False,
+        "timezone": "Asia/Seoul",
+        "instance_name_prefix": name[:8],  # prefix max_length 8
+        "allowable_ip_addresses": ["10.0.0.0/24"],
+        "subnet_id": subnet_id,
+        "is_combined": True,
+        "init_config_option": {
+            "database_user_name": "regradmin",
+            "database_user_password": "Regr1234!@",
+            "database_port": 9201,
+            "backup_option": {
+                "retention_period_day": "7",
+                "starting_time_hour": "11",
+            },
+        },
+        "instance_groups": [
+            {
+                "role_type": "MASTER_DATA",
+                "server_type_name": stype,
+                "block_storage_groups": [
+                    {"role_type": "OS", "size_gb": 104, "volume_type": "SSD"},
+                    {"role_type": "DATA", "size_gb": 200, "volume_type": "SSD"},
+                ],
+                "instances": [
+                    {"role_type": "MASTER_DATA"},
+                ],
+            },
+            {
+                "role_type": "KIBANA",
+                "server_type_name": stype,
+                "block_storage_groups": [
+                    {"role_type": "OS", "size_gb": 104, "volume_type": "SSD"},
+                ],
+                "instances": [
+                    {"role_type": "KIBANA"},
+                ],
+            },
+        ],
+    }
+
+
+def probe_sqlserver_versions(c):
+    """Resolve the sqlserver 400 'Invalid Engine Version.' (sweep 27399112864).
+
+    Run 27402349428 showed the canonical api_bodies template (first-of-160
+    server type db1v10m120) fails schema validation before the engine-version
+    check — every id got a bare 400 value_error. So mirror the FIXTURE body
+    (server type db1v2m8) instead, log EVERY engine-version entry verbatim,
+    and try once per engine_version_id until one returns 202; delete it."""
+    svc, _ = ENGINES["sqlserver"]
 
     st, evs, raw = get_items(c, svc, "/v1/engine-versions")
     print(f"[sqlserver-versions] engine-versions -> {st} ({len(evs)} entries)")
@@ -305,7 +420,7 @@ def probe_sqlserver_versions(c):
     for v in evs:
         print(f"[sqlserver-versions] ENTRY {json.dumps(v, ensure_ascii=False, sort_keys=True)}")
 
-    stype = pick_server_type(c, svc)
+    stype = pick_server_type_like(c, svc, "db1v2m8", "db1v2m")  # fixture's type
     subnet_id = pick_subnet(c, "sqlserver-versions")
     results = []
     for v in evs:
@@ -313,10 +428,7 @@ def probe_sqlserver_versions(c):
         if not ev_id:
             print(f"[sqlserver-versions] entry without id, skipping: {v}"); continue
         name = lettername(SQLSERVER_NAME_PREFIX, 2)  # 9 chars, letters-only
-        payload = fill(template, name=name, engine_version_id=ev_id, subnet_id=subnet_id,
-                       server_type_name=stype, service_ip="", engine="sqlserver")
-        # fixture under test sends license "" (SDK NullableString); keep it
-        payload.setdefault("init_config_option", {})["license"] = ""
+        payload = sqlserver_fixture_body(name, ev_id, subnet_id, stype)
         tag = f"ev={ev_id} sw={v.get('software_version')!r} eos={v.get('end_of_service')!r}"
         status = attempt_create(c, svc, payload, tag)
         results.append((ev_id, status))
@@ -331,46 +443,53 @@ def probe_sqlserver_versions(c):
 
 
 def probe_searchengine_license(c):
-    """Resolve sweep 27399112864's searchengine 400 'Invalid License.'.
+    """Resolve the searchengine 400 'Invalid License.' (sweep 27399112864).
 
-    The fixture omits `license` entirely (SDK NullableString, omitempty); the
-    API doc example shows license: "". Try create with license omitted, "",
-    explicit null, then known tier names, until one returns 202; delete it."""
-    svc, body_key = ENGINES["searchengine"]
-    template = load_bodies()[body_key]
+    Run 27402349428: omitted and explicit-null license both reach the NAMED
+    Dbaas.ValidationError.InvalidLicense; any string ("", OPEN_SOURCE, BASIC,
+    ENTERPRISE) is rejected at the schema (bare value_error) — so strings are
+    out. Hypothesis: license validity depends on the ENGINE VERSION (only
+    contents[0] was tried; some of the 5 versions may be open-source builds
+    needing no license). Iterate ALL engine versions (logged verbatim) x
+    license in {omitted, explicit null}, with the FIXTURE-mirror body, until
+    one returns 202; delete it (leak-0)."""
+    svc, _ = ENGINES["searchengine"]
 
     st, evs, raw = get_items(c, svc, "/v1/engine-versions")
-    ev_id = ""
+    print(f"[searchengine-license] engine-versions -> {st} ({len(evs)} entries)")
+    if not evs:
+        print(f"[searchengine-license] raw body: {raw}"); return
     for v in evs:
-        if not v.get("end_of_service"):
-            ev_id = v.get("id") or v.get("dbaas_engine_version_id") or ""
-            break
-    if not ev_id and evs:
-        ev_id = evs[0].get("id", "")
-    print(f"[searchengine-license] engine-versions -> {st}, picked id={ev_id!r} ({len(evs)} available)")
+        print(f"[searchengine-license] ENTRY {json.dumps(v, ensure_ascii=False, sort_keys=True)}")
 
-    stype = pick_server_type(c, svc)
+    stype = pick_server_type_like(c, svc, "ses1v2m4", "ses1v2m")  # fixture's type
     subnet_id = pick_subnet(c, "searchengine-license")
-    variants = [("omitted", _OMIT), ('empty ""', ""), ("explicit null", None),
-                ("OPEN_SOURCE", "OPEN_SOURCE"), ("BASIC", "BASIC"), ("ENTERPRISE", "ENTERPRISE")]
+    variants = [("omitted", _OMIT), ("explicit null", None)]
     results = []
-    for tag, val in variants:
-        name = lettername(SEARCHENGINE_NAME_PREFIX, 1)  # 9 chars, letters-only
-        payload = fill(template, name=name, engine_version_id=ev_id, subnet_id=subnet_id,
-                       server_type_name=stype, service_ip="", engine="searchengine")
-        if val is _OMIT:
-            payload.pop("license", None)
-        else:
-            payload["license"] = val
-        status = attempt_create(c, svc, payload, f"license {tag}")
-        results.append((tag, status))
-        if status is None:
-            return
-        if status and 200 <= status < 300:
-            print(f"[searchengine-license] *** license variant {tag!r} ACCEPTED — stopping ***")
+    done = False
+    for v in evs:
+        if done:
             break
+        ev_id = v.get("id") or v.get("dbaas_engine_version_id") or ""
+        if not ev_id:
+            print(f"[searchengine-license] entry without id, skipping: {v}"); continue
+        evtag = (f"ev={ev_id} name={v.get('name')!r} sw={v.get('software_version')!r} "
+                 f"img={v.get('product_image_type')!r} eos={v.get('end_of_service')!r}")
+        for ltag, val in variants:
+            name = lettername(SEARCHENGINE_NAME_PREFIX, 1)  # 9 chars, letters-only
+            payload = searchengine_fixture_body(name, ev_id, subnet_id, stype)
+            if val is not _OMIT:
+                payload["license"] = val
+            status = attempt_create(c, svc, payload, f"{evtag} license {ltag}")
+            results.append((ev_id, ltag, status))
+            if status is None:
+                return
+            if status and 200 <= status < 300:
+                print(f"[searchengine-license] *** engine {ev_id} + license {ltag!r} ACCEPTED — stopping ***")
+                done = True
+                break
     print("[searchengine-license] summary: " +
-          ", ".join(f"{t}->{s}" for t, s in results))
+          ", ".join(f"{i}/{t}->{s}" for i, t, s in results))
     print("-" * 70)
 
 
