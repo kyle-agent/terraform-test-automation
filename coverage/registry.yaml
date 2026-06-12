@@ -543,7 +543,7 @@ loggingaudit_trail:
   issues:
   - 'retest: provider schema requires log_archive_account_id (validate failed when omitted) - re-added
     with the injected account id; real OBS bucket + real account_id wired; provider null-optionals fix
-    live.'
+    live. (fixture commit landed in follow-up)'
   needs: []
   parallel: normal
   status: untested
