@@ -29,9 +29,10 @@
    "scenario": "ds_plannedcompute"
   },
   "budget_budget": {
+   "excluded": true,
    "family": "budget",
-   "required": [],
-   "scenario": "ds_budget"
+   "reason": "bare read 404s on an empty account (show-by-id semantics; run 27451961730)",
+   "required": []
   },
   "budget_budgets": {
    "family": "budget",
@@ -39,9 +40,10 @@
    "scenario": "ds_budget"
   },
   "cachestore_cluster": {
+   "excluded": true,
    "family": "cachestore",
-   "required": [],
-   "scenario": "ds_cachestore"
+   "reason": "bare read 404s on an empty account (show-by-id semantics; run 27451961730)",
+   "required": []
   },
   "cachestore_clusters": {
    "family": "cachestore",
@@ -54,9 +56,10 @@
    "scenario": "ds_cachestore"
   },
   "certificate_manager": {
+   "excluded": true,
    "family": "certificatemanager",
-   "required": [],
-   "scenario": "ds_certificatemanager"
+   "reason": "bare read 404s on an empty account (show-by-id semantics; run 27451961730)",
+   "required": []
   },
   "certificate_managers": {
    "family": "certificatemanager",
@@ -64,9 +67,10 @@
    "scenario": "ds_certificatemanager"
   },
   "cloudmonitoring_account_events": {
+   "excluded": true,
    "family": "cloudmonitoring",
-   "required": [],
-   "scenario": "ds_cloudmonitoring"
+   "reason": "API rejects unfiltered read: eventState is required (run 27451961730)",
+   "required": []
   },
   "cloudmonitoring_accountmembers": {
    "family": "cloudmonitoring",
@@ -95,9 +99,10 @@
    "scenario": "ds_cloudmonitoring"
   },
   "cloudmonitoring_event": {
+   "excluded": true,
    "family": "cloudmonitoring",
-   "required": [],
-   "scenario": "ds_cloudmonitoring"
+   "reason": "bare read 404s on an empty account (show-by-id semantics; run 27451961730)",
+   "required": []
   },
   "cloudmonitoring_event_notification_states": {
    "excluded": true,
@@ -212,9 +217,10 @@
    ]
   },
   "dns_hosted_zone": {
+   "excluded": true,
    "family": "dns",
-   "required": [],
-   "scenario": "ds_dns"
+   "reason": "bare read 404s on an empty account (show-by-id semantics; run 27451961730)",
+   "required": []
   },
   "dns_hosted_zones": {
    "family": "dns",
@@ -222,9 +228,10 @@
    "scenario": "ds_dns"
   },
   "dns_private_dns": {
+   "excluded": true,
    "family": "dns",
-   "required": [],
-   "scenario": "ds_dns"
+   "reason": "bare read 404s on an empty account (show-by-id semantics; run 27451961730)",
+   "required": []
   },
   "dns_private_dnss": {
    "family": "dns",
@@ -252,9 +259,10 @@
    "scenario": "ds_dns"
   },
   "epas_cluster": {
+   "excluded": true,
    "family": "epas",
-   "required": [],
-   "scenario": "ds_epas"
+   "reason": "bare read 404s on an empty account (show-by-id semantics; run 27451961730)",
+   "required": []
   },
   "epas_clusters": {
    "family": "epas",
@@ -267,9 +275,10 @@
    "scenario": "ds_epas"
   },
   "eventstreams_cluster": {
+   "excluded": true,
    "family": "eventstreams",
-   "required": [],
-   "scenario": "ds_eventstreams"
+   "reason": "bare read 404s on an empty account (show-by-id semantics; run 27451961730)",
+   "required": []
   },
   "eventstreams_clusters": {
    "family": "eventstreams",
@@ -350,9 +359,10 @@
    "scenario": "ds_firewall"
   },
   "gslb_gslb": {
+   "excluded": true,
    "family": "gslb",
-   "required": [],
-   "scenario": "ds_gslb"
+   "reason": "bare read 404s on an empty account (show-by-id semantics; run 27451961730)",
+   "required": []
   },
   "gslb_gslb_resources": {
    "excluded": true,
@@ -388,14 +398,16 @@
    "scenario": "ds_iam"
   },
   "iam_group": {
+   "excluded": true,
    "family": "iam",
-   "required": [],
-   "scenario": "ds_iam"
+   "reason": "bare read 404s on an empty account (show-by-id semantics; run 27451961730)",
+   "required": []
   },
   "iam_group_members": {
+   "excluded": true,
    "family": "iam",
-   "required": [],
-   "scenario": "ds_iam"
+   "reason": "list 404s without its parent resource (run 27451961730)",
+   "required": []
   },
   "iam_group_policy_bindings": {
    "family": "iam",
@@ -448,9 +460,10 @@
    "scenario": "ds_iam"
   },
   "loadbalancer_lb_certificate": {
+   "excluded": true,
    "family": "loadbalancer",
-   "required": [],
-   "scenario": "ds_loadbalancer"
+   "reason": "bare read 404s on an empty account (show-by-id semantics; run 27451961730)",
+   "required": []
   },
   "loadbalancer_lb_certificates": {
    "family": "loadbalancer",
@@ -458,9 +471,10 @@
    "scenario": "ds_loadbalancer"
   },
   "loadbalancer_lb_health_check": {
+   "excluded": true,
    "family": "loadbalancer",
-   "required": [],
-   "scenario": "ds_loadbalancer"
+   "reason": "bare read 404s on an empty account (show-by-id semantics; run 27451961730)",
+   "required": []
   },
   "loadbalancer_lb_health_checks": {
    "family": "loadbalancer",
@@ -518,9 +532,10 @@
    "scenario": "ds_loggingaudit"
   },
   "mariadb_cluster": {
+   "excluded": true,
    "family": "mariadb",
-   "required": [],
-   "scenario": "ds_mariadb"
+   "reason": "bare read 404s on an empty account (show-by-id semantics; run 27451961730)",
+   "required": []
   },
   "mariadb_clusters": {
    "family": "mariadb",
@@ -546,9 +561,10 @@
    "scenario": "ds_multinodegpucluster"
   },
   "mysql_cluster": {
+   "excluded": true,
    "family": "mysql",
-   "required": [],
-   "scenario": "ds_mysql"
+   "reason": "bare read 404s on an empty account (show-by-id semantics; run 27451961730)",
+   "required": []
   },
   "mysql_clusters": {
    "family": "mysql",
@@ -575,9 +591,10 @@
    "scenario": "ds_network_logging"
   },
   "postgresql_cluster": {
+   "excluded": true,
    "family": "postgresql",
-   "required": [],
-   "scenario": "ds_postgresql"
+   "reason": "bare read 404s on an empty account (show-by-id semantics; run 27451961730)",
+   "required": []
   },
   "postgresql_clusters": {
    "family": "postgresql",
@@ -626,9 +643,10 @@
    "scenario": "ds_resourcemanager"
   },
   "searchengine_cluster": {
+   "excluded": true,
    "family": "searchengine",
-   "required": [],
-   "scenario": "ds_searchengine"
+   "reason": "bare read 404s on an empty account (show-by-id semantics; run 27451961730)",
+   "required": []
   },
   "searchengine_clusters": {
    "family": "searchengine",
@@ -670,14 +688,16 @@
    "scenario": "ds_securitygroup"
   },
   "servicewatch_alert": {
+   "excluded": true,
    "family": "servicewatch",
-   "required": [],
-   "scenario": "ds_servicewatch"
+   "reason": "bare read 404s on an empty account (show-by-id semantics; run 27451961730)",
+   "required": []
   },
   "servicewatch_dashboard": {
+   "excluded": true,
    "family": "servicewatch",
-   "required": [],
-   "scenario": "ds_servicewatch"
+   "reason": "bare read 404s on an empty account (show-by-id semantics; run 27451961730)",
+   "required": []
   },
   "servicewatch_dashboards": {
    "family": "servicewatch",
@@ -764,9 +784,10 @@
    ]
   },
   "sqlserver_cluster": {
+   "excluded": true,
    "family": "sqlserver",
-   "required": [],
-   "scenario": "ds_sqlserver"
+   "reason": "bare read 404s on an empty account (show-by-id semantics; run 27451961730)",
+   "required": []
   },
   "sqlserver_clusters": {
    "family": "sqlserver",
@@ -779,9 +800,10 @@
    "scenario": "ds_sqlserver"
   },
   "vertica_cluster": {
+   "excluded": true,
    "family": "vertica",
-   "required": [],
-   "scenario": "ds_vertica"
+   "reason": "bare read 404s on an empty account (show-by-id semantics; run 27451961730)",
+   "required": []
   },
   "vertica_clusters": {
    "family": "vertica",
@@ -859,14 +881,16 @@
    "scenario": "ds_vpc"
   },
   "vpc_private_nat": {
+   "excluded": true,
    "family": "vpc",
-   "required": [],
-   "scenario": "ds_vpc"
+   "reason": "bare read 404s on an empty account (show-by-id semantics; run 27451961730)",
+   "required": []
   },
   "vpc_private_nat_ips": {
+   "excluded": true,
    "family": "vpc",
-   "required": [],
-   "scenario": "ds_vpc"
+   "reason": "list 404s without its parent resource (run 27451961730)",
+   "required": []
   },
   "vpc_private_nats": {
    "family": "vpc",

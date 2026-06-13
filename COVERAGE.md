@@ -280,10 +280,10 @@ Read-only verification: each `ds_<family>` smoke scenario reads every standalone
 | metric | count |
 |---|---:|
 | total data sources | 168 |
-| standalone-readable (smoke-covered) | 127 |
+| standalone-readable (smoke-covered) | 103 |
 | **read-verified green** | 0 |
 | read failing | 0 |
-| excluded (requires parent-resource arg) | 41 |
+| excluded (requires parent-resource arg) | 65 |
 
 | data source | family | read | note |
 |---|---|---|---|
@@ -292,19 +292,19 @@ Read-only verification: each `ds_<family>` smoke scenario reads every standalone
 | `baremetal_baremetal` | baremetal | excluded | requires id (parent-resource arg; not standalone-readable) |
 | `baremetal_baremetals` | baremetal | untested | via `ds_baremetal` |
 | `billing_planned_computes` | plannedcompute | untested | via `ds_plannedcompute` |
-| `budget_budget` | budget | untested | via `ds_budget` |
+| `budget_budget` | budget | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `budget_budgets` | budget | untested | via `ds_budget` |
-| `cachestore_cluster` | cachestore | untested | via `ds_cachestore` |
+| `cachestore_cluster` | cachestore | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `cachestore_clusters` | cachestore | untested | via `ds_cachestore` |
 | `cachestore_engine_version` | cachestore | untested | via `ds_cachestore` |
-| `certificate_manager` | certificatemanager | untested | via `ds_certificatemanager` |
+| `certificate_manager` | certificatemanager | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `certificate_managers` | certificatemanager | untested | via `ds_certificatemanager` |
-| `cloudmonitoring_account_events` | cloudmonitoring | untested | via `ds_cloudmonitoring` |
+| `cloudmonitoring_account_events` | cloudmonitoring | excluded | API rejects unfiltered read: eventState is required (run 27451961730) |
 | `cloudmonitoring_accountmembers` | cloudmonitoring | untested | via `ds_cloudmonitoring` |
 | `cloudmonitoring_accountproducts` | cloudmonitoring | excluded | requires x_resource_type (parent-resource arg; not standalone-readable) |
 | `cloudmonitoring_addressbookmembers` | cloudmonitoring | excluded | requires addrbook_id (parent-resource arg; not standalone-readable) |
 | `cloudmonitoring_addressbooks` | cloudmonitoring | untested | via `ds_cloudmonitoring` |
-| `cloudmonitoring_event` | cloudmonitoring | untested | via `ds_cloudmonitoring` |
+| `cloudmonitoring_event` | cloudmonitoring | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `cloudmonitoring_event_notification_states` | cloudmonitoring | excluded | requires event_id, x_resource_type (parent-resource arg; not standalone-readabl… |
 | `cloudmonitoring_event_policies` | cloudmonitoring | untested | via `ds_cloudmonitoring` |
 | `cloudmonitoring_event_policy` | cloudmonitoring | untested | via `ds_cloudmonitoring` |
@@ -321,18 +321,18 @@ Read-only verification: each `ds_<family>` smoke scenario reads every standalone
 | `configinspection_diagnosis_request` | configinspection | excluded | requires access_key, diagnosis_check_type, diagnosis_id, secret_key, tenant_id … |
 | `directconnect_direct_connects` | directconnect | untested | via `ds_directconnect` |
 | `directconnect_routing_rules` | directconnect | excluded | requires direct_connect_id (parent-resource arg; not standalone-readable) |
-| `dns_hosted_zone` | dns | untested | via `ds_dns` |
+| `dns_hosted_zone` | dns | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `dns_hosted_zones` | dns | untested | via `ds_dns` |
-| `dns_private_dns` | dns | untested | via `ds_dns` |
+| `dns_private_dns` | dns | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `dns_private_dnss` | dns | untested | via `ds_dns` |
 | `dns_public_domain_name` | dns | untested | via `ds_dns` |
 | `dns_public_domain_names` | dns | untested | via `ds_dns` |
 | `dns_record` | dns | untested | via `ds_dns` |
 | `dns_records` | dns | untested | via `ds_dns` |
-| `epas_cluster` | epas | untested | via `ds_epas` |
+| `epas_cluster` | epas | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `epas_clusters` | epas | untested | via `ds_epas` |
 | `epas_engine_version` | epas | untested | via `ds_epas` |
-| `eventstreams_cluster` | eventstreams | untested | via `ds_eventstreams` |
+| `eventstreams_cluster` | eventstreams | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `eventstreams_clusters` | eventstreams | untested | via `ds_eventstreams` |
 | `eventstreams_engine_version` | eventstreams | untested | via `ds_eventstreams` |
 | `filestorage_replication` | filestorage | excluded | requires id, volume_id (parent-resource arg; not standalone-readable) |
@@ -344,14 +344,14 @@ Read-only verification: each `ds_<family>` smoke scenario reads every standalone
 | `firewall_firewall_rule` | firewall | excluded | requires firewall_id, id (parent-resource arg; not standalone-readable) |
 | `firewall_firewall_rules` | firewall | excluded | requires firewall_id (parent-resource arg; not standalone-readable) |
 | `firewall_firewalls` | firewall | untested | via `ds_firewall` |
-| `gslb_gslb` | gslb | untested | via `ds_gslb` |
+| `gslb_gslb` | gslb | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `gslb_gslb_resources` | gslb | excluded | requires gslb_id (parent-resource arg; not standalone-readable) |
 | `gslb_gslb_rrc_update` | gslb | excluded | requires gslb_id, region, status (parent-resource arg; not standalone-readable) |
 | `gslb_gslb_rrcs` | gslb | untested | via `ds_gslb` |
 | `gslb_gslbs` | gslb | untested | via `ds_gslb` |
 | `iam_access_keys` | iam | untested | via `ds_iam` |
-| `iam_group` | iam | untested | via `ds_iam` |
-| `iam_group_members` | iam | untested | via `ds_iam` |
+| `iam_group` | iam | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
+| `iam_group_members` | iam | excluded | list 404s without its parent resource (run 27451961730) |
 | `iam_group_policy_bindings` | iam | untested | via `ds_iam` |
 | `iam_groups` | iam | untested | via `ds_iam` |
 | `iam_policies` | iam | untested | via `ds_iam` |
@@ -362,9 +362,9 @@ Read-only verification: each `ds_<family>` smoke scenario reads every standalone
 | `iam_user` | iam | untested | via `ds_iam` |
 | `iam_user_policy_bindings` | iam | untested | via `ds_iam` |
 | `iam_users` | iam | untested | via `ds_iam` |
-| `loadbalancer_lb_certificate` | loadbalancer | untested | via `ds_loadbalancer` |
+| `loadbalancer_lb_certificate` | loadbalancer | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `loadbalancer_lb_certificates` | loadbalancer | untested | via `ds_loadbalancer` |
-| `loadbalancer_lb_health_check` | loadbalancer | untested | via `ds_loadbalancer` |
+| `loadbalancer_lb_health_check` | loadbalancer | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `loadbalancer_lb_health_checks` | loadbalancer | untested | via `ds_loadbalancer` |
 | `loadbalancer_lb_listener` | loadbalancer | untested | via `ds_loadbalancer` |
 | `loadbalancer_lb_listeners` | loadbalancer | untested | via `ds_loadbalancer` |
@@ -376,17 +376,17 @@ Read-only verification: each `ds_<family>` smoke scenario reads every standalone
 | `loadbalancer_loadbalancer_private_nat_ip` | loadbalancer | untested | via `ds_loadbalancer` |
 | `loadbalancer_loadbalancers` | loadbalancer | untested | via `ds_loadbalancer` |
 | `loggingaudit_trail` | loggingaudit | untested | via `ds_loggingaudit` |
-| `mariadb_cluster` | mariadb | untested | via `ds_mariadb` |
+| `mariadb_cluster` | mariadb | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `mariadb_clusters` | mariadb | untested | via `ds_mariadb` |
 | `mariadb_engine_version` | mariadb | untested | via `ds_mariadb` |
 | `multinodegpucluster_gpunode` | multinodegpucluster | excluded | requires id (parent-resource arg; not standalone-readable) |
 | `multinodegpucluster_gpunodes` | multinodegpucluster | untested | via `ds_multinodegpucluster` |
-| `mysql_cluster` | mysql | untested | via `ds_mysql` |
+| `mysql_cluster` | mysql | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `mysql_clusters` | mysql | untested | via `ds_mysql` |
 | `mysql_engine_version` | mysql | untested | via `ds_mysql` |
 | `network_logging_network_logging_configurations` | network-logging | untested | via `ds_network_logging` |
 | `network_logging_network_logging_storages` | network-logging | untested | via `ds_network_logging` |
-| `postgresql_cluster` | postgresql | untested | via `ds_postgresql` |
+| `postgresql_cluster` | postgresql | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `postgresql_clusters` | postgresql | untested | via `ds_postgresql` |
 | `postgresql_engine_version` | postgresql | untested | via `ds_postgresql` |
 | `quota_account_quota` | quota | excluded | requires id (parent-resource arg; not standalone-readable) |
@@ -395,15 +395,15 @@ Read-only verification: each `ds_<family>` smoke scenario reads every standalone
 | `resourcemanager_resource_groups` | resourcemanager | untested | via `ds_resourcemanager` |
 | `resourcemanager_resource_tags` | resourcemanager | excluded | requires srn (parent-resource arg; not standalone-readable) |
 | `resourcemanager_tags` | resourcemanager | untested | via `ds_resourcemanager` |
-| `searchengine_cluster` | searchengine | untested | via `ds_searchengine` |
+| `searchengine_cluster` | searchengine | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `searchengine_clusters` | searchengine | untested | via `ds_searchengine` |
 | `searchengine_engine_version` | searchengine | untested | via `ds_searchengine` |
 | `security_group_security_group` | securitygroup | excluded | requires id (parent-resource arg; not standalone-readable) |
 | `security_group_security_group_rule` | securitygroup | excluded | requires id (parent-resource arg; not standalone-readable) |
 | `security_group_security_group_rules` | securitygroup | excluded | requires security_group_id (parent-resource arg; not standalone-readable) |
 | `security_group_security_groups` | securitygroup | untested | via `ds_securitygroup` |
-| `servicewatch_alert` | servicewatch | untested | via `ds_servicewatch` |
-| `servicewatch_dashboard` | servicewatch | untested | via `ds_servicewatch` |
+| `servicewatch_alert` | servicewatch | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
+| `servicewatch_dashboard` | servicewatch | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `servicewatch_dashboards` | servicewatch | untested | via `ds_servicewatch` |
 | `servicewatch_event_rule` | servicewatch | excluded | requires event_rule_id (parent-resource arg; not standalone-readable) |
 | `servicewatch_log_group` | servicewatch | excluded | requires log_group_id (parent-resource arg; not standalone-readable) |
@@ -416,10 +416,10 @@ Read-only verification: each `ds_<family>` smoke scenario reads every standalone
 | `ske_nodepool_images` | ske | untested | via `ds_ske` |
 | `ske_nodepoolnodes` | ske | excluded | requires nodepool_id (parent-resource arg; not standalone-readable) |
 | `ske_nodepools` | ske | excluded | requires cluster_id (parent-resource arg; not standalone-readable) |
-| `sqlserver_cluster` | sqlserver | untested | via `ds_sqlserver` |
+| `sqlserver_cluster` | sqlserver | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `sqlserver_clusters` | sqlserver | untested | via `ds_sqlserver` |
 | `sqlserver_engine_version` | sqlserver | untested | via `ds_sqlserver` |
-| `vertica_cluster` | vertica | untested | via `ds_vertica` |
+| `vertica_cluster` | vertica | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `vertica_clusters` | vertica | untested | via `ds_vertica` |
 | `vertica_engine_version` | vertica | untested | via `ds_vertica` |
 | `virtualserver_image` | virtualserver | untested | via `ds_virtualserver` |
@@ -435,8 +435,8 @@ Read-only verification: each `ds_<family>` smoke scenario reads every standalone
 | `vpc_internet_gateways` | vpc | untested | via `ds_vpc` |
 | `vpc_nat_gateways` | vpc | untested | via `ds_vpc` |
 | `vpc_ports` | vpc | untested | via `ds_vpc` |
-| `vpc_private_nat` | vpc | untested | via `ds_vpc` |
-| `vpc_private_nat_ips` | vpc | untested | via `ds_vpc` |
+| `vpc_private_nat` | vpc | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
+| `vpc_private_nat_ips` | vpc | excluded | list 404s without its parent resource (run 27451961730) |
 | `vpc_private_nats` | vpc | untested | via `ds_vpc` |
 | `vpc_publicips` | vpc | untested | via `ds_vpc` |
 | `vpc_subnet_vip` | vpc | excluded | requires subnet_id, vip_id (parent-resource arg; not standalone-readable) |

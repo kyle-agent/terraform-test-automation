@@ -14,13 +14,7 @@ provider "samsungcloudplatformv2" {}
 # Creates NOTHING: each block exercises a list/read endpoint with no or
 # constant-only arguments, so plan/apply verify the data-source code paths.
 
-data "samsungcloudplatformv2_dns_hosted_zone" "smoke" {
-}
-
 data "samsungcloudplatformv2_dns_hosted_zones" "smoke" {
-}
-
-data "samsungcloudplatformv2_dns_private_dns" "smoke" {
 }
 
 data "samsungcloudplatformv2_dns_private_dnss" "smoke" {

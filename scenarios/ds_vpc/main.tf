@@ -23,12 +23,6 @@ data "samsungcloudplatformv2_vpc_nat_gateways" "smoke" {
 data "samsungcloudplatformv2_vpc_ports" "smoke" {
 }
 
-data "samsungcloudplatformv2_vpc_private_nat" "smoke" {
-}
-
-data "samsungcloudplatformv2_vpc_private_nat_ips" "smoke" {
-}
-
 data "samsungcloudplatformv2_vpc_private_nats" "smoke" {
 }
 

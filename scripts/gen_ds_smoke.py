@@ -64,6 +64,38 @@ CONST_ARGS = {
 # Provider service dir -> dashboard family (only where they differ).
 DIR_FAMILY = {"baremetalblockstorage": "baremetal"}
 
+# Schema-valid but NOT standalone-readable in practice — discovered by sweep run
+# 27451961730 (the first ds_* discovery run, empty account). Three patterns:
+_R404 = "bare read 404s on an empty account (show-by-id semantics; run 27451961730)"
+_RLIST = "list 404s without its parent resource (run 27451961730)"
+_RFILT = "API rejects unfiltered read: eventState is required (run 27451961730)"
+RUNTIME_EXCLUDED = {
+    "budget_budget": _R404,
+    "cachestore_cluster": _R404,
+    "certificate_manager": _R404,
+    "cloudmonitoring_event": _R404,
+    "cloudmonitoring_account_events": _RFILT,
+    "dns_hosted_zone": _R404,
+    "dns_private_dns": _R404,
+    "epas_cluster": _R404,
+    "eventstreams_cluster": _R404,
+    "gslb_gslb": _R404,
+    "iam_group": _R404,
+    "iam_group_members": _RLIST,
+    "loadbalancer_lb_certificate": _R404,
+    "loadbalancer_lb_health_check": _R404,
+    "mariadb_cluster": _R404,
+    "mysql_cluster": _R404,
+    "postgresql_cluster": _R404,
+    "searchengine_cluster": _R404,
+    "servicewatch_alert": _R404,
+    "servicewatch_dashboard": _R404,
+    "sqlserver_cluster": _R404,
+    "vertica_cluster": _R404,
+    "vpc_private_nat": _R404,
+    "vpc_private_nat_ips": _RLIST,
+}
+
 
 def snake(name):
     return re.sub(r"(?<!^)(?=[A-Z])", "_", name).lower()
@@ -185,6 +217,9 @@ def disposition(datasources):
                 "requires %s (parent-resource arg; not standalone-readable)"
                 % ", ".join(req)
             )
+        elif t in RUNTIME_EXCLUDED:
+            info["excluded"] = True
+            info["reason"] = RUNTIME_EXCLUDED[t]
         else:
             info["scenario"] = "ds_" + info["family"].replace("-", "_")
     return datasources

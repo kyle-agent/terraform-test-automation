@@ -14,9 +14,6 @@ provider "samsungcloudplatformv2" {}
 # Creates NOTHING: each block exercises a list/read endpoint with no or
 # constant-only arguments, so plan/apply verify the data-source code paths.
 
-data "samsungcloudplatformv2_sqlserver_cluster" "smoke" {
-}
-
 data "samsungcloudplatformv2_sqlserver_clusters" "smoke" {
 }
 

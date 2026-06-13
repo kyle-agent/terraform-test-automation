@@ -14,13 +14,7 @@ provider "samsungcloudplatformv2" {}
 # Creates NOTHING: each block exercises a list/read endpoint with no or
 # constant-only arguments, so plan/apply verify the data-source code paths.
 
-data "samsungcloudplatformv2_loadbalancer_lb_certificate" "smoke" {
-}
-
 data "samsungcloudplatformv2_loadbalancer_lb_certificates" "smoke" {
-}
-
-data "samsungcloudplatformv2_loadbalancer_lb_health_check" "smoke" {
 }
 
 data "samsungcloudplatformv2_loadbalancer_lb_health_checks" "smoke" {

@@ -14,8 +14,5 @@ provider "samsungcloudplatformv2" {}
 # Creates NOTHING: each block exercises a list/read endpoint with no or
 # constant-only arguments, so plan/apply verify the data-source code paths.
 
-data "samsungcloudplatformv2_budget_budget" "smoke" {
-}
-
 data "samsungcloudplatformv2_budget_budgets" "smoke" {
 }

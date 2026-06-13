@@ -14,16 +14,10 @@ provider "samsungcloudplatformv2" {}
 # Creates NOTHING: each block exercises a list/read endpoint with no or
 # constant-only arguments, so plan/apply verify the data-source code paths.
 
-data "samsungcloudplatformv2_cloudmonitoring_account_events" "smoke" {
-}
-
 data "samsungcloudplatformv2_cloudmonitoring_accountmembers" "smoke" {
 }
 
 data "samsungcloudplatformv2_cloudmonitoring_addressbooks" "smoke" {
-}
-
-data "samsungcloudplatformv2_cloudmonitoring_event" "smoke" {
 }
 
 data "samsungcloudplatformv2_cloudmonitoring_event_policies" "smoke" {

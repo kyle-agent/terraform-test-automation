@@ -17,12 +17,6 @@ provider "samsungcloudplatformv2" {}
 data "samsungcloudplatformv2_iam_access_keys" "smoke" {
 }
 
-data "samsungcloudplatformv2_iam_group" "smoke" {
-}
-
-data "samsungcloudplatformv2_iam_group_members" "smoke" {
-}
-
 data "samsungcloudplatformv2_iam_group_policy_bindings" "smoke" {
 }
 
