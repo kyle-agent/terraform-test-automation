@@ -20,12 +20,6 @@ data "samsungcloudplatformv2_cloudmonitoring_accountmembers" "smoke" {
 data "samsungcloudplatformv2_cloudmonitoring_addressbooks" "smoke" {
 }
 
-data "samsungcloudplatformv2_cloudmonitoring_event_policies" "smoke" {
-}
-
-data "samsungcloudplatformv2_cloudmonitoring_event_policy" "smoke" {
-}
-
 data "samsungcloudplatformv2_cloudmonitoring_event_policy_notifications" "smoke" {
 }
 

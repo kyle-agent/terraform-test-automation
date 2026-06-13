@@ -33,6 +33,8 @@ on:
     paths:
       - '.github/workflows/coverage-sweep-pool.yml'
       - 'coverage/registry.yaml'
+      - 'coverage/provider_surface.json'
+      - 'scenarios/**'
       - 'scripts/plan_matrix.py'
 
 concurrency:

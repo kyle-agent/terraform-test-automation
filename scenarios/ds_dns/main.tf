@@ -20,13 +20,7 @@ data "samsungcloudplatformv2_dns_hosted_zones" "smoke" {
 data "samsungcloudplatformv2_dns_private_dnss" "smoke" {
 }
 
-data "samsungcloudplatformv2_dns_public_domain_name" "smoke" {
-}
-
 data "samsungcloudplatformv2_dns_public_domain_names" "smoke" {
-}
-
-data "samsungcloudplatformv2_dns_record" "smoke" {
 }
 
 data "samsungcloudplatformv2_dns_records" "smoke" {

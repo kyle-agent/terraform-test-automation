@@ -114,14 +114,16 @@
    ]
   },
   "cloudmonitoring_event_policies": {
+   "excluded": true,
    "family": "cloudmonitoring",
-   "required": [],
-   "scenario": "ds_cloudmonitoring"
+   "reason": "API rejects unfiltered read: productResourceId/eventPolicyId required (run 27452400061)",
+   "required": []
   },
   "cloudmonitoring_event_policy": {
+   "excluded": true,
    "family": "cloudmonitoring",
-   "required": [],
-   "scenario": "ds_cloudmonitoring"
+   "reason": "API rejects unfiltered read: productResourceId/eventPolicyId required (run 27452400061)",
+   "required": []
   },
   "cloudmonitoring_event_policy_histories": {
    "excluded": true,
@@ -239,9 +241,10 @@
    "scenario": "ds_dns"
   },
   "dns_public_domain_name": {
+   "excluded": true,
    "family": "dns",
-   "required": [],
-   "scenario": "ds_dns"
+   "reason": "bare read 404s on an empty account (show-by-id semantics; run 27451961730)",
+   "required": []
   },
   "dns_public_domain_names": {
    "family": "dns",
@@ -249,9 +252,10 @@
    "scenario": "ds_dns"
   },
   "dns_record": {
+   "excluded": true,
    "family": "dns",
-   "required": [],
-   "scenario": "ds_dns"
+   "reason": "bare read 404s on an empty account (show-by-id semantics; run 27451961730)",
+   "required": []
   },
   "dns_records": {
    "family": "dns",
@@ -410,9 +414,10 @@
    "required": []
   },
   "iam_group_policy_bindings": {
+   "excluded": true,
    "family": "iam",
-   "required": [],
-   "scenario": "ds_iam"
+   "reason": "list 404s without its parent resource (run 27451961730)",
+   "required": []
   },
   "iam_groups": {
    "family": "iam",
@@ -425,9 +430,10 @@
    "scenario": "ds_iam"
   },
   "iam_policy": {
+   "excluded": true,
    "family": "iam",
-   "required": [],
-   "scenario": "ds_iam"
+   "reason": "bare read 404s on an empty account (show-by-id semantics; run 27451961730)",
+   "required": []
   },
   "iam_role": {
    "family": "iam",
@@ -482,9 +488,10 @@
    "scenario": "ds_loadbalancer"
   },
   "loadbalancer_lb_listener": {
+   "excluded": true,
    "family": "loadbalancer",
-   "required": [],
-   "scenario": "ds_loadbalancer"
+   "reason": "bare read 404s on an empty account (show-by-id semantics; run 27451961730)",
+   "required": []
   },
   "loadbalancer_lb_listeners": {
    "family": "loadbalancer",
@@ -492,9 +499,10 @@
    "scenario": "ds_loadbalancer"
   },
   "loadbalancer_lb_member": {
+   "excluded": true,
    "family": "loadbalancer",
-   "required": [],
-   "scenario": "ds_loadbalancer"
+   "reason": "list 404s without its parent resource (run 27451961730)",
+   "required": []
   },
   "loadbalancer_lb_members": {
    "family": "loadbalancer",

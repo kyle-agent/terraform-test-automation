@@ -280,10 +280,10 @@ Read-only verification: each `ds_<family>` smoke scenario reads every standalone
 | metric | count |
 |---|---:|
 | total data sources | 168 |
-| standalone-readable (smoke-covered) | 103 |
+| standalone-readable (smoke-covered) | 95 |
 | **read-verified green** | 0 |
 | read failing | 0 |
-| excluded (requires parent-resource arg) | 65 |
+| excluded (requires parent-resource arg) | 73 |
 
 | data source | family | read | note |
 |---|---|---|---|
@@ -306,8 +306,8 @@ Read-only verification: each `ds_<family>` smoke scenario reads every standalone
 | `cloudmonitoring_addressbooks` | cloudmonitoring | untested | via `ds_cloudmonitoring` |
 | `cloudmonitoring_event` | cloudmonitoring | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `cloudmonitoring_event_notification_states` | cloudmonitoring | excluded | requires event_id, x_resource_type (parent-resource arg; not standalone-readabl… |
-| `cloudmonitoring_event_policies` | cloudmonitoring | untested | via `ds_cloudmonitoring` |
-| `cloudmonitoring_event_policy` | cloudmonitoring | untested | via `ds_cloudmonitoring` |
+| `cloudmonitoring_event_policies` | cloudmonitoring | excluded | API rejects unfiltered read: productResourceId/eventPolicyId required (run 2745… |
+| `cloudmonitoring_event_policy` | cloudmonitoring | excluded | API rejects unfiltered read: productResourceId/eventPolicyId required (run 2745… |
 | `cloudmonitoring_event_policy_histories` | cloudmonitoring | excluded | requires event_policy_id, x_resource_type (parent-resource arg; not standalone-… |
 | `cloudmonitoring_event_policy_notifications` | cloudmonitoring | untested | via `ds_cloudmonitoring` |
 | `cloudmonitoring_events` | cloudmonitoring | untested | via `ds_cloudmonitoring` |
@@ -325,9 +325,9 @@ Read-only verification: each `ds_<family>` smoke scenario reads every standalone
 | `dns_hosted_zones` | dns | untested | via `ds_dns` |
 | `dns_private_dns` | dns | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `dns_private_dnss` | dns | untested | via `ds_dns` |
-| `dns_public_domain_name` | dns | untested | via `ds_dns` |
+| `dns_public_domain_name` | dns | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `dns_public_domain_names` | dns | untested | via `ds_dns` |
-| `dns_record` | dns | untested | via `ds_dns` |
+| `dns_record` | dns | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `dns_records` | dns | untested | via `ds_dns` |
 | `epas_cluster` | epas | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `epas_clusters` | epas | untested | via `ds_epas` |
@@ -352,10 +352,10 @@ Read-only verification: each `ds_<family>` smoke scenario reads every standalone
 | `iam_access_keys` | iam | untested | via `ds_iam` |
 | `iam_group` | iam | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `iam_group_members` | iam | excluded | list 404s without its parent resource (run 27451961730) |
-| `iam_group_policy_bindings` | iam | untested | via `ds_iam` |
+| `iam_group_policy_bindings` | iam | excluded | list 404s without its parent resource (run 27451961730) |
 | `iam_groups` | iam | untested | via `ds_iam` |
 | `iam_policies` | iam | untested | via `ds_iam` |
-| `iam_policy` | iam | untested | via `ds_iam` |
+| `iam_policy` | iam | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `iam_role` | iam | untested | via `ds_iam` |
 | `iam_role_policy_bindings` | iam | untested | via `ds_iam` |
 | `iam_roles` | iam | untested | via `ds_iam` |
@@ -366,9 +366,9 @@ Read-only verification: each `ds_<family>` smoke scenario reads every standalone
 | `loadbalancer_lb_certificates` | loadbalancer | untested | via `ds_loadbalancer` |
 | `loadbalancer_lb_health_check` | loadbalancer | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `loadbalancer_lb_health_checks` | loadbalancer | untested | via `ds_loadbalancer` |
-| `loadbalancer_lb_listener` | loadbalancer | untested | via `ds_loadbalancer` |
+| `loadbalancer_lb_listener` | loadbalancer | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `loadbalancer_lb_listeners` | loadbalancer | untested | via `ds_loadbalancer` |
-| `loadbalancer_lb_member` | loadbalancer | untested | via `ds_loadbalancer` |
+| `loadbalancer_lb_member` | loadbalancer | excluded | list 404s without its parent resource (run 27451961730) |
 | `loadbalancer_lb_members` | loadbalancer | untested | via `ds_loadbalancer` |
 | `loadbalancer_lb_server_group` | loadbalancer | untested | via `ds_loadbalancer` |
 | `loadbalancer_lb_server_groups` | loadbalancer | untested | via `ds_loadbalancer` |
