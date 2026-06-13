@@ -23,12 +23,6 @@ data "samsungcloudplatformv2_loadbalancer_lb_health_checks" "smoke" {
 data "samsungcloudplatformv2_loadbalancer_lb_listeners" "smoke" {
 }
 
-data "samsungcloudplatformv2_loadbalancer_lb_members" "smoke" {
-}
-
-data "samsungcloudplatformv2_loadbalancer_lb_server_group" "smoke" {
-}
-
 data "samsungcloudplatformv2_loadbalancer_lb_server_groups" "smoke" {
 }
 

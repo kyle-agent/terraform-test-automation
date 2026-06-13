@@ -135,14 +135,16 @@
    ]
   },
   "cloudmonitoring_event_policy_notifications": {
+   "excluded": true,
    "family": "cloudmonitoring",
-   "required": [],
-   "scenario": "ds_cloudmonitoring"
+   "reason": "API rejects unfiltered read: productResourceId/eventPolicyId required (run 27452400061)",
+   "required": []
   },
   "cloudmonitoring_events": {
+   "excluded": true,
    "family": "cloudmonitoring",
-   "required": [],
-   "scenario": "ds_cloudmonitoring"
+   "reason": "list 404s without its parent resource (run 27451961730)",
+   "required": []
   },
   "cloudmonitoring_metricperfdatas": {
    "excluded": true,
@@ -258,9 +260,10 @@
    "required": []
   },
   "dns_records": {
+   "excluded": true,
    "family": "dns",
-   "required": [],
-   "scenario": "ds_dns"
+   "reason": "list 404s without its parent resource (run 27451961730)",
+   "required": []
   },
   "epas_cluster": {
    "excluded": true,
@@ -505,14 +508,16 @@
    "required": []
   },
   "loadbalancer_lb_members": {
+   "excluded": true,
    "family": "loadbalancer",
-   "required": [],
-   "scenario": "ds_loadbalancer"
+   "reason": "list 404s without its parent resource (run 27451961730)",
+   "required": []
   },
   "loadbalancer_lb_server_group": {
+   "excluded": true,
    "family": "loadbalancer",
-   "required": [],
-   "scenario": "ds_loadbalancer"
+   "reason": "bare read 404s on an empty account (show-by-id semantics; run 27451961730)",
+   "required": []
   },
   "loadbalancer_lb_server_groups": {
    "family": "loadbalancer",

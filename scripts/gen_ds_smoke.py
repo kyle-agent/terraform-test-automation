@@ -104,6 +104,13 @@ RUNTIME_EXCLUDED = {
     "iam_policy": _R404,
     "loadbalancer_lb_listener": _R404,
     "loadbalancer_lb_member": _RLIST,
+    # third wave, sweep 27452629242 (revealed once scenarios shrank below the
+    # terraform parallelism=10 read window that had masked them)
+    "cloudmonitoring_event_policy_notifications": _RFILT_PRID,
+    "cloudmonitoring_events": _RLIST,
+    "dns_records": _RLIST,
+    "loadbalancer_lb_members": _RLIST,
+    "loadbalancer_lb_server_group": _R404,
 }
 
 

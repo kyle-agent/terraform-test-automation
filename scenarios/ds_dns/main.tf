@@ -22,6 +22,3 @@ data "samsungcloudplatformv2_dns_private_dnss" "smoke" {
 
 data "samsungcloudplatformv2_dns_public_domain_names" "smoke" {
 }
-
-data "samsungcloudplatformv2_dns_records" "smoke" {
-}
