@@ -456,14 +456,16 @@
    "scenario": "ds_iam"
   },
   "iam_user": {
+   "excluded": true,
    "family": "iam",
-   "required": [],
-   "scenario": "ds_iam"
+   "reason": "bare read 404s on an empty account (show-by-id semantics; run 27451961730)",
+   "required": []
   },
   "iam_user_policy_bindings": {
+   "excluded": true,
    "family": "iam",
-   "required": [],
-   "scenario": "ds_iam"
+   "reason": "list 404s without its parent resource (run 27451961730)",
+   "required": []
   },
   "iam_users": {
    "family": "iam",

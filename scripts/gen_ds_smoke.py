@@ -116,6 +116,9 @@ RUNTIME_EXCLUDED = {
     "iam_role_policy_bindings": _RLIST,
     "loadbalancer_loadbalancer": _R404,
     "loadbalancer_loadbalancer_private_nat_ip": _R404,
+    # fifth wave, sweep 27453181422 (no standalone iam user on the account)
+    "iam_user": _R404,
+    "iam_user_policy_bindings": _RLIST,
 }
 
 
