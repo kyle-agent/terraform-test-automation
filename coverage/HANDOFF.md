@@ -10,7 +10,50 @@ multi-agent architecture + session bootstrap), then this file, then
 
 ---
 
-## 0Y. Session 2026-06-12 (LATEST) — domain-knowledge-driven fixes, green 56→57+, #83 cracked for eventstreams
+## 0X. Session 2026-06-13 (LATEST) — data-source read-smoke layer + dashboard split
+
+**Branch:** `claude/zen-pasteur-1e38be` (test repo). **Question that started it:** are the
+"복수개 생성" (plural) entries worth testing separately? **Finding:** the provider has NO
+count/for_each-style "make N of the same resource" resources — `count`/`for_each` is pure
+Terraform core and reuses the single-create provider path (proven: identical code path; the
+real failures there are platform quotas like TGW-max-3, iam-key-max-2, already caught by the
+single-create scenarios). The ~90 plural NAMES on the old dashboard were all **list data
+sources**, which the dashboard wrongly counted in the 191 "resource" denominator. They are a
+DIFFERENT code path from the singular read (separate `*_datasources.go`, list vs show API), so
+single-resource green did NOT cover them — but they're read-only and cheap.
+
+**What changed:**
+- **`scripts/gen_ds_smoke.py`** (NEW) — scans the provider source for the family grouping and,
+  authoritatively, consumes a `terraform providers schema -json` dump (`--schema`) for the exact
+  required-args (a regex-only scan misses the 4 data sources built via a delegated
+  `resp.Schema = XxxSchema()` helper: baremetal_baremetal, filestorage_volume,
+  multinodegpucluster_gpunode, quota_account_quota). Emits `coverage/provider_surface.json`
+  (the new authoritative surface: **87 resources + 168 data sources**, replaces
+  `resource_families.json`) and **34 `scenarios/ds_<family>/` read-only smoke fixtures** (a bare
+  `data` block per standalone-readable data source; 3 use a documented const arg —
+  network_logging resource_type, ske_nodepool_images type).
+- **Disposition:** 127 data sources standalone-readable (smoke-covered, registry `untested`,
+  vpc:none); **41 excluded** (require a parent-resource id/arg — exercised implicitly by the
+  resource scenarios, not testable standalone).
+- **`build_coverage.py` / `build_coverage_html.py`** — funnel denominator is now the **87 managed
+  resources** (was a conflated 191). Data sources get their own section/table: read-verified
+  (the `ds_<family>` scenario's plan is green) vs excluded. fully-green resources unchanged at
+  **37/87** (was reported as 37/191).
+- **Local verification:** built the provider from fork `main` (vendored SDK, `go build`), all
+  **34 ds_* scenarios `terraform validate` green** via dev_overrides. Live plan/read needs API
+  creds → runs in CI.
+- **CI:** pushing the registry change fires `coverage-sweep-pool` with `SELECT_STATUS=untested`,
+  which now selects ONLY the 34 ds_* scenarios (novpc lane, read-only, leak-0). After the sweep,
+  merge `out/capability-matrix.json` with `build_coverage.py` and commit to light up the data-
+  source reads on the dashboard (same manual merge pattern as before — no auto-commit job exists).
+- **Provider build ref fix:** `coverage-sweep-pool.yml` `SCP_PROVIDER_BUILD_REF` was the deleted
+  `claude/wonderful-keller-h05ucp`; repointed to fork `main` (PR #90 merged there).
+- Regenerate after any provider-surface change: `terraform providers schema -json > s.json &&
+  python3 scripts/gen_ds_smoke.py --schema s.json`, then `build_coverage.py` + `_html.py`.
+
+---
+
+## 0Y. Session 2026-06-12 — domain-knowledge-driven fixes, green 56→57+, #83 cracked for eventstreams
 
 **Branch:** `claude/wonderful-keller-h05ucp` (all 3 repos; provider branch == fork main b5b7197).
 **Method:** multi-agent — inspection (registry/non-green triage), domain research (api-test-automation

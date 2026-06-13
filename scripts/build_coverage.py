@@ -24,8 +24,12 @@ based on the run's timestamp (last_seen). Resources never seen are still listed
 in the funnel denominator (the full provider surface) but carry no stages.
 
 This script owns: coverage/coverage.json and COVERAGE.md. It reads the static
-resource->family map from coverage/resource_families.json (generated from the
-provider source; the authoritative list of ~191 resource types).
+provider surface from coverage/provider_surface.json (generated from the
+provider source by scripts/gen_ds_smoke.py), which splits the surface by kind:
+87 managed resources (the funnel denominator) and 168 data sources. Data
+sources are read-verified by the generated ds_<family> smoke scenarios; their
+records land in the store under the scenario key and are fanned out to the
+member data sources at render time.
 """
 
 from __future__ import annotations
@@ -40,12 +44,13 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 COV_DIR = os.path.join(REPO, "coverage")
 COV_JSON = os.path.join(COV_DIR, "coverage.json")
-FAMILIES_JSON = os.path.join(COV_DIR, "resource_families.json")
+SURFACE_JSON = os.path.join(COV_DIR, "provider_surface.json")
 COV_MD = os.path.join(REPO, "COVERAGE.md")
 
 STAGES = ["validate", "plan", "apply", "replan", "destroy"]
 # Stage outcomes that count as "verified green".
 OK = "ok"
+PREFIX = "samsungcloudplatformv2_"
 
 
 # --------------------------------------------------------------------------- #
@@ -61,15 +66,37 @@ def load_json(path, default):
         return default
 
 
-def load_families():
-    """resource_type -> service family. The full provider surface lives here."""
-    m = load_json(FAMILIES_JSON, {})
+def load_surface():
+    """{"resources": {short_type: {family}}, "datasources": {short_type: {...}}}."""
+    m = load_json(SURFACE_JSON, {})
     if not m:
         sys.stderr.write(
             "warn: %s missing/empty; family grouping and funnel totals "
-            "will be incomplete\n" % FAMILIES_JSON
+            "will be incomplete\n" % SURFACE_JSON
         )
-    return m
+    return {"resources": m.get("resources", {}), "datasources": m.get("datasources", {})}
+
+
+def short_name(res):
+    return res[len(PREFIX):] if res.startswith(PREFIX) else res
+
+
+def ds_read_status(rec):
+    """Collapse a smoke-scenario record into a read verdict for its members.
+
+    Data sources are read at plan time (and re-read on apply), so plan==ok is
+    the signal; validate/plan failures mean at least one member read is broken.
+    """
+    if not rec:
+        return "untested"
+    st = rec.get("stages", {})
+    if st.get("plan") == OK:
+        return OK
+    if "fail" in (st.get("validate"), st.get("plan")):
+        return "fail"
+    if "blocked" in (st.get("validate"), st.get("plan"), st.get("apply")):
+        return "blocked"
+    return "untested"
 
 
 def highest_stage(stages):
@@ -179,29 +206,33 @@ def _ci_run_url():
 # --------------------------------------------------------------------------- #
 # render
 # --------------------------------------------------------------------------- #
-def family_of(resource, families):
-    if resource in families:
-        return families[resource]
-    # Fall back to the leading segment after the provider prefix.
-    base = resource
-    pfx = "samsungcloudplatformv2_"
-    if base.startswith(pfx):
-        base = base[len(pfx):]
-    return base.split("_", 1)[0] or "(unknown)"
+def family_of(short, surface):
+    info = surface["resources"].get(short) or surface["datasources"].get(short)
+    if info:
+        return info["family"]
+    return short.split("_", 1)[0] or "(unknown)"
 
 
-def build_markdown(store, families):
-    total = len(families) if families else len(store)
-    all_types = sorted(set(families) | set(store))
-    if families:
-        total = len(set(families))
+def build_markdown(store, surface):
+    # Resource rows: provider surface resources plus any stray store record
+    # that is neither a ds_* smoke scenario nor a known data source.
+    all_types = set(surface["resources"])
+    for k in store:
+        if k.startswith("ds_"):
+            continue
+        all_types.add(short_name(k))
+    all_types = sorted(all_types)
+    total = len(all_types)
+
+    def rec_of(short):
+        return store.get(PREFIX + short) or store.get(short)
 
     # Funnel: count resources reaching each stage as "ok".
     reach = {s: 0 for s in STAGES}
     with_scenario = 0
     fully_green = 0
     for res in all_types:
-        rec = store.get(res)
+        rec = rec_of(res)
         if not rec:
             continue
         with_scenario += 1
@@ -221,7 +252,11 @@ def build_markdown(store, families):
         "Per-resource verification depth for the SCP Terraform provider, distilled "
         "from every \"Capability matrix outcome\" run. Each resource is walked "
         "through the pipeline `validate -> plan -> apply -> replan -> destroy`; "
-        "a stage is **verified green** only when its outcome is `ok`."
+        "a stage is **verified green** only when its outcome is `ok`. Data "
+        "sources are tracked separately (see [Data sources](#data-sources)): "
+        "standalone-readable ones are read-verified by the generated "
+        "`ds_<family>` smoke scenarios; the rest require a parent-resource "
+        "argument and are excluded from the testable denominator."
     )
     out.append("")
     out.append(
@@ -237,7 +272,7 @@ def build_markdown(store, families):
     out.append("")
     out.append("| metric | count | of total |")
     out.append("|---|---:|---:|")
-    out.append("| total provider resources | %d | 100%% |" % total)
+    out.append("| managed resources (provider surface) | %d | 100%% |" % total)
     out.append(
         "| with a capability-matrix scenario run | %d | %d%% |"
         % (with_scenario, round(100.0 * with_scenario / denom))
@@ -255,7 +290,7 @@ def build_markdown(store, families):
     # ----- per-family table ----- #
     by_family = OrderedDict()
     for res in all_types:
-        fam = family_of(res, families)
+        fam = family_of(res, surface)
         by_family.setdefault(fam, []).append(res)
 
     out.append("## By service family")
@@ -266,13 +301,17 @@ def build_markdown(store, families):
             return "-"
         return rec["stages"].get(stage, "skip")
 
+    def clip(note):
+        note = (note or "").replace("\n", " ").replace("|", "\\|")
+        return note[:79] + "…" if len(note) > 80 else note
+
     for fam in sorted(by_family):
         members = sorted(by_family[fam])
         green = sum(
             1
             for r in members
-            if store.get(r)
-            and all(store[r]["stages"].get(s) == OK for s in STAGES)
+            if rec_of(r)
+            and all(rec_of(r)["stages"].get(s) == OK for s in STAGES)
         )
         out.append("### %s (%d/%d fully green)" % (fam, green, len(members)))
         out.append("")
@@ -282,30 +321,71 @@ def build_markdown(store, families):
         )
         out.append("|---|---|---|---|---|---|---|---|")
         for r in members:
-            rec = store.get(r)
+            rec = rec_of(r)
             hi = rec["highest_stage"] if rec else None
-            short = r
-            pfx = "samsungcloudplatformv2_"
-            if short.startswith(pfx):
-                short = short[len(pfx):]
-            note = (rec["note"] if rec else "") or ""
-            note = note.replace("\n", " ").replace("|", "\\|")
-            if len(note) > 80:
-                note = note[:79] + "…"
             out.append(
                 "| `%s` | %s | %s | %s | %s | %s | %s | %s |"
                 % (
-                    short,
+                    r,
                     cell(rec, "validate"),
                     cell(rec, "plan"),
                     cell(rec, "apply"),
                     cell(rec, "replan"),
                     cell(rec, "destroy"),
                     hi or "-",
-                    note,
+                    clip(rec["note"] if rec else ""),
                 )
             )
         out.append("")
+
+    # ----- data sources ----- #
+    ds = surface["datasources"]
+    smoke = {t: e for t, e in ds.items() if e.get("scenario")}
+    excluded = {t: e for t, e in ds.items() if e.get("excluded")}
+    read_ok = sum(
+        1 for t, e in smoke.items() if ds_read_status(store.get(e["scenario"])) == OK
+    )
+    read_fail = sum(
+        1
+        for t, e in smoke.items()
+        if ds_read_status(store.get(e["scenario"])) == "fail"
+    )
+    out.append("## Data sources")
+    out.append("")
+    out.append(
+        "Read-only verification: each `ds_<family>` smoke scenario reads every "
+        "standalone-readable data source of that family (list endpoints with "
+        "optional/constant-only arguments) through the same "
+        "validate/plan/apply pipeline; a data source is **read-verified** when "
+        "its scenario's plan is green. Data sources requiring a parent-resource "
+        "argument (id etc.) are excluded - they are exercised implicitly by "
+        "resource scenarios, not testable standalone."
+    )
+    out.append("")
+    out.append("| metric | count |")
+    out.append("|---|---:|")
+    out.append("| total data sources | %d |" % len(ds))
+    out.append("| standalone-readable (smoke-covered) | %d |" % len(smoke))
+    out.append("| **read-verified green** | %d |" % read_ok)
+    out.append("| read failing | %d |" % read_fail)
+    out.append("| excluded (requires parent-resource arg) | %d |" % len(excluded))
+    out.append("")
+    out.append("| data source | family | read | note |")
+    out.append("|---|---|---|---|")
+    for t in sorted(ds):
+        e = ds[t]
+        if e.get("excluded"):
+            status, note = "excluded", e.get("reason", "")
+        else:
+            rec = store.get(e["scenario"])
+            status = ds_read_status(rec)
+            note = "via `%s`" % e["scenario"]
+            if rec and status != OK and rec.get("note"):
+                note += " - " + rec["note"]
+        out.append(
+            "| `%s` | %s | %s | %s |" % (t, e["family"], status, clip(note))
+        )
+    out.append("")
 
     return "\n".join(out) + "\n"
 
@@ -314,7 +394,7 @@ def build_markdown(store, families):
 # main
 # --------------------------------------------------------------------------- #
 def main(argv):
-    families = load_families()
+    surface = load_surface()
 
     store = load_json(COV_JSON, {})
     if not isinstance(store, dict):
@@ -335,19 +415,23 @@ def main(argv):
         json.dump(ordered, fh, indent=2, sort_keys=True)
         fh.write("\n")
 
-    md = build_markdown(store, families)
+    md = build_markdown(store, surface)
     with open(COV_MD, "w", encoding="utf-8") as fh:
         fh.write(md)
 
-    # Brief stdout summary for CI logs.
+    # Brief stdout summary for CI logs. Count only managed-resource records
+    # (ds_* smoke-scenario records are summarized in the Data sources section).
+    res_recs = [
+        r
+        for k, r in store.items()
+        if not short_name(k).startswith("ds_") and not k.startswith("ds_")
+    ]
     green = sum(
-        1
-        for r in store.values()
-        if all(r["stages"].get(s) == OK for s in STAGES)
+        1 for r in res_recs if all(r["stages"].get(s) == OK for s in STAGES)
     )
     sys.stderr.write(
-        "coverage: %d resources tracked, %d fully green; wrote %s + %s\n"
-        % (len(store), green, COV_JSON, COV_MD)
+        "coverage: %d resource records, %d fully green; wrote %s + %s\n"
+        % (len(res_recs), green, COV_JSON, COV_MD)
     )
     return 0
 

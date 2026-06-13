@@ -1,0 +1,1253 @@
+{
+ "datasources": {
+  "backup_backup": {
+   "family": "backup",
+   "required": [],
+   "scenario": "ds_backup"
+  },
+  "backup_backups": {
+   "family": "backup",
+   "required": [],
+   "scenario": "ds_backup"
+  },
+  "baremetal_baremetal": {
+   "excluded": true,
+   "family": "baremetal",
+   "reason": "requires id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "id"
+   ]
+  },
+  "baremetal_baremetals": {
+   "family": "baremetal",
+   "required": [],
+   "scenario": "ds_baremetal"
+  },
+  "billing_planned_computes": {
+   "family": "plannedcompute",
+   "required": [],
+   "scenario": "ds_plannedcompute"
+  },
+  "budget_budget": {
+   "family": "budget",
+   "required": [],
+   "scenario": "ds_budget"
+  },
+  "budget_budgets": {
+   "family": "budget",
+   "required": [],
+   "scenario": "ds_budget"
+  },
+  "cachestore_cluster": {
+   "family": "cachestore",
+   "required": [],
+   "scenario": "ds_cachestore"
+  },
+  "cachestore_clusters": {
+   "family": "cachestore",
+   "required": [],
+   "scenario": "ds_cachestore"
+  },
+  "cachestore_engine_version": {
+   "family": "cachestore",
+   "required": [],
+   "scenario": "ds_cachestore"
+  },
+  "certificate_manager": {
+   "family": "certificatemanager",
+   "required": [],
+   "scenario": "ds_certificatemanager"
+  },
+  "certificate_managers": {
+   "family": "certificatemanager",
+   "required": [],
+   "scenario": "ds_certificatemanager"
+  },
+  "cloudmonitoring_account_events": {
+   "family": "cloudmonitoring",
+   "required": [],
+   "scenario": "ds_cloudmonitoring"
+  },
+  "cloudmonitoring_accountmembers": {
+   "family": "cloudmonitoring",
+   "required": [],
+   "scenario": "ds_cloudmonitoring"
+  },
+  "cloudmonitoring_accountproducts": {
+   "excluded": true,
+   "family": "cloudmonitoring",
+   "reason": "requires x_resource_type (parent-resource arg; not standalone-readable)",
+   "required": [
+    "x_resource_type"
+   ]
+  },
+  "cloudmonitoring_addressbookmembers": {
+   "excluded": true,
+   "family": "cloudmonitoring",
+   "reason": "requires addrbook_id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "addrbook_id"
+   ]
+  },
+  "cloudmonitoring_addressbooks": {
+   "family": "cloudmonitoring",
+   "required": [],
+   "scenario": "ds_cloudmonitoring"
+  },
+  "cloudmonitoring_event": {
+   "family": "cloudmonitoring",
+   "required": [],
+   "scenario": "ds_cloudmonitoring"
+  },
+  "cloudmonitoring_event_notification_states": {
+   "excluded": true,
+   "family": "cloudmonitoring",
+   "reason": "requires event_id, x_resource_type (parent-resource arg; not standalone-readable)",
+   "required": [
+    "event_id",
+    "x_resource_type"
+   ]
+  },
+  "cloudmonitoring_event_policies": {
+   "family": "cloudmonitoring",
+   "required": [],
+   "scenario": "ds_cloudmonitoring"
+  },
+  "cloudmonitoring_event_policy": {
+   "family": "cloudmonitoring",
+   "required": [],
+   "scenario": "ds_cloudmonitoring"
+  },
+  "cloudmonitoring_event_policy_histories": {
+   "excluded": true,
+   "family": "cloudmonitoring",
+   "reason": "requires event_policy_id, x_resource_type (parent-resource arg; not standalone-readable)",
+   "required": [
+    "event_policy_id",
+    "x_resource_type"
+   ]
+  },
+  "cloudmonitoring_event_policy_notifications": {
+   "family": "cloudmonitoring",
+   "required": [],
+   "scenario": "ds_cloudmonitoring"
+  },
+  "cloudmonitoring_events": {
+   "family": "cloudmonitoring",
+   "required": [],
+   "scenario": "ds_cloudmonitoring"
+  },
+  "cloudmonitoring_metricperfdatas": {
+   "excluded": true,
+   "family": "cloudmonitoring",
+   "reason": "requires metric_key, product_resource_id, query_end_dt, query_start_dt, x_resource_type (parent-resource arg; not standalone-readable)",
+   "required": [
+    "metric_key",
+    "product_resource_id",
+    "query_end_dt",
+    "query_start_dt",
+    "x_resource_type"
+   ]
+  },
+  "cloudmonitoring_metrics": {
+   "family": "cloudmonitoring",
+   "required": [],
+   "scenario": "ds_cloudmonitoring"
+  },
+  "cloudmonitoring_producttypes": {
+   "family": "cloudmonitoring",
+   "required": [],
+   "scenario": "ds_cloudmonitoring"
+  },
+  "configinspection_configinspection": {
+   "excluded": true,
+   "family": "configinspection",
+   "reason": "requires diagnosis_id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "diagnosis_id"
+   ]
+  },
+  "configinspection_configinspections": {
+   "family": "configinspection",
+   "required": [],
+   "scenario": "ds_configinspection"
+  },
+  "configinspection_diagnoses": {
+   "family": "configinspection",
+   "required": [],
+   "scenario": "ds_configinspection"
+  },
+  "configinspection_diagnosis": {
+   "excluded": true,
+   "family": "configinspection",
+   "reason": "requires diagnosis_id, diagnosis_request_sequence (parent-resource arg; not standalone-readable)",
+   "required": [
+    "diagnosis_id",
+    "diagnosis_request_sequence"
+   ]
+  },
+  "configinspection_diagnosis_request": {
+   "excluded": true,
+   "family": "configinspection",
+   "reason": "requires access_key, diagnosis_check_type, diagnosis_id, secret_key, tenant_id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "access_key",
+    "diagnosis_check_type",
+    "diagnosis_id",
+    "secret_key",
+    "tenant_id"
+   ]
+  },
+  "directconnect_direct_connects": {
+   "family": "directconnect",
+   "required": [],
+   "scenario": "ds_directconnect"
+  },
+  "directconnect_routing_rules": {
+   "excluded": true,
+   "family": "directconnect",
+   "reason": "requires direct_connect_id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "direct_connect_id"
+   ]
+  },
+  "dns_hosted_zone": {
+   "family": "dns",
+   "required": [],
+   "scenario": "ds_dns"
+  },
+  "dns_hosted_zones": {
+   "family": "dns",
+   "required": [],
+   "scenario": "ds_dns"
+  },
+  "dns_private_dns": {
+   "family": "dns",
+   "required": [],
+   "scenario": "ds_dns"
+  },
+  "dns_private_dnss": {
+   "family": "dns",
+   "required": [],
+   "scenario": "ds_dns"
+  },
+  "dns_public_domain_name": {
+   "family": "dns",
+   "required": [],
+   "scenario": "ds_dns"
+  },
+  "dns_public_domain_names": {
+   "family": "dns",
+   "required": [],
+   "scenario": "ds_dns"
+  },
+  "dns_record": {
+   "family": "dns",
+   "required": [],
+   "scenario": "ds_dns"
+  },
+  "dns_records": {
+   "family": "dns",
+   "required": [],
+   "scenario": "ds_dns"
+  },
+  "epas_cluster": {
+   "family": "epas",
+   "required": [],
+   "scenario": "ds_epas"
+  },
+  "epas_clusters": {
+   "family": "epas",
+   "required": [],
+   "scenario": "ds_epas"
+  },
+  "epas_engine_version": {
+   "family": "epas",
+   "required": [],
+   "scenario": "ds_epas"
+  },
+  "eventstreams_cluster": {
+   "family": "eventstreams",
+   "required": [],
+   "scenario": "ds_eventstreams"
+  },
+  "eventstreams_clusters": {
+   "family": "eventstreams",
+   "required": [],
+   "scenario": "ds_eventstreams"
+  },
+  "eventstreams_engine_version": {
+   "family": "eventstreams",
+   "required": [],
+   "scenario": "ds_eventstreams"
+  },
+  "filestorage_replication": {
+   "excluded": true,
+   "family": "filestorage",
+   "reason": "requires id, volume_id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "id",
+    "volume_id"
+   ]
+  },
+  "filestorage_replications": {
+   "excluded": true,
+   "family": "filestorage",
+   "reason": "requires volume_id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "volume_id"
+   ]
+  },
+  "filestorage_snapshot_schedule": {
+   "excluded": true,
+   "family": "filestorage",
+   "reason": "requires volume_id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "volume_id"
+   ]
+  },
+  "filestorage_volume": {
+   "excluded": true,
+   "family": "filestorage",
+   "reason": "requires id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "id"
+   ]
+  },
+  "filestorage_volumes": {
+   "family": "filestorage",
+   "required": [],
+   "scenario": "ds_filestorage"
+  },
+  "firewall_firewall": {
+   "excluded": true,
+   "family": "firewall",
+   "reason": "requires id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "id"
+   ]
+  },
+  "firewall_firewall_rule": {
+   "excluded": true,
+   "family": "firewall",
+   "reason": "requires firewall_id, id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "firewall_id",
+    "id"
+   ]
+  },
+  "firewall_firewall_rules": {
+   "excluded": true,
+   "family": "firewall",
+   "reason": "requires firewall_id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "firewall_id"
+   ]
+  },
+  "firewall_firewalls": {
+   "family": "firewall",
+   "required": [],
+   "scenario": "ds_firewall"
+  },
+  "gslb_gslb": {
+   "family": "gslb",
+   "required": [],
+   "scenario": "ds_gslb"
+  },
+  "gslb_gslb_resources": {
+   "excluded": true,
+   "family": "gslb",
+   "reason": "requires gslb_id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "gslb_id"
+   ]
+  },
+  "gslb_gslb_rrc_update": {
+   "excluded": true,
+   "family": "gslb",
+   "reason": "requires gslb_id, region, status (parent-resource arg; not standalone-readable)",
+   "required": [
+    "gslb_id",
+    "region",
+    "status"
+   ]
+  },
+  "gslb_gslb_rrcs": {
+   "family": "gslb",
+   "required": [],
+   "scenario": "ds_gslb"
+  },
+  "gslb_gslbs": {
+   "family": "gslb",
+   "required": [],
+   "scenario": "ds_gslb"
+  },
+  "iam_access_keys": {
+   "family": "iam",
+   "required": [],
+   "scenario": "ds_iam"
+  },
+  "iam_group": {
+   "family": "iam",
+   "required": [],
+   "scenario": "ds_iam"
+  },
+  "iam_group_members": {
+   "family": "iam",
+   "required": [],
+   "scenario": "ds_iam"
+  },
+  "iam_group_policy_bindings": {
+   "family": "iam",
+   "required": [],
+   "scenario": "ds_iam"
+  },
+  "iam_groups": {
+   "family": "iam",
+   "required": [],
+   "scenario": "ds_iam"
+  },
+  "iam_policies": {
+   "family": "iam",
+   "required": [],
+   "scenario": "ds_iam"
+  },
+  "iam_policy": {
+   "family": "iam",
+   "required": [],
+   "scenario": "ds_iam"
+  },
+  "iam_role": {
+   "family": "iam",
+   "required": [],
+   "scenario": "ds_iam"
+  },
+  "iam_role_policy_bindings": {
+   "family": "iam",
+   "required": [],
+   "scenario": "ds_iam"
+  },
+  "iam_roles": {
+   "family": "iam",
+   "required": [],
+   "scenario": "ds_iam"
+  },
+  "iam_user": {
+   "family": "iam",
+   "required": [],
+   "scenario": "ds_iam"
+  },
+  "iam_user_policy_bindings": {
+   "family": "iam",
+   "required": [],
+   "scenario": "ds_iam"
+  },
+  "iam_users": {
+   "family": "iam",
+   "required": [],
+   "scenario": "ds_iam"
+  },
+  "loadbalancer_lb_certificate": {
+   "family": "loadbalancer",
+   "required": [],
+   "scenario": "ds_loadbalancer"
+  },
+  "loadbalancer_lb_certificates": {
+   "family": "loadbalancer",
+   "required": [],
+   "scenario": "ds_loadbalancer"
+  },
+  "loadbalancer_lb_health_check": {
+   "family": "loadbalancer",
+   "required": [],
+   "scenario": "ds_loadbalancer"
+  },
+  "loadbalancer_lb_health_checks": {
+   "family": "loadbalancer",
+   "required": [],
+   "scenario": "ds_loadbalancer"
+  },
+  "loadbalancer_lb_listener": {
+   "family": "loadbalancer",
+   "required": [],
+   "scenario": "ds_loadbalancer"
+  },
+  "loadbalancer_lb_listeners": {
+   "family": "loadbalancer",
+   "required": [],
+   "scenario": "ds_loadbalancer"
+  },
+  "loadbalancer_lb_member": {
+   "family": "loadbalancer",
+   "required": [],
+   "scenario": "ds_loadbalancer"
+  },
+  "loadbalancer_lb_members": {
+   "family": "loadbalancer",
+   "required": [],
+   "scenario": "ds_loadbalancer"
+  },
+  "loadbalancer_lb_server_group": {
+   "family": "loadbalancer",
+   "required": [],
+   "scenario": "ds_loadbalancer"
+  },
+  "loadbalancer_lb_server_groups": {
+   "family": "loadbalancer",
+   "required": [],
+   "scenario": "ds_loadbalancer"
+  },
+  "loadbalancer_loadbalancer": {
+   "family": "loadbalancer",
+   "required": [],
+   "scenario": "ds_loadbalancer"
+  },
+  "loadbalancer_loadbalancer_private_nat_ip": {
+   "family": "loadbalancer",
+   "required": [],
+   "scenario": "ds_loadbalancer"
+  },
+  "loadbalancer_loadbalancers": {
+   "family": "loadbalancer",
+   "required": [],
+   "scenario": "ds_loadbalancer"
+  },
+  "loggingaudit_trail": {
+   "family": "loggingaudit",
+   "required": [],
+   "scenario": "ds_loggingaudit"
+  },
+  "mariadb_cluster": {
+   "family": "mariadb",
+   "required": [],
+   "scenario": "ds_mariadb"
+  },
+  "mariadb_clusters": {
+   "family": "mariadb",
+   "required": [],
+   "scenario": "ds_mariadb"
+  },
+  "mariadb_engine_version": {
+   "family": "mariadb",
+   "required": [],
+   "scenario": "ds_mariadb"
+  },
+  "multinodegpucluster_gpunode": {
+   "excluded": true,
+   "family": "multinodegpucluster",
+   "reason": "requires id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "id"
+   ]
+  },
+  "multinodegpucluster_gpunodes": {
+   "family": "multinodegpucluster",
+   "required": [],
+   "scenario": "ds_multinodegpucluster"
+  },
+  "mysql_cluster": {
+   "family": "mysql",
+   "required": [],
+   "scenario": "ds_mysql"
+  },
+  "mysql_clusters": {
+   "family": "mysql",
+   "required": [],
+   "scenario": "ds_mysql"
+  },
+  "mysql_engine_version": {
+   "family": "mysql",
+   "required": [],
+   "scenario": "ds_mysql"
+  },
+  "network_logging_network_logging_configurations": {
+   "family": "network-logging",
+   "required": [
+    "resource_type"
+   ],
+   "scenario": "ds_network_logging"
+  },
+  "network_logging_network_logging_storages": {
+   "family": "network-logging",
+   "required": [
+    "resource_type"
+   ],
+   "scenario": "ds_network_logging"
+  },
+  "postgresql_cluster": {
+   "family": "postgresql",
+   "required": [],
+   "scenario": "ds_postgresql"
+  },
+  "postgresql_clusters": {
+   "family": "postgresql",
+   "required": [],
+   "scenario": "ds_postgresql"
+  },
+  "postgresql_engine_version": {
+   "family": "postgresql",
+   "required": [],
+   "scenario": "ds_postgresql"
+  },
+  "quota_account_quota": {
+   "excluded": true,
+   "family": "quota",
+   "reason": "requires id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "id"
+   ]
+  },
+  "quota_account_quotas": {
+   "family": "quota",
+   "required": [],
+   "scenario": "ds_quota"
+  },
+  "resourcemanager_resource_group": {
+   "family": "resourcemanager",
+   "required": [],
+   "scenario": "ds_resourcemanager"
+  },
+  "resourcemanager_resource_groups": {
+   "family": "resourcemanager",
+   "required": [],
+   "scenario": "ds_resourcemanager"
+  },
+  "resourcemanager_resource_tags": {
+   "excluded": true,
+   "family": "resourcemanager",
+   "reason": "requires srn (parent-resource arg; not standalone-readable)",
+   "required": [
+    "srn"
+   ]
+  },
+  "resourcemanager_tags": {
+   "family": "resourcemanager",
+   "required": [],
+   "scenario": "ds_resourcemanager"
+  },
+  "searchengine_cluster": {
+   "family": "searchengine",
+   "required": [],
+   "scenario": "ds_searchengine"
+  },
+  "searchengine_clusters": {
+   "family": "searchengine",
+   "required": [],
+   "scenario": "ds_searchengine"
+  },
+  "searchengine_engine_version": {
+   "family": "searchengine",
+   "required": [],
+   "scenario": "ds_searchengine"
+  },
+  "security_group_security_group": {
+   "excluded": true,
+   "family": "securitygroup",
+   "reason": "requires id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "id"
+   ]
+  },
+  "security_group_security_group_rule": {
+   "excluded": true,
+   "family": "securitygroup",
+   "reason": "requires id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "id"
+   ]
+  },
+  "security_group_security_group_rules": {
+   "excluded": true,
+   "family": "securitygroup",
+   "reason": "requires security_group_id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "security_group_id"
+   ]
+  },
+  "security_group_security_groups": {
+   "family": "securitygroup",
+   "required": [],
+   "scenario": "ds_securitygroup"
+  },
+  "servicewatch_alert": {
+   "family": "servicewatch",
+   "required": [],
+   "scenario": "ds_servicewatch"
+  },
+  "servicewatch_dashboard": {
+   "family": "servicewatch",
+   "required": [],
+   "scenario": "ds_servicewatch"
+  },
+  "servicewatch_dashboards": {
+   "family": "servicewatch",
+   "required": [],
+   "scenario": "ds_servicewatch"
+  },
+  "servicewatch_event_rule": {
+   "excluded": true,
+   "family": "servicewatch",
+   "reason": "requires event_rule_id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "event_rule_id"
+   ]
+  },
+  "servicewatch_log_group": {
+   "excluded": true,
+   "family": "servicewatch",
+   "reason": "requires log_group_id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "log_group_id"
+   ]
+  },
+  "servicewatch_log_groups": {
+   "family": "servicewatch",
+   "required": [],
+   "scenario": "ds_servicewatch"
+  },
+  "servicewatch_log_stream": {
+   "excluded": true,
+   "family": "servicewatch",
+   "reason": "requires log_group_id, log_stream_id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "log_group_id",
+    "log_stream_id"
+   ]
+  },
+  "ske_cluster": {
+   "excluded": true,
+   "family": "ske",
+   "reason": "requires id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "id"
+   ]
+  },
+  "ske_clusters": {
+   "family": "ske",
+   "required": [],
+   "scenario": "ds_ske"
+  },
+  "ske_kubernetes_versions": {
+   "family": "ske",
+   "required": [],
+   "scenario": "ds_ske"
+  },
+  "ske_nodepool": {
+   "excluded": true,
+   "family": "ske",
+   "reason": "requires id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "id"
+   ]
+  },
+  "ske_nodepool_images": {
+   "family": "ske",
+   "required": [
+    "scp_original_image_type"
+   ],
+   "scenario": "ds_ske"
+  },
+  "ske_nodepoolnodes": {
+   "excluded": true,
+   "family": "ske",
+   "reason": "requires nodepool_id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "nodepool_id"
+   ]
+  },
+  "ske_nodepools": {
+   "excluded": true,
+   "family": "ske",
+   "reason": "requires cluster_id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "cluster_id"
+   ]
+  },
+  "sqlserver_cluster": {
+   "family": "sqlserver",
+   "required": [],
+   "scenario": "ds_sqlserver"
+  },
+  "sqlserver_clusters": {
+   "family": "sqlserver",
+   "required": [],
+   "scenario": "ds_sqlserver"
+  },
+  "sqlserver_engine_version": {
+   "family": "sqlserver",
+   "required": [],
+   "scenario": "ds_sqlserver"
+  },
+  "vertica_cluster": {
+   "family": "vertica",
+   "required": [],
+   "scenario": "ds_vertica"
+  },
+  "vertica_clusters": {
+   "family": "vertica",
+   "required": [],
+   "scenario": "ds_vertica"
+  },
+  "vertica_engine_version": {
+   "family": "vertica",
+   "required": [],
+   "scenario": "ds_vertica"
+  },
+  "virtualserver_image": {
+   "family": "virtualserver",
+   "required": [],
+   "scenario": "ds_virtualserver"
+  },
+  "virtualserver_images": {
+   "family": "virtualserver",
+   "required": [],
+   "scenario": "ds_virtualserver"
+  },
+  "virtualserver_keypair": {
+   "family": "virtualserver",
+   "required": [],
+   "scenario": "ds_virtualserver"
+  },
+  "virtualserver_keypairs": {
+   "family": "virtualserver",
+   "required": [],
+   "scenario": "ds_virtualserver"
+  },
+  "virtualserver_server": {
+   "family": "virtualserver",
+   "required": [],
+   "scenario": "ds_virtualserver"
+  },
+  "virtualserver_server_group": {
+   "family": "virtualserver",
+   "required": [],
+   "scenario": "ds_virtualserver"
+  },
+  "virtualserver_server_groups": {
+   "family": "virtualserver",
+   "required": [],
+   "scenario": "ds_virtualserver"
+  },
+  "virtualserver_servers": {
+   "family": "virtualserver",
+   "required": [],
+   "scenario": "ds_virtualserver"
+  },
+  "virtualserver_volume": {
+   "family": "virtualserver",
+   "required": [],
+   "scenario": "ds_virtualserver"
+  },
+  "virtualserver_volumes": {
+   "family": "virtualserver",
+   "required": [],
+   "scenario": "ds_virtualserver"
+  },
+  "vpc_internet_gateways": {
+   "family": "vpc",
+   "required": [],
+   "scenario": "ds_vpc"
+  },
+  "vpc_nat_gateways": {
+   "family": "vpc",
+   "required": [],
+   "scenario": "ds_vpc"
+  },
+  "vpc_ports": {
+   "family": "vpc",
+   "required": [],
+   "scenario": "ds_vpc"
+  },
+  "vpc_private_nat": {
+   "family": "vpc",
+   "required": [],
+   "scenario": "ds_vpc"
+  },
+  "vpc_private_nat_ips": {
+   "family": "vpc",
+   "required": [],
+   "scenario": "ds_vpc"
+  },
+  "vpc_private_nats": {
+   "family": "vpc",
+   "required": [],
+   "scenario": "ds_vpc"
+  },
+  "vpc_publicips": {
+   "family": "vpc",
+   "required": [],
+   "scenario": "ds_vpc"
+  },
+  "vpc_subnet_vip": {
+   "excluded": true,
+   "family": "vpc",
+   "reason": "requires subnet_id, vip_id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "subnet_id",
+    "vip_id"
+   ]
+  },
+  "vpc_subnet_vips": {
+   "excluded": true,
+   "family": "vpc",
+   "reason": "requires subnet_id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "subnet_id"
+   ]
+  },
+  "vpc_subnets": {
+   "family": "vpc",
+   "required": [],
+   "scenario": "ds_vpc"
+  },
+  "vpc_transit_gateway": {
+   "excluded": true,
+   "family": "vpc",
+   "reason": "requires id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "id"
+   ]
+  },
+  "vpc_transit_gateway_rules": {
+   "excluded": true,
+   "family": "vpc",
+   "reason": "requires transit_gateway_id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "transit_gateway_id"
+   ]
+  },
+  "vpc_transit_gateway_vpc_connections": {
+   "excluded": true,
+   "family": "vpc",
+   "reason": "requires transit_gateway_id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "transit_gateway_id"
+   ]
+  },
+  "vpc_transit_gateways": {
+   "family": "vpc",
+   "required": [],
+   "scenario": "ds_vpc"
+  },
+  "vpc_vpc_endpoints": {
+   "family": "vpc",
+   "required": [],
+   "scenario": "ds_vpc"
+  },
+  "vpc_vpc_peering": {
+   "excluded": true,
+   "family": "vpc",
+   "reason": "requires id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "id"
+   ]
+  },
+  "vpc_vpc_peering_rules": {
+   "excluded": true,
+   "family": "vpc",
+   "reason": "requires vpc_peering_id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "vpc_peering_id"
+   ]
+  },
+  "vpc_vpc_peerings": {
+   "family": "vpc",
+   "required": [],
+   "scenario": "ds_vpc"
+  },
+  "vpc_vpcs": {
+   "family": "vpc",
+   "required": [],
+   "scenario": "ds_vpc"
+  },
+  "vpn_vpn_gateway": {
+   "excluded": true,
+   "family": "vpn",
+   "reason": "requires id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "id"
+   ]
+  },
+  "vpn_vpn_gateways": {
+   "family": "vpn",
+   "required": [],
+   "scenario": "ds_vpn"
+  },
+  "vpn_vpn_tunnel": {
+   "excluded": true,
+   "family": "vpn",
+   "reason": "requires id (parent-resource arg; not standalone-readable)",
+   "required": [
+    "id"
+   ]
+  },
+  "vpn_vpn_tunnels": {
+   "family": "vpn",
+   "required": [],
+   "scenario": "ds_vpn"
+  }
+ },
+ "resources": {
+  "backup_backup": {
+   "family": "backup"
+  },
+  "baremetal_baremetal": {
+   "family": "baremetal"
+  },
+  "baremetal_blockstorage_volume": {
+   "family": "baremetal"
+  },
+  "billing_planned_compute": {
+   "family": "plannedcompute"
+  },
+  "budget_budget": {
+   "family": "budget"
+  },
+  "cachestore_cluster": {
+   "family": "cachestore"
+  },
+  "certificate_manager": {
+   "family": "certificatemanager"
+  },
+  "certificate_manager_self_sign": {
+   "family": "certificatemanager"
+  },
+  "cloudmonitoring_event_policy": {
+   "family": "cloudmonitoring"
+  },
+  "configinspection": {
+   "family": "configinspection"
+  },
+  "directconnect_direct_connect": {
+   "family": "directconnect"
+  },
+  "directconnect_routing_rule": {
+   "family": "directconnect"
+  },
+  "dns_hosted_zone": {
+   "family": "dns"
+  },
+  "dns_private_dns": {
+   "family": "dns"
+  },
+  "dns_public_domain_name": {
+   "family": "dns"
+  },
+  "dns_record": {
+   "family": "dns"
+  },
+  "epas_cluster": {
+   "family": "epas"
+  },
+  "eventstreams_cluster": {
+   "family": "eventstreams"
+  },
+  "filestorage_replication": {
+   "family": "filestorage"
+  },
+  "filestorage_snapshot_schedule": {
+   "family": "filestorage"
+  },
+  "filestorage_volume": {
+   "family": "filestorage"
+  },
+  "firewall_firewall_rule": {
+   "family": "firewall"
+  },
+  "gslb_gslb": {
+   "family": "gslb"
+  },
+  "iam_access_key": {
+   "family": "iam"
+  },
+  "iam_group": {
+   "family": "iam"
+  },
+  "iam_group_member": {
+   "family": "iam"
+  },
+  "iam_group_policy_bindings": {
+   "family": "iam"
+  },
+  "iam_policy": {
+   "family": "iam"
+  },
+  "iam_role": {
+   "family": "iam"
+  },
+  "iam_role_policy_bindings": {
+   "family": "iam"
+  },
+  "iam_user": {
+   "family": "iam"
+  },
+  "iam_user_policy_bindings": {
+   "family": "iam"
+  },
+  "loadbalancer_lb_health_check": {
+   "family": "loadbalancer"
+  },
+  "loadbalancer_lb_listener": {
+   "family": "loadbalancer"
+  },
+  "loadbalancer_lb_member": {
+   "family": "loadbalancer"
+  },
+  "loadbalancer_lb_server_group": {
+   "family": "loadbalancer"
+  },
+  "loadbalancer_loadbalancer": {
+   "family": "loadbalancer"
+  },
+  "loadbalancer_loadbalancer_private_nat_ip": {
+   "family": "loadbalancer"
+  },
+  "loadbalancer_loadbalancer_public_nat_ip": {
+   "family": "loadbalancer"
+  },
+  "loggingaudit_trail": {
+   "family": "loggingaudit"
+  },
+  "mariadb_cluster": {
+   "family": "mariadb"
+  },
+  "multinodegpucluster_gpunode": {
+   "family": "multinodegpucluster"
+  },
+  "mysql_cluster": {
+   "family": "mysql"
+  },
+  "network_logging_network_logging_storage": {
+   "family": "network-logging"
+  },
+  "postgresql_cluster": {
+   "family": "postgresql"
+  },
+  "resourcemanager_resource_group": {
+   "family": "resourcemanager"
+  },
+  "searchengine_cluster": {
+   "family": "searchengine"
+  },
+  "security_group_security_group": {
+   "family": "securitygroup"
+  },
+  "security_group_security_group_rule": {
+   "family": "securitygroup"
+  },
+  "servicewatch_alert": {
+   "family": "servicewatch"
+  },
+  "servicewatch_dashboard": {
+   "family": "servicewatch"
+  },
+  "servicewatch_event_rule": {
+   "family": "servicewatch"
+  },
+  "servicewatch_log_group": {
+   "family": "servicewatch"
+  },
+  "servicewatch_log_stream": {
+   "family": "servicewatch"
+  },
+  "ske_cluster": {
+   "family": "ske"
+  },
+  "ske_nodepool": {
+   "family": "ske"
+  },
+  "sqlserver_cluster": {
+   "family": "sqlserver"
+  },
+  "vertica_cluster": {
+   "family": "vertica"
+  },
+  "virtualserver_image": {
+   "family": "virtualserver"
+  },
+  "virtualserver_keypair": {
+   "family": "virtualserver"
+  },
+  "virtualserver_server": {
+   "family": "virtualserver"
+  },
+  "virtualserver_server_group": {
+   "family": "virtualserver"
+  },
+  "virtualserver_volume": {
+   "family": "virtualserver"
+  },
+  "vpc_cidr": {
+   "family": "vpc"
+  },
+  "vpc_internet_gateway": {
+   "family": "vpc"
+  },
+  "vpc_nat_gateway": {
+   "family": "vpc"
+  },
+  "vpc_port": {
+   "family": "vpc"
+  },
+  "vpc_private_nat": {
+   "family": "vpc"
+  },
+  "vpc_private_nat_ip": {
+   "family": "vpc"
+  },
+  "vpc_publicip": {
+   "family": "vpc"
+  },
+  "vpc_subnet": {
+   "family": "vpc"
+  },
+  "vpc_subnet_vip": {
+   "family": "vpc"
+  },
+  "vpc_subnet_vip_nat_ip": {
+   "family": "vpc"
+  },
+  "vpc_subnet_vip_port": {
+   "family": "vpc"
+  },
+  "vpc_transit_gateway": {
+   "family": "vpc"
+  },
+  "vpc_transit_gateway_firewall": {
+   "family": "vpc"
+  },
+  "vpc_transit_gateway_firewall_connection": {
+   "family": "vpc"
+  },
+  "vpc_transit_gateway_rule": {
+   "family": "vpc"
+  },
+  "vpc_transit_gateway_uplink_rule": {
+   "family": "vpc"
+  },
+  "vpc_transit_gateway_vpc_connection": {
+   "family": "vpc"
+  },
+  "vpc_vpc": {
+   "family": "vpc"
+  },
+  "vpc_vpc_endpoint": {
+   "family": "vpc"
+  },
+  "vpc_vpc_peering": {
+   "family": "vpc"
+  },
+  "vpc_vpc_peering_approval": {
+   "family": "vpc"
+  },
+  "vpc_vpc_peering_rule": {
+   "family": "vpc"
+  },
+  "vpn_vpn_gateway": {
+   "family": "vpn"
+  },
+  "vpn_vpn_tunnel": {
+   "family": "vpn"
+  }
+ }
+}
