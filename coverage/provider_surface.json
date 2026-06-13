@@ -439,14 +439,16 @@
    "required": []
   },
   "iam_role": {
+   "excluded": true,
    "family": "iam",
-   "required": [],
-   "scenario": "ds_iam"
+   "reason": "bare read 404s on an empty account (show-by-id semantics; run 27451961730)",
+   "required": []
   },
   "iam_role_policy_bindings": {
+   "excluded": true,
    "family": "iam",
-   "required": [],
-   "scenario": "ds_iam"
+   "reason": "list 404s without its parent resource (run 27451961730)",
+   "required": []
   },
   "iam_roles": {
    "family": "iam",
@@ -525,14 +527,16 @@
    "scenario": "ds_loadbalancer"
   },
   "loadbalancer_loadbalancer": {
+   "excluded": true,
    "family": "loadbalancer",
-   "required": [],
-   "scenario": "ds_loadbalancer"
+   "reason": "bare read 404s on an empty account (show-by-id semantics; run 27451961730)",
+   "required": []
   },
   "loadbalancer_loadbalancer_private_nat_ip": {
+   "excluded": true,
    "family": "loadbalancer",
-   "required": [],
-   "scenario": "ds_loadbalancer"
+   "reason": "bare read 404s on an empty account (show-by-id semantics; run 27451961730)",
+   "required": []
   },
   "loadbalancer_loadbalancers": {
    "family": "loadbalancer",

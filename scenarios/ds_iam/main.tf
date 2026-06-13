@@ -23,12 +23,6 @@ data "samsungcloudplatformv2_iam_groups" "smoke" {
 data "samsungcloudplatformv2_iam_policies" "smoke" {
 }
 
-data "samsungcloudplatformv2_iam_role" "smoke" {
-}
-
-data "samsungcloudplatformv2_iam_role_policy_bindings" "smoke" {
-}
-
 data "samsungcloudplatformv2_iam_roles" "smoke" {
 }
 

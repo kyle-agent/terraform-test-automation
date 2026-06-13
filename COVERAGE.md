@@ -280,10 +280,10 @@ Read-only verification: each `ds_<family>` smoke scenario reads every standalone
 | metric | count |
 |---|---:|
 | total data sources | 168 |
-| standalone-readable (smoke-covered) | 90 |
+| standalone-readable (smoke-covered) | 86 |
 | **read-verified green** | 0 |
 | read failing | 0 |
-| excluded (requires parent-resource arg) | 78 |
+| excluded (requires parent-resource arg) | 82 |
 
 | data source | family | read | note |
 |---|---|---|---|
@@ -356,8 +356,8 @@ Read-only verification: each `ds_<family>` smoke scenario reads every standalone
 | `iam_groups` | iam | untested | via `ds_iam` |
 | `iam_policies` | iam | untested | via `ds_iam` |
 | `iam_policy` | iam | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
-| `iam_role` | iam | untested | via `ds_iam` |
-| `iam_role_policy_bindings` | iam | untested | via `ds_iam` |
+| `iam_role` | iam | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
+| `iam_role_policy_bindings` | iam | excluded | list 404s without its parent resource (run 27451961730) |
 | `iam_roles` | iam | untested | via `ds_iam` |
 | `iam_user` | iam | untested | via `ds_iam` |
 | `iam_user_policy_bindings` | iam | untested | via `ds_iam` |
@@ -372,8 +372,8 @@ Read-only verification: each `ds_<family>` smoke scenario reads every standalone
 | `loadbalancer_lb_members` | loadbalancer | excluded | list 404s without its parent resource (run 27451961730) |
 | `loadbalancer_lb_server_group` | loadbalancer | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `loadbalancer_lb_server_groups` | loadbalancer | untested | via `ds_loadbalancer` |
-| `loadbalancer_loadbalancer` | loadbalancer | untested | via `ds_loadbalancer` |
-| `loadbalancer_loadbalancer_private_nat_ip` | loadbalancer | untested | via `ds_loadbalancer` |
+| `loadbalancer_loadbalancer` | loadbalancer | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
+| `loadbalancer_loadbalancer_private_nat_ip` | loadbalancer | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `loadbalancer_loadbalancers` | loadbalancer | untested | via `ds_loadbalancer` |
 | `loggingaudit_trail` | loggingaudit | untested | via `ds_loggingaudit` |
 | `mariadb_cluster` | mariadb | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |

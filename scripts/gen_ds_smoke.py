@@ -111,6 +111,11 @@ RUNTIME_EXCLUDED = {
     "dns_records": _RLIST,
     "loadbalancer_lb_members": _RLIST,
     "loadbalancer_lb_server_group": _R404,
+    # fourth wave, sweep 27452952744 (the last singular show-reads + their child lists)
+    "iam_role": _R404,
+    "iam_role_policy_bindings": _RLIST,
+    "loadbalancer_loadbalancer": _R404,
+    "loadbalancer_loadbalancer_private_nat_ip": _R404,
 }
 
 

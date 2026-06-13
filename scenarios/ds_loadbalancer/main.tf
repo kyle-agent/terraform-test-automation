@@ -26,11 +26,5 @@ data "samsungcloudplatformv2_loadbalancer_lb_listeners" "smoke" {
 data "samsungcloudplatformv2_loadbalancer_lb_server_groups" "smoke" {
 }
 
-data "samsungcloudplatformv2_loadbalancer_loadbalancer" "smoke" {
-}
-
-data "samsungcloudplatformv2_loadbalancer_loadbalancer_private_nat_ip" "smoke" {
-}
-
 data "samsungcloudplatformv2_loadbalancer_loadbalancers" "smoke" {
 }
