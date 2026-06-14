@@ -210,6 +210,482 @@ dns_record:
   timeout_class: fast
   update: false
   vpc: none
+ds_backup:
+  cost: cheap
+  depends_on: []
+  family: backup
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_baremetal:
+  cost: cheap
+  depends_on: []
+  family: baremetal
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_budget:
+  cost: cheap
+  depends_on: []
+  family: budget
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_cachestore:
+  cost: cheap
+  depends_on: []
+  family: cachestore
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_certificatemanager:
+  cost: cheap
+  depends_on: []
+  family: certificatemanager
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_cloudmonitoring:
+  cost: cheap
+  depends_on: []
+  family: cloudmonitoring
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_configinspection:
+  cost: cheap
+  depends_on: []
+  family: configinspection
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_directconnect:
+  cost: cheap
+  depends_on: []
+  family: directconnect
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_dns:
+  cost: cheap
+  depends_on: []
+  family: dns
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_epas:
+  cost: cheap
+  depends_on: []
+  family: epas
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_eventstreams:
+  cost: cheap
+  depends_on: []
+  family: eventstreams
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_filestorage:
+  cost: cheap
+  depends_on: []
+  family: filestorage
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_firewall:
+  cost: cheap
+  depends_on: []
+  family: firewall
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_gslb:
+  cost: cheap
+  depends_on: []
+  family: gslb
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_iam:
+  cost: cheap
+  depends_on: []
+  family: iam
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_loadbalancer:
+  cost: cheap
+  depends_on: []
+  family: loadbalancer
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_loggingaudit:
+  cost: cheap
+  depends_on: []
+  family: loggingaudit
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_mariadb:
+  cost: cheap
+  depends_on: []
+  family: mariadb
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_multinodegpucluster:
+  cost: cheap
+  depends_on: []
+  family: multinodegpucluster
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_mysql:
+  cost: cheap
+  depends_on: []
+  family: mysql
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_network_logging:
+  cost: cheap
+  depends_on: []
+  family: network-logging
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_plannedcompute:
+  cost: cheap
+  depends_on: []
+  family: plannedcompute
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_postgresql:
+  cost: cheap
+  depends_on: []
+  family: postgresql
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_quota:
+  cost: cheap
+  depends_on: []
+  family: quota
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_resourcemanager:
+  cost: cheap
+  depends_on: []
+  family: resourcemanager
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_searchengine:
+  cost: cheap
+  depends_on: []
+  family: searchengine
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_securitygroup:
+  cost: cheap
+  depends_on: []
+  family: securitygroup
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_servicewatch:
+  cost: cheap
+  depends_on: []
+  family: servicewatch
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_ske:
+  cost: cheap
+  depends_on: []
+  family: ske
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_sqlserver:
+  cost: cheap
+  depends_on: []
+  family: sqlserver
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_vertica:
+  cost: cheap
+  depends_on: []
+  family: vertica
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_virtualserver:
+  cost: cheap
+  depends_on: []
+  family: virtualserver
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_vpc:
+  cost: cheap
+  depends_on: []
+  family: vpc
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
+ds_vpn:
+  cost: cheap
+  depends_on: []
+  family: vpn
+  import: false
+  issues: []
+  needs: []
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
+  parallel: normal
+  status: green
+  timeout_class: fast
+  update: false
+  vpc: none
 epas_cluster:
   cost: heavy
   depends_on: []
