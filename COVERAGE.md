@@ -280,10 +280,10 @@ Read-only verification: each `ds_<family>` smoke scenario reads every standalone
 | metric | count |
 |---|---:|
 | total data sources | 168 |
-| standalone-readable (smoke-covered) | 84 |
+| standalone-readable (smoke-covered) | 83 |
 | **read-verified green** | 0 |
 | read failing | 0 |
-| excluded (requires parent-resource arg) | 84 |
+| excluded (requires parent-resource arg) | 85 |
 
 | data source | family | read | note |
 |---|---|---|---|
@@ -361,7 +361,7 @@ Read-only verification: each `ds_<family>` smoke scenario reads every standalone
 | `iam_roles` | iam | untested | via `ds_iam` |
 | `iam_user` | iam | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `iam_user_policy_bindings` | iam | excluded | list 404s without its parent resource (run 27451961730) |
-| `iam_users` | iam | untested | via `ds_iam` |
+| `iam_users` | iam | excluded | 401 Unauthorized: test key lacks the list permission (run 27453373549) |
 | `loadbalancer_lb_certificate` | loadbalancer | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `loadbalancer_lb_certificates` | loadbalancer | untested | via `ds_loadbalancer` |
 | `loadbalancer_lb_health_check` | loadbalancer | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |

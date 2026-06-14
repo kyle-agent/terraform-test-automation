@@ -468,9 +468,10 @@
    "required": []
   },
   "iam_users": {
+   "excluded": true,
    "family": "iam",
-   "required": [],
-   "scenario": "ds_iam"
+   "reason": "401 Unauthorized: test key lacks the list permission (run 27453373549)",
+   "required": []
   },
   "loadbalancer_lb_certificate": {
    "excluded": true,

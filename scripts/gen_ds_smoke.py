@@ -70,6 +70,7 @@ _R404 = "bare read 404s on an empty account (show-by-id semantics; run 274519617
 _RLIST = "list 404s without its parent resource (run 27451961730)"
 _RFILT = "API rejects unfiltered read: eventState is required (run 27451961730)"
 _RFILT_PRID = "API rejects unfiltered read: productResourceId/eventPolicyId required (run 27452400061)"
+_R401 = "401 Unauthorized: test key lacks the list permission (run 27453373549)"
 RUNTIME_EXCLUDED = {
     "budget_budget": _R404,
     "cachestore_cluster": _R404,
@@ -119,6 +120,8 @@ RUNTIME_EXCLUDED = {
     # fifth wave, sweep 27453181422 (no standalone iam user on the account)
     "iam_user": _R404,
     "iam_user_policy_bindings": _RLIST,
+    # sixth wave, sweep 27453373549 (permission gap, not a readability pattern)
+    "iam_users": _R401,
 }
 
 
