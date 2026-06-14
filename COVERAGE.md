@@ -281,29 +281,29 @@ Read-only verification: each `ds_<family>` smoke scenario reads every standalone
 |---|---:|
 | total data sources | 168 |
 | standalone-readable (smoke-covered) | 83 |
-| **read-verified green** | 0 |
+| **read-verified green** | 83 |
 | read failing | 0 |
 | excluded (requires parent-resource arg) | 85 |
 
 | data source | family | read | note |
 |---|---|---|---|
-| `backup_backup` | backup | untested | via `ds_backup` |
-| `backup_backups` | backup | untested | via `ds_backup` |
+| `backup_backup` | backup | ok | via `ds_backup` |
+| `backup_backups` | backup | ok | via `ds_backup` |
 | `baremetal_baremetal` | baremetal | excluded | requires id (parent-resource arg; not standalone-readable) |
-| `baremetal_baremetals` | baremetal | untested | via `ds_baremetal` |
-| `billing_planned_computes` | plannedcompute | untested | via `ds_plannedcompute` |
+| `baremetal_baremetals` | baremetal | ok | via `ds_baremetal` |
+| `billing_planned_computes` | plannedcompute | ok | via `ds_plannedcompute` |
 | `budget_budget` | budget | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
-| `budget_budgets` | budget | untested | via `ds_budget` |
+| `budget_budgets` | budget | ok | via `ds_budget` |
 | `cachestore_cluster` | cachestore | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
-| `cachestore_clusters` | cachestore | untested | via `ds_cachestore` |
-| `cachestore_engine_version` | cachestore | untested | via `ds_cachestore` |
+| `cachestore_clusters` | cachestore | ok | via `ds_cachestore` |
+| `cachestore_engine_version` | cachestore | ok | via `ds_cachestore` |
 | `certificate_manager` | certificatemanager | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
-| `certificate_managers` | certificatemanager | untested | via `ds_certificatemanager` |
+| `certificate_managers` | certificatemanager | ok | via `ds_certificatemanager` |
 | `cloudmonitoring_account_events` | cloudmonitoring | excluded | API rejects unfiltered read: eventState is required (run 27451961730) |
-| `cloudmonitoring_accountmembers` | cloudmonitoring | untested | via `ds_cloudmonitoring` |
+| `cloudmonitoring_accountmembers` | cloudmonitoring | ok | via `ds_cloudmonitoring` |
 | `cloudmonitoring_accountproducts` | cloudmonitoring | excluded | requires x_resource_type (parent-resource arg; not standalone-readable) |
 | `cloudmonitoring_addressbookmembers` | cloudmonitoring | excluded | requires addrbook_id (parent-resource arg; not standalone-readable) |
-| `cloudmonitoring_addressbooks` | cloudmonitoring | untested | via `ds_cloudmonitoring` |
+| `cloudmonitoring_addressbooks` | cloudmonitoring | ok | via `ds_cloudmonitoring` |
 | `cloudmonitoring_event` | cloudmonitoring | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `cloudmonitoring_event_notification_states` | cloudmonitoring | excluded | requires event_id, x_resource_type (parent-resource arg; not standalone-readabl… |
 | `cloudmonitoring_event_policies` | cloudmonitoring | excluded | API rejects unfiltered read: productResourceId/eventPolicyId required (run 2745… |
@@ -312,147 +312,147 @@ Read-only verification: each `ds_<family>` smoke scenario reads every standalone
 | `cloudmonitoring_event_policy_notifications` | cloudmonitoring | excluded | API rejects unfiltered read: productResourceId/eventPolicyId required (run 2745… |
 | `cloudmonitoring_events` | cloudmonitoring | excluded | list 404s without its parent resource (run 27451961730) |
 | `cloudmonitoring_metricperfdatas` | cloudmonitoring | excluded | requires metric_key, product_resource_id, query_end_dt, query_start_dt, x_resou… |
-| `cloudmonitoring_metrics` | cloudmonitoring | untested | via `ds_cloudmonitoring` |
-| `cloudmonitoring_producttypes` | cloudmonitoring | untested | via `ds_cloudmonitoring` |
+| `cloudmonitoring_metrics` | cloudmonitoring | ok | via `ds_cloudmonitoring` |
+| `cloudmonitoring_producttypes` | cloudmonitoring | ok | via `ds_cloudmonitoring` |
 | `configinspection_configinspection` | configinspection | excluded | requires diagnosis_id (parent-resource arg; not standalone-readable) |
-| `configinspection_configinspections` | configinspection | untested | via `ds_configinspection` |
-| `configinspection_diagnoses` | configinspection | untested | via `ds_configinspection` |
+| `configinspection_configinspections` | configinspection | ok | via `ds_configinspection` |
+| `configinspection_diagnoses` | configinspection | ok | via `ds_configinspection` |
 | `configinspection_diagnosis` | configinspection | excluded | requires diagnosis_id, diagnosis_request_sequence (parent-resource arg; not sta… |
 | `configinspection_diagnosis_request` | configinspection | excluded | requires access_key, diagnosis_check_type, diagnosis_id, secret_key, tenant_id … |
-| `directconnect_direct_connects` | directconnect | untested | via `ds_directconnect` |
+| `directconnect_direct_connects` | directconnect | ok | via `ds_directconnect` |
 | `directconnect_routing_rules` | directconnect | excluded | requires direct_connect_id (parent-resource arg; not standalone-readable) |
 | `dns_hosted_zone` | dns | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
-| `dns_hosted_zones` | dns | untested | via `ds_dns` |
+| `dns_hosted_zones` | dns | ok | via `ds_dns` |
 | `dns_private_dns` | dns | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
-| `dns_private_dnss` | dns | untested | via `ds_dns` |
+| `dns_private_dnss` | dns | ok | via `ds_dns` |
 | `dns_public_domain_name` | dns | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
-| `dns_public_domain_names` | dns | untested | via `ds_dns` |
+| `dns_public_domain_names` | dns | ok | via `ds_dns` |
 | `dns_record` | dns | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `dns_records` | dns | excluded | list 404s without its parent resource (run 27451961730) |
 | `epas_cluster` | epas | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
-| `epas_clusters` | epas | untested | via `ds_epas` |
-| `epas_engine_version` | epas | untested | via `ds_epas` |
+| `epas_clusters` | epas | ok | via `ds_epas` |
+| `epas_engine_version` | epas | ok | via `ds_epas` |
 | `eventstreams_cluster` | eventstreams | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
-| `eventstreams_clusters` | eventstreams | untested | via `ds_eventstreams` |
-| `eventstreams_engine_version` | eventstreams | untested | via `ds_eventstreams` |
+| `eventstreams_clusters` | eventstreams | ok | via `ds_eventstreams` |
+| `eventstreams_engine_version` | eventstreams | ok | via `ds_eventstreams` |
 | `filestorage_replication` | filestorage | excluded | requires id, volume_id (parent-resource arg; not standalone-readable) |
 | `filestorage_replications` | filestorage | excluded | requires volume_id (parent-resource arg; not standalone-readable) |
 | `filestorage_snapshot_schedule` | filestorage | excluded | requires volume_id (parent-resource arg; not standalone-readable) |
 | `filestorage_volume` | filestorage | excluded | requires id (parent-resource arg; not standalone-readable) |
-| `filestorage_volumes` | filestorage | untested | via `ds_filestorage` |
+| `filestorage_volumes` | filestorage | ok | via `ds_filestorage` |
 | `firewall_firewall` | firewall | excluded | requires id (parent-resource arg; not standalone-readable) |
 | `firewall_firewall_rule` | firewall | excluded | requires firewall_id, id (parent-resource arg; not standalone-readable) |
 | `firewall_firewall_rules` | firewall | excluded | requires firewall_id (parent-resource arg; not standalone-readable) |
-| `firewall_firewalls` | firewall | untested | via `ds_firewall` |
+| `firewall_firewalls` | firewall | ok | via `ds_firewall` |
 | `gslb_gslb` | gslb | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `gslb_gslb_resources` | gslb | excluded | requires gslb_id (parent-resource arg; not standalone-readable) |
 | `gslb_gslb_rrc_update` | gslb | excluded | requires gslb_id, region, status (parent-resource arg; not standalone-readable) |
-| `gslb_gslb_rrcs` | gslb | untested | via `ds_gslb` |
-| `gslb_gslbs` | gslb | untested | via `ds_gslb` |
-| `iam_access_keys` | iam | untested | via `ds_iam` |
+| `gslb_gslb_rrcs` | gslb | ok | via `ds_gslb` |
+| `gslb_gslbs` | gslb | ok | via `ds_gslb` |
+| `iam_access_keys` | iam | ok | via `ds_iam` |
 | `iam_group` | iam | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `iam_group_members` | iam | excluded | list 404s without its parent resource (run 27451961730) |
 | `iam_group_policy_bindings` | iam | excluded | list 404s without its parent resource (run 27451961730) |
-| `iam_groups` | iam | untested | via `ds_iam` |
-| `iam_policies` | iam | untested | via `ds_iam` |
+| `iam_groups` | iam | ok | via `ds_iam` |
+| `iam_policies` | iam | ok | via `ds_iam` |
 | `iam_policy` | iam | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `iam_role` | iam | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `iam_role_policy_bindings` | iam | excluded | list 404s without its parent resource (run 27451961730) |
-| `iam_roles` | iam | untested | via `ds_iam` |
+| `iam_roles` | iam | ok | via `ds_iam` |
 | `iam_user` | iam | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `iam_user_policy_bindings` | iam | excluded | list 404s without its parent resource (run 27451961730) |
 | `iam_users` | iam | excluded | 401 Unauthorized: test key lacks the list permission (run 27453373549) |
 | `loadbalancer_lb_certificate` | loadbalancer | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
-| `loadbalancer_lb_certificates` | loadbalancer | untested | via `ds_loadbalancer` |
+| `loadbalancer_lb_certificates` | loadbalancer | ok | via `ds_loadbalancer` |
 | `loadbalancer_lb_health_check` | loadbalancer | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
-| `loadbalancer_lb_health_checks` | loadbalancer | untested | via `ds_loadbalancer` |
+| `loadbalancer_lb_health_checks` | loadbalancer | ok | via `ds_loadbalancer` |
 | `loadbalancer_lb_listener` | loadbalancer | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
-| `loadbalancer_lb_listeners` | loadbalancer | untested | via `ds_loadbalancer` |
+| `loadbalancer_lb_listeners` | loadbalancer | ok | via `ds_loadbalancer` |
 | `loadbalancer_lb_member` | loadbalancer | excluded | list 404s without its parent resource (run 27451961730) |
 | `loadbalancer_lb_members` | loadbalancer | excluded | list 404s without its parent resource (run 27451961730) |
 | `loadbalancer_lb_server_group` | loadbalancer | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
-| `loadbalancer_lb_server_groups` | loadbalancer | untested | via `ds_loadbalancer` |
+| `loadbalancer_lb_server_groups` | loadbalancer | ok | via `ds_loadbalancer` |
 | `loadbalancer_loadbalancer` | loadbalancer | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `loadbalancer_loadbalancer_private_nat_ip` | loadbalancer | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
-| `loadbalancer_loadbalancers` | loadbalancer | untested | via `ds_loadbalancer` |
-| `loggingaudit_trail` | loggingaudit | untested | via `ds_loggingaudit` |
+| `loadbalancer_loadbalancers` | loadbalancer | ok | via `ds_loadbalancer` |
+| `loggingaudit_trail` | loggingaudit | ok | via `ds_loggingaudit` |
 | `mariadb_cluster` | mariadb | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
-| `mariadb_clusters` | mariadb | untested | via `ds_mariadb` |
-| `mariadb_engine_version` | mariadb | untested | via `ds_mariadb` |
+| `mariadb_clusters` | mariadb | ok | via `ds_mariadb` |
+| `mariadb_engine_version` | mariadb | ok | via `ds_mariadb` |
 | `multinodegpucluster_gpunode` | multinodegpucluster | excluded | requires id (parent-resource arg; not standalone-readable) |
-| `multinodegpucluster_gpunodes` | multinodegpucluster | untested | via `ds_multinodegpucluster` |
+| `multinodegpucluster_gpunodes` | multinodegpucluster | ok | via `ds_multinodegpucluster` |
 | `mysql_cluster` | mysql | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
-| `mysql_clusters` | mysql | untested | via `ds_mysql` |
-| `mysql_engine_version` | mysql | untested | via `ds_mysql` |
-| `network_logging_network_logging_configurations` | network-logging | untested | via `ds_network_logging` |
-| `network_logging_network_logging_storages` | network-logging | untested | via `ds_network_logging` |
+| `mysql_clusters` | mysql | ok | via `ds_mysql` |
+| `mysql_engine_version` | mysql | ok | via `ds_mysql` |
+| `network_logging_network_logging_configurations` | network-logging | ok | via `ds_network_logging` |
+| `network_logging_network_logging_storages` | network-logging | ok | via `ds_network_logging` |
 | `postgresql_cluster` | postgresql | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
-| `postgresql_clusters` | postgresql | untested | via `ds_postgresql` |
-| `postgresql_engine_version` | postgresql | untested | via `ds_postgresql` |
+| `postgresql_clusters` | postgresql | ok | via `ds_postgresql` |
+| `postgresql_engine_version` | postgresql | ok | via `ds_postgresql` |
 | `quota_account_quota` | quota | excluded | requires id (parent-resource arg; not standalone-readable) |
-| `quota_account_quotas` | quota | untested | via `ds_quota` |
-| `resourcemanager_resource_group` | resourcemanager | untested | via `ds_resourcemanager` |
-| `resourcemanager_resource_groups` | resourcemanager | untested | via `ds_resourcemanager` |
+| `quota_account_quotas` | quota | ok | via `ds_quota` |
+| `resourcemanager_resource_group` | resourcemanager | ok | via `ds_resourcemanager` |
+| `resourcemanager_resource_groups` | resourcemanager | ok | via `ds_resourcemanager` |
 | `resourcemanager_resource_tags` | resourcemanager | excluded | requires srn (parent-resource arg; not standalone-readable) |
-| `resourcemanager_tags` | resourcemanager | untested | via `ds_resourcemanager` |
+| `resourcemanager_tags` | resourcemanager | ok | via `ds_resourcemanager` |
 | `searchengine_cluster` | searchengine | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
-| `searchengine_clusters` | searchengine | untested | via `ds_searchengine` |
-| `searchengine_engine_version` | searchengine | untested | via `ds_searchengine` |
+| `searchengine_clusters` | searchengine | ok | via `ds_searchengine` |
+| `searchengine_engine_version` | searchengine | ok | via `ds_searchengine` |
 | `security_group_security_group` | securitygroup | excluded | requires id (parent-resource arg; not standalone-readable) |
 | `security_group_security_group_rule` | securitygroup | excluded | requires id (parent-resource arg; not standalone-readable) |
 | `security_group_security_group_rules` | securitygroup | excluded | requires security_group_id (parent-resource arg; not standalone-readable) |
-| `security_group_security_groups` | securitygroup | untested | via `ds_securitygroup` |
+| `security_group_security_groups` | securitygroup | ok | via `ds_securitygroup` |
 | `servicewatch_alert` | servicewatch | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `servicewatch_dashboard` | servicewatch | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
-| `servicewatch_dashboards` | servicewatch | untested | via `ds_servicewatch` |
+| `servicewatch_dashboards` | servicewatch | ok | via `ds_servicewatch` |
 | `servicewatch_event_rule` | servicewatch | excluded | requires event_rule_id (parent-resource arg; not standalone-readable) |
 | `servicewatch_log_group` | servicewatch | excluded | requires log_group_id (parent-resource arg; not standalone-readable) |
-| `servicewatch_log_groups` | servicewatch | untested | via `ds_servicewatch` |
+| `servicewatch_log_groups` | servicewatch | ok | via `ds_servicewatch` |
 | `servicewatch_log_stream` | servicewatch | excluded | requires log_group_id, log_stream_id (parent-resource arg; not standalone-reada… |
 | `ske_cluster` | ske | excluded | requires id (parent-resource arg; not standalone-readable) |
-| `ske_clusters` | ske | untested | via `ds_ske` |
-| `ske_kubernetes_versions` | ske | untested | via `ds_ske` |
+| `ske_clusters` | ske | ok | via `ds_ske` |
+| `ske_kubernetes_versions` | ske | ok | via `ds_ske` |
 | `ske_nodepool` | ske | excluded | requires id (parent-resource arg; not standalone-readable) |
-| `ske_nodepool_images` | ske | untested | via `ds_ske` |
+| `ske_nodepool_images` | ske | ok | via `ds_ske` |
 | `ske_nodepoolnodes` | ske | excluded | requires nodepool_id (parent-resource arg; not standalone-readable) |
 | `ske_nodepools` | ske | excluded | requires cluster_id (parent-resource arg; not standalone-readable) |
 | `sqlserver_cluster` | sqlserver | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
-| `sqlserver_clusters` | sqlserver | untested | via `ds_sqlserver` |
-| `sqlserver_engine_version` | sqlserver | untested | via `ds_sqlserver` |
+| `sqlserver_clusters` | sqlserver | ok | via `ds_sqlserver` |
+| `sqlserver_engine_version` | sqlserver | ok | via `ds_sqlserver` |
 | `vertica_cluster` | vertica | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
-| `vertica_clusters` | vertica | untested | via `ds_vertica` |
-| `vertica_engine_version` | vertica | untested | via `ds_vertica` |
-| `virtualserver_image` | virtualserver | untested | via `ds_virtualserver` |
-| `virtualserver_images` | virtualserver | untested | via `ds_virtualserver` |
-| `virtualserver_keypair` | virtualserver | untested | via `ds_virtualserver` |
-| `virtualserver_keypairs` | virtualserver | untested | via `ds_virtualserver` |
-| `virtualserver_server` | virtualserver | untested | via `ds_virtualserver` |
-| `virtualserver_server_group` | virtualserver | untested | via `ds_virtualserver` |
-| `virtualserver_server_groups` | virtualserver | untested | via `ds_virtualserver` |
-| `virtualserver_servers` | virtualserver | untested | via `ds_virtualserver` |
-| `virtualserver_volume` | virtualserver | untested | via `ds_virtualserver` |
-| `virtualserver_volumes` | virtualserver | untested | via `ds_virtualserver` |
-| `vpc_internet_gateways` | vpc | untested | via `ds_vpc` |
-| `vpc_nat_gateways` | vpc | untested | via `ds_vpc` |
-| `vpc_ports` | vpc | untested | via `ds_vpc` |
+| `vertica_clusters` | vertica | ok | via `ds_vertica` |
+| `vertica_engine_version` | vertica | ok | via `ds_vertica` |
+| `virtualserver_image` | virtualserver | ok | via `ds_virtualserver` |
+| `virtualserver_images` | virtualserver | ok | via `ds_virtualserver` |
+| `virtualserver_keypair` | virtualserver | ok | via `ds_virtualserver` |
+| `virtualserver_keypairs` | virtualserver | ok | via `ds_virtualserver` |
+| `virtualserver_server` | virtualserver | ok | via `ds_virtualserver` |
+| `virtualserver_server_group` | virtualserver | ok | via `ds_virtualserver` |
+| `virtualserver_server_groups` | virtualserver | ok | via `ds_virtualserver` |
+| `virtualserver_servers` | virtualserver | ok | via `ds_virtualserver` |
+| `virtualserver_volume` | virtualserver | ok | via `ds_virtualserver` |
+| `virtualserver_volumes` | virtualserver | ok | via `ds_virtualserver` |
+| `vpc_internet_gateways` | vpc | ok | via `ds_vpc` |
+| `vpc_nat_gateways` | vpc | ok | via `ds_vpc` |
+| `vpc_ports` | vpc | ok | via `ds_vpc` |
 | `vpc_private_nat` | vpc | excluded | bare read 404s on an empty account (show-by-id semantics; run 27451961730) |
 | `vpc_private_nat_ips` | vpc | excluded | list 404s without its parent resource (run 27451961730) |
-| `vpc_private_nats` | vpc | untested | via `ds_vpc` |
-| `vpc_publicips` | vpc | untested | via `ds_vpc` |
+| `vpc_private_nats` | vpc | ok | via `ds_vpc` |
+| `vpc_publicips` | vpc | ok | via `ds_vpc` |
 | `vpc_subnet_vip` | vpc | excluded | requires subnet_id, vip_id (parent-resource arg; not standalone-readable) |
 | `vpc_subnet_vips` | vpc | excluded | requires subnet_id (parent-resource arg; not standalone-readable) |
-| `vpc_subnets` | vpc | untested | via `ds_vpc` |
+| `vpc_subnets` | vpc | ok | via `ds_vpc` |
 | `vpc_transit_gateway` | vpc | excluded | requires id (parent-resource arg; not standalone-readable) |
 | `vpc_transit_gateway_rules` | vpc | excluded | requires transit_gateway_id (parent-resource arg; not standalone-readable) |
 | `vpc_transit_gateway_vpc_connections` | vpc | excluded | requires transit_gateway_id (parent-resource arg; not standalone-readable) |
-| `vpc_transit_gateways` | vpc | untested | via `ds_vpc` |
-| `vpc_vpc_endpoints` | vpc | untested | via `ds_vpc` |
+| `vpc_transit_gateways` | vpc | ok | via `ds_vpc` |
+| `vpc_vpc_endpoints` | vpc | ok | via `ds_vpc` |
 | `vpc_vpc_peering` | vpc | excluded | requires id (parent-resource arg; not standalone-readable) |
 | `vpc_vpc_peering_rules` | vpc | excluded | requires vpc_peering_id (parent-resource arg; not standalone-readable) |
-| `vpc_vpc_peerings` | vpc | untested | via `ds_vpc` |
-| `vpc_vpcs` | vpc | untested | via `ds_vpc` |
+| `vpc_vpc_peerings` | vpc | ok | via `ds_vpc` |
+| `vpc_vpcs` | vpc | ok | via `ds_vpc` |
 | `vpn_vpn_gateway` | vpn | excluded | requires id (parent-resource arg; not standalone-readable) |
-| `vpn_vpn_gateways` | vpn | untested | via `ds_vpn` |
+| `vpn_vpn_gateways` | vpn | ok | via `ds_vpn` |
 | `vpn_vpn_tunnel` | vpn | excluded | requires id (parent-resource arg; not standalone-readable) |
-| `vpn_vpn_tunnels` | vpn | untested | via `ds_vpn` |
+| `vpn_vpn_tunnels` | vpn | ok | via `ds_vpn` |
 

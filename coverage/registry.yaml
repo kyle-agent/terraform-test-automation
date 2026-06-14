@@ -217,10 +217,10 @@ ds_backup:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -231,10 +231,10 @@ ds_baremetal:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -245,10 +245,10 @@ ds_budget:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -259,10 +259,10 @@ ds_cachestore:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -273,10 +273,10 @@ ds_certificatemanager:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -287,10 +287,10 @@ ds_cloudmonitoring:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -301,10 +301,10 @@ ds_configinspection:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -315,10 +315,10 @@ ds_directconnect:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -329,10 +329,10 @@ ds_dns:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -343,10 +343,10 @@ ds_epas:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -357,10 +357,10 @@ ds_eventstreams:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -371,10 +371,10 @@ ds_filestorage:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -385,10 +385,10 @@ ds_firewall:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -399,10 +399,10 @@ ds_gslb:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -413,10 +413,10 @@ ds_iam:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -427,10 +427,10 @@ ds_loadbalancer:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -441,10 +441,10 @@ ds_loggingaudit:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -455,10 +455,10 @@ ds_mariadb:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -469,10 +469,10 @@ ds_multinodegpucluster:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -483,10 +483,10 @@ ds_mysql:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -497,10 +497,10 @@ ds_network_logging:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -511,10 +511,10 @@ ds_plannedcompute:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -525,10 +525,10 @@ ds_postgresql:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -539,10 +539,10 @@ ds_quota:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -553,10 +553,10 @@ ds_resourcemanager:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -567,10 +567,10 @@ ds_searchengine:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -581,10 +581,10 @@ ds_securitygroup:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -595,10 +595,10 @@ ds_servicewatch:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -609,10 +609,10 @@ ds_ske:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -623,10 +623,10 @@ ds_sqlserver:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -637,10 +637,10 @@ ds_vertica:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -651,10 +651,10 @@ ds_virtualserver:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -665,10 +665,10 @@ ds_vpc:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -679,10 +679,10 @@ ds_vpn:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); standalone-readable members only \u2014 non-readable\
-    \ ones excluded per sweep 27451961730"
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
