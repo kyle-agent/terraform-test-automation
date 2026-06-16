@@ -810,16 +810,16 @@
     }
   },
   "samsungcloudplatformv2_iam_access_key": {
-    "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26929023654",
-    "last_seen": "2026-06-04T03:42:11Z",
-    "note": "Error: Error creating access key with samsungcloudplatformv2_iam_access_key.regr, on main.tf line 28, in resource \"samsungcloudplatformv2_iam_access_key\" \"regr\": 28: resource \"samsungcloudplatformv2_iam_access_key\" \"regr\" { Could not create access key, unexpected error: 403 Forbidden Reason: Exceeded the service quota limit - quota_item: IAM.USER.ACCESS_KEY.MAX.COUNT applied_value: 2EA. Check the Quota Service to see if a quota increase is possible.",
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27241816399",
+    "last_seen": "2026-06-09T23:33:14Z",
+    "note": "",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
+      "apply": "ok",
+      "destroy": "ok",
       "import": "skip",
       "plan": "ok",
-      "replan": "skip",
+      "replan": "ok",
       "update": "skip",
       "validate": "ok"
     }
@@ -870,16 +870,31 @@
     }
   },
   "samsungcloudplatformv2_iam_role": {
-    "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-    "last_seen": "2026-06-05T01:30:00Z",
-    "note": "400 Input should be a valid list / 404 no policy id (fixture)",
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27233487205",
+    "last_seen": "2026-06-09T20:25:36Z",
+    "note": "",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
+      "apply": "ok",
+      "destroy": "ok",
       "import": "skip",
       "plan": "ok",
-      "replan": "skip",
+      "replan": "ok",
+      "update": "skip",
+      "validate": "ok"
+    }
+  },
+  "samsungcloudplatformv2_iam_role_policy_bindings": {
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27233487205",
+    "last_seen": "2026-06-09T20:25:36Z",
+    "note": "",
+    "stages": {
+      "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
+      "replan": "ok",
       "update": "skip",
       "validate": "ok"
     }
@@ -929,10 +944,40 @@
       "validate": "ok"
     }
   },
+  "samsungcloudplatformv2_loadbalancer_lb_listener": {
+    "highest_stage": "plan",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27212070186",
+    "last_seen": "2026-06-09T14:34:19Z",
+    "note": "Error: Error creating Lb Listener with samsungcloudplatformv2_loadbalancer_lb_listener.regr, on main.tf line 79, in resource \"samsungcloudplatformv2_loadbalancer_lb_listener\" \"regr\": 79: resource \"samsungcloudplatformv2_loadbalancer_lb_listener\" \"regr\" { Could not create Lb Listener, unexpected error: 500 Internal Server Error Reason: Failed to create listener. ( code : 104 ) | LEAK: partial-create cleanup destroy failed: Error: Error Deleting LB Server Group Could not delete lb server group, unexpected error: 409 Conflict Reason: Unable to delete the LB Server Group '6d38f22635a34524bb1c390ea09f730f' due to attached resources.",
+    "stages": {
+      "apply": "fail",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "ok",
+      "replan": "skip",
+      "update": "skip",
+      "validate": "ok"
+    }
+  },
+  "samsungcloudplatformv2_loadbalancer_lb_member": {
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27238242719",
+    "last_seen": "2026-06-09T22:04:56Z",
+    "note": "",
+    "stages": {
+      "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
+      "replan": "ok",
+      "update": "skip",
+      "validate": "ok"
+    }
+  },
   "samsungcloudplatformv2_loadbalancer_lb_server_group": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26932747382",
-    "last_seen": "2026-06-04T05:33:00Z",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27212070186",
+    "last_seen": "2026-06-09T14:34:19Z",
     "note": "",
     "stages": {
       "apply": "ok",
@@ -945,16 +990,31 @@
     }
   },
   "samsungcloudplatformv2_loadbalancer_loadbalancer": {
-    "highest_stage": "validate",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-    "last_seen": "2026-06-05T01:30:00Z",
-    "note": "blocked: provider #77 create no-wait \u2192 destroy leak",
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27212070186",
+    "last_seen": "2026-06-09T14:34:19Z",
+    "note": "",
     "stages": {
-      "apply": "skip",
-      "destroy": "skip",
+      "apply": "ok",
+      "destroy": "ok",
       "import": "skip",
-      "plan": "skip",
-      "replan": "skip",
+      "plan": "ok",
+      "replan": "ok",
+      "update": "skip",
+      "validate": "ok"
+    }
+  },
+  "samsungcloudplatformv2_loadbalancer_loadbalancer_public_nat_ip": {
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27233794315",
+    "last_seen": "2026-06-09T20:46:06Z",
+    "note": "",
+    "stages": {
+      "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
+      "replan": "ok",
       "update": "skip",
       "validate": "ok"
     }
@@ -1215,16 +1275,16 @@
     }
   },
   "samsungcloudplatformv2_virtualserver_image": {
-    "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-    "last_seen": "2026-06-05T01:30:00Z",
-    "note": "400 invalid Object Storage URL (fixture)",
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27257742108",
+    "last_seen": "2026-06-10T06:31:56Z",
+    "note": "",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
+      "apply": "ok",
+      "destroy": "ok",
       "import": "skip",
       "plan": "ok",
-      "replan": "skip",
+      "replan": "ok",
       "update": "skip",
       "validate": "ok"
     }
@@ -1365,15 +1425,15 @@
     }
   },
   "samsungcloudplatformv2_vpc_private_nat_ip": {
-    "highest_stage": "validate",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-    "last_seen": "2026-06-05T01:30:00Z",
-    "note": "blocked: TGW Connectable race / #76",
+    "highest_stage": "plan",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27233794315",
+    "last_seen": "2026-06-09T20:46:06Z",
+    "note": "Error: Error creating Private NAT with samsungcloudplatformv2_vpc_private_nat.regr, on main.tf line 40, in resource \"samsungcloudplatformv2_vpc_private_nat\" \"regr\": 40: resource \"samsungcloudplatformv2_vpc_private_nat\" \"regr\" { Could not create Private NAT, unexpected error: 400 Bad Request Reason: Cannot found the Transit Gateway(f33f497de2a94f6b876e465ceec949b1) in Connectable state.",
     "stages": {
-      "apply": "skip",
+      "apply": "fail",
       "destroy": "skip",
       "import": "skip",
-      "plan": "skip",
+      "plan": "ok",
       "replan": "skip",
       "update": "skip",
       "validate": "ok"
@@ -1424,6 +1484,21 @@
       "validate": "ok"
     }
   },
+  "samsungcloudplatformv2_vpc_subnet_vip_nat_ip": {
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27238242719",
+    "last_seen": "2026-06-09T22:04:56Z",
+    "note": "",
+    "stages": {
+      "apply": "ok",
+      "destroy": "ok",
+      "import": "skip",
+      "plan": "ok",
+      "replan": "ok",
+      "update": "skip",
+      "validate": "ok"
+    }
+  },
   "samsungcloudplatformv2_vpc_subnet_vip_port": {
     "highest_stage": "destroy",
     "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
@@ -1455,46 +1530,76 @@
     }
   },
   "samsungcloudplatformv2_vpc_transit_gateway_firewall": {
-    "highest_stage": "validate",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-    "last_seen": "2026-06-05T01:30:00Z",
-    "note": "blocked: provider #76 status-waiter hang",
+    "highest_stage": "plan",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27241816399",
+    "last_seen": "2026-06-09T23:33:14Z",
+    "note": "Error: Error creating CreateTransitGatewayFirewall with samsungcloudplatformv2_vpc_transit_gateway_firewall.regr, on main.tf line 28, in resource \"samsungcloudplatformv2_vpc_transit_gateway_firewall\" \"regr\": 28: resource \"samsungcloudplatformv2_vpc_transit_gateway_firewall\" \"regr\" { Could not create CreateTransitGatewayFirewall, unexpected error: 404 Not Found Reason: Not found with ID 00000000-0000-0000-0000-000000000000",
     "stages": {
-      "apply": "skip",
+      "apply": "fail",
       "destroy": "skip",
       "import": "skip",
-      "plan": "skip",
+      "plan": "ok",
+      "replan": "skip",
+      "update": "skip",
+      "validate": "ok"
+    }
+  },
+  "samsungcloudplatformv2_vpc_transit_gateway_firewall_connection": {
+    "highest_stage": "plan",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27241816399",
+    "last_seen": "2026-06-09T23:33:14Z",
+    "note": "Error: Error creating Transit Gateway Firewall Connection with samsungcloudplatformv2_vpc_transit_gateway_firewall_connection.regr, on main.tf line 22, in resource \"samsungcloudplatformv2_vpc_transit_gateway_firewall_connection\" \"regr\": 22: resource \"samsungcloudplatformv2_vpc_transit_gateway_firewall_connection\" \"regr\" { Could not create Transit Gateway Firewall Connection, unexpected error: 404 Not Found Reason: Not found with ID 00000000-0000-0000-0000-000000000000",
+    "stages": {
+      "apply": "fail",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "ok",
       "replan": "skip",
       "update": "skip",
       "validate": "ok"
     }
   },
   "samsungcloudplatformv2_vpc_transit_gateway_rule": {
-    "highest_stage": "validate",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-    "last_seen": "2026-06-05T01:30:00Z",
-    "note": "blocked: provider #76 status-waiter hang",
+    "highest_stage": "plan",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27241816399",
+    "last_seen": "2026-06-09T23:33:14Z",
+    "note": "Error: Error creating transit gateway routing rule with samsungcloudplatformv2_vpc_transit_gateway_rule.regr, on main.tf line 54, in resource \"samsungcloudplatformv2_vpc_transit_gateway_rule\" \"regr\": 54: resource \"samsungcloudplatformv2_vpc_transit_gateway_rule\" \"regr\" { Could not create routing rule, unexpected error: no value given for required property created_at Reason: Invalid error data | LEAK: partial-create cleanup destroy failed: Error: Error Deleting tgw vpc connection Could not delete tgw vpc connection, unexpected error: 400 Bad Request Reason: Transit Gateway state is not Active.:(EDITING)",
     "stages": {
-      "apply": "skip",
+      "apply": "fail",
       "destroy": "skip",
       "import": "skip",
-      "plan": "skip",
+      "plan": "ok",
+      "replan": "skip",
+      "update": "skip",
+      "validate": "ok"
+    }
+  },
+  "samsungcloudplatformv2_vpc_transit_gateway_uplink_rule": {
+    "highest_stage": "plan",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27241816399",
+    "last_seen": "2026-06-09T23:33:14Z",
+    "note": "Error: Error Creating Transit Gateway Uplink Rule with samsungcloudplatformv2_vpc_transit_gateway_uplink_rule.regr, on main.tf line 35, in resource \"samsungcloudplatformv2_vpc_transit_gateway_uplink_rule\" \"regr\": 35: resource \"samsungcloudplatformv2_vpc_transit_gateway_uplink_rule\" \"regr\" { Could not create uplink rule, unexpected error: 404 Not Found Reason: Not found with ID 00000000-0000-0000-0000-000000000000",
+    "stages": {
+      "apply": "fail",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "ok",
       "replan": "skip",
       "update": "skip",
       "validate": "ok"
     }
   },
   "samsungcloudplatformv2_vpc_transit_gateway_vpc_connection": {
-    "highest_stage": "validate",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-    "last_seen": "2026-06-05T01:30:00Z",
-    "note": "blocked: provider #76 status-waiter hang",
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27241816399",
+    "last_seen": "2026-06-09T23:33:14Z",
+    "note": "",
     "stages": {
-      "apply": "skip",
-      "destroy": "skip",
+      "apply": "ok",
+      "destroy": "ok",
       "import": "skip",
-      "plan": "skip",
-      "replan": "skip",
+      "plan": "ok",
+      "replan": "ok",
       "update": "skip",
       "validate": "ok"
     }
@@ -1531,9 +1636,39 @@
   },
   "samsungcloudplatformv2_vpc_vpc_peering": {
     "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26797061130",
-    "last_seen": "2026-06-02T03:47:45Z",
-    "note": "Error: Error creating vpc peering with samsungcloudplatformv2_vpc_vpc_peering.regr, on main.tf line 41, in resource \"samsungcloudplatformv2_vpc_vpc_peering\" \"regr\": 41: resource \"samsungcloudplatformv2_vpc_vpc_peering\" \"regr\" { Could not create vpc peering, unexpected error: no value given for required property approver_vpc_name Reason: Invalid error data",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27238242719",
+    "last_seen": "2026-06-09T22:04:56Z",
+    "note": "Error: Error creating vpc peering with samsungcloudplatformv2_vpc_vpc_peering.regr, on main.tf line 44, in resource \"samsungcloudplatformv2_vpc_vpc_peering\" \"regr\": 44: resource \"samsungcloudplatformv2_vpc_vpc_peering\" \"regr\" { Could not create vpc peering, unexpected error: no value given for required property approver_vpc_name Reason: Invalid error data | LEAK: partial-create cleanup destroy failed: Error: Error Deleting vpc Could not delete vpc, unexpected error: 409 Conflict Reason: Cannot terminate due to associated resources. Please terminate the following associated resources first and then terminate the VPC. Error: Error Deleting vpc Could not delete vpc, unexpected error: 409 Conflict Reason: Cannot terminate due to associated resources. Please terminate the following associated resources first and then terminate the VPC.",
+    "stages": {
+      "apply": "fail",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "ok",
+      "replan": "skip",
+      "update": "skip",
+      "validate": "ok"
+    }
+  },
+  "samsungcloudplatformv2_vpc_vpc_peering_approval": {
+    "highest_stage": "plan",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27238242719",
+    "last_seen": "2026-06-09T22:04:56Z",
+    "note": "Error: Error creating vpc with samsungcloudplatformv2_vpc_vpc.requester, on main.tf line 32, in resource \"samsungcloudplatformv2_vpc_vpc\" \"requester\": 32: resource \"samsungcloudplatformv2_vpc_vpc\" \"requester\" { Could not create vpc, unexpected error: 400 Bad Request Reason: The number(5) of VPCs that can be created in this account has been exceeded. Please contact the administrator. Error: Error creating vpc",
+    "stages": {
+      "apply": "fail",
+      "destroy": "skip",
+      "import": "skip",
+      "plan": "ok",
+      "replan": "skip",
+      "update": "skip",
+      "validate": "ok"
+    }
+  },
+  "samsungcloudplatformv2_vpc_vpc_peering_rule": {
+    "highest_stage": "plan",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27238242719",
+    "last_seen": "2026-06-09T22:04:56Z",
+    "note": "Error: Error creating vpc with samsungcloudplatformv2_vpc_vpc.requester, on main.tf line 39, in resource \"samsungcloudplatformv2_vpc_vpc\" \"requester\": 39: resource \"samsungcloudplatformv2_vpc_vpc\" \"requester\" { Could not create vpc, unexpected error: 400 Bad Request Reason: The number(5) of VPCs that can be created in this account has been exceeded. Please contact the administrator. Error: Error creating vpc",
     "stages": {
       "apply": "fail",
       "destroy": "skip",
