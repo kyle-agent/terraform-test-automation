@@ -1455,16 +1455,16 @@
     }
   },
   "samsungcloudplatformv2_vpc_subnet": {
-    "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27419601096",
-    "last_seen": "2026-06-12T15:31:50Z",
-    "note": "Error: Error creating vpc endpoint with samsungcloudplatformv2_vpc_vpc_endpoint.regr, on main.tf line 93, in resource \"samsungcloudplatformv2_vpc_vpc_endpoint\" \"regr\": 93: resource \"samsungcloudplatformv2_vpc_vpc_endpoint\" \"regr\" { Could not create vpc endpoint, unexpected error: 400 Bad Request Reason: Resource Key is not valid : 9b13e0d04b7544ad8b66905cd94888bd",
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27653148345",
+    "last_seen": "2026-06-16T22:58:51Z",
+    "note": "",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
+      "apply": "ok",
+      "destroy": "ok",
       "import": "skip",
       "plan": "ok",
-      "replan": "skip",
+      "replan": "ok",
       "update": "skip",
       "validate": "ok"
     }
@@ -1515,16 +1515,16 @@
     }
   },
   "samsungcloudplatformv2_vpc_transit_gateway": {
-    "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27399112864",
-    "last_seen": "2026-06-12T13:05:23Z",
-    "note": "Error: Error creating Private NAT with samsungcloudplatformv2_vpc_private_nat.regr, on main.tf line 53, in resource \"samsungcloudplatformv2_vpc_private_nat\" \"regr\": 53: resource \"samsungcloudplatformv2_vpc_private_nat\" \"regr\" { Could not create Private NAT, unexpected error: 400 Bad Request Reason: Cannot found the Transit Gateway(9b5c707aa7e74f79863c8ffb8c6d3405) in Connectable state.",
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27653148345",
+    "last_seen": "2026-06-16T22:58:51Z",
+    "note": "",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
+      "apply": "ok",
+      "destroy": "ok",
       "import": "skip",
       "plan": "ok",
-      "replan": "skip",
+      "replan": "ok",
       "update": "skip",
       "validate": "ok"
     }

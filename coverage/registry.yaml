@@ -1425,14 +1425,13 @@ vpc_subnet:
   family: vpc
   import: false
   issues:
-  - 'RETEST: verified GREEN with patched provider #59 (dns_nameservers []string->types.List;
-    run 27235979211, 2026-06-09). A later 2026-06-12 sweep ran with a broken provider
-    build-ref (deleted branch) and recorded plan-only, knocking it off the dashboard.
-    build-ref is now fork main (#59 fix confirmed present); re-running to reconfirm green.'
+  - 'GREEN with patched provider #59 (dns_nameservers []string->types.List); full lifecycle
+    ok. RECONFIRMED on fork main build-ref (run 27653148345, 2026-06-16) after a 2026-06-12
+    broken-build-ref sweep had regressed it to plan-only on the dashboard. Requires patched provider.'
   needs:
   - vpc_id
   parallel: low
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -1485,13 +1484,12 @@ vpc_transit_gateway:
   family: vpc
   import: false
   issues:
-  - 'RETEST: verified GREEN with patched provider #76 (TGW status-waiter no longer hangs;
-    run 27241816399, 2026-06-09). A later 2026-06-12 sweep ran with a broken provider
-    build-ref (deleted branch) and recorded plan-only, knocking it off the dashboard.
-    build-ref is now fork main (#76 fix confirmed present); re-running to reconfirm green.'
+  - 'GREEN with patched provider #76 (TGW status-waiter no longer hangs); full lifecycle incl
+    clean destroy. RECONFIRMED on fork main build-ref (run 27653148345, 2026-06-16) after a
+    2026-06-12 broken-build-ref sweep had regressed it to plan-only. Requires patched provider.'
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
