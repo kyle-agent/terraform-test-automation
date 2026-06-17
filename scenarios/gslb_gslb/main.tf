@@ -41,12 +41,20 @@ variable "backend_destination" {
   default     = "10.0.0.10"
 }
 
+# GSLB description; Optional, in-place-updatable (no RequiresReplace; gslbChanged
+# detects it and the provider's UpdateGslb PATCHes it). Mutated by update.tfvars.
+variable "gslb_description" {
+  description = "GSLB description (in-place-updatable attribute)."
+  type        = string
+  default     = "regrgslb1"
+}
+
 resource "samsungcloudplatformv2_gslb_gslb" "regr" {
   gslb_create = {
     algorithm   = var.gslb_algorithm
     env_usage   = var.env_usage
     name        = var.gslb_name
-    description = "regrgslb1"
+    description = var.gslb_description
 
     health_check = {
       protocol                   = "HTTP"

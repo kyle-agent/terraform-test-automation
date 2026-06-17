@@ -58,3 +58,8 @@ A lesson without a concrete trigger + action is not a lesson — delete it.
 - trigger: waiting on a coverage-sweep / pages run to finish.
 - do: the shared egress IP rate-limits api.github.com (403) for unauthenticated requests. Use `mcp__github__actions_get`/`actions_list` (authenticated) to check status, or a Monitor poll that tolerates 403s. Do not rely on bash `curl` to api.github.com for a definitive status.
 - conf: med · seen: 2026-06-17 · obs: 1
+
+### Edit registry.yaml with the yaml library, not line-based mutation
+- trigger: bulk-flipping many registry.yaml entries' status/issues in one pass.
+- do: load with `yaml.safe_load`, mutate the dict, re-dump with `yaml.safe_dump(sort_keys=True, default_flow_style=False, width=100)` (the documented canonical style). A line-based loop that does `lines[j:k]=...` while iterating shifts later indices off a pre-computed block map → it silently set the *issues* but not the *status* on 2 of 22 entries. yaml round-trip is the safe path (it also normalizes drifted hand-edits).
+- conf: high · seen: 2026-06-17 · obs: 1

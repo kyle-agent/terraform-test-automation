@@ -70,6 +70,12 @@ variable "alert_period" {
   default     = 300
 }
 
+variable "alert_description" {
+  type        = string
+  description = "Free-text description of the alert (in-place updatable via UpdateAlertDescription)."
+  default     = "Regression fixture: CPU utilization breach alert."
+}
+
 # Minimal METRIC_ALERT fixture guarding ServiceWatch alert coverage: a fresh
 # alert must re-plan cleanly with no spurious diff. Enums per provider v3.3.1.
 resource "samsungcloudplatformv2_servicewatch_alert" "regr" {
@@ -87,5 +93,5 @@ resource "samsungcloudplatformv2_servicewatch_alert" "regr" {
     value = var.alert_dimension_value
   }]
   missing_data_option = "MISSING"
-  description         = "Regression fixture: CPU utilization breach alert."
+  description         = var.alert_description
 }

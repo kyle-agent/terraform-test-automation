@@ -17,6 +17,12 @@ variable "name_suffix" {
   default     = ""
 }
 
+variable "firewall_rule_description" {
+  type        = string
+  description = "Description of the firewall rule (in-place updatable via UpdateFirewallRule; maxLength 100)."
+  default     = "regr-test"
+}
+
 # Firewall rule fixture guarding firewall coverage: an inbound ALLOW rule with a
 # single TCP service must re-plan cleanly (no spurious update or replacement).
 # Required: firewall_id and the firewall_rule_create object (action, direction,
@@ -57,7 +63,7 @@ resource "samsungcloudplatformv2_firewall_firewall_rule" "regr" {
     action              = "ALLOW"
     direction           = "INBOUND"
     status              = "ENABLE"
-    description         = "regr-test"
+    description         = var.firewall_rule_description
     source_address      = ["192.168.1.0/24"]
     destination_address = ["192.168.2.0/24"]
     service = [

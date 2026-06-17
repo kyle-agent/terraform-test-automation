@@ -22,6 +22,15 @@ variable "volume_size" {
   default     = 8
 }
 
+# The volume has no description; tags are an in-place-updatable attribute
+# (tag.UpdateTags in volume Update). The capability matrix update stage mutates
+# this map rather than the riskier size-grow path.
+variable "tags" {
+  type        = map(string)
+  description = "Resource tags (in-place-updatable via the volume tag update path)."
+  default     = { "regr" = "terraform" }
+}
+
 # Virtual server (block) volume fixture.
 # Guards an unattached data volume: required size plus an explicit volume_type,
 # so the optional/computed volume_type does not drift between plans. max_iops
@@ -32,7 +41,5 @@ resource "samsungcloudplatformv2_virtualserver_volume" "regr" {
   size        = var.volume_size
   volume_type = "SSD"
 
-  tags = {
-    "regr" = "terraform"
-  }
+  tags = var.tags
 }

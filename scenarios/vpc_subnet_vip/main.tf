@@ -22,11 +22,17 @@ variable "virtual_ip_address" {
   default     = null
 }
 
+variable "subnet_vip_description" {
+  type        = string
+  description = "Description for the subnet VIP."
+  default     = "regr-test"
+}
+
 # Subnet VIP fixture guarding networking coverage: a virtual IP reserved in a
 # subnet must re-plan cleanly with no spurious update or replacement.
 # Required arg: subnet_id. Optional: virtual_ip_address, description.
 resource "samsungcloudplatformv2_vpc_subnet_vip" "regr" {
   subnet_id          = var.subnet_id
   virtual_ip_address = var.virtual_ip_address
-  description        = "regr-test"
+  description        = var.subnet_vip_description
 }

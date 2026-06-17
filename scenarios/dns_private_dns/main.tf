@@ -33,13 +33,21 @@ variable "private_dns_name" {
   default     = "regrpdns"
 }
 
+# Private-DNS description; Optional, in-place-updatable (no RequiresReplace; the
+# provider's UpdatePrivateDns PATCHes it). The optional update stage mutates this.
+variable "private_dns_description" {
+  type        = string
+  description = "Private DNS zone description (in-place-updatable attribute)."
+  default     = "regression-test private DNS"
+}
+
 # DNS private DNS regression fixture. The resource takes a single nested object
 # attribute `private_dns_create`. connected_vpc_ids is bound to the bootstrap
 # VPC so the zone attaches to a real VPC at apply; a second apply with no config
 # change must re-plan cleanly.
 resource "samsungcloudplatformv2_dns_private_dns" "regr" {
   private_dns_create = {
-    description       = "regression-test private DNS"
+    description       = var.private_dns_description
     name              = "${var.private_dns_name}${var.name_suffix}"
     connected_vpc_ids = [var.vpc_id]
   }

@@ -25,6 +25,15 @@ variable "vpc_id" {
   default     = "00000000-0000-0000-0000-000000000000"
 }
 
+# Record description; an Optional, in-place-updatable attribute (no
+# RequiresReplace, the provider's record Update PATCHes it). The optional update
+# stage mutates this via update.tfvars.
+variable "record_description" {
+  type        = string
+  description = "DNS record description (in-place-updatable attribute)."
+  default     = "regression-test A record"
+}
+
 # DNS record regression fixture. A record requires a parent hosted zone, which in
 # turn requires a private DNS zone, so this fixture creates both prerequisites
 # in-line (chained) and feeds the hosted zone id into the record. A second apply
@@ -52,7 +61,7 @@ resource "samsungcloudplatformv2_dns_record" "regr" {
     name        = "www.regr${var.name_suffix}.example.com"
     type        = "A"
     ttl         = 300
-    description = "regression-test A record"
+    description = var.record_description
     records     = ["192.0.2.10"]
   }
 }
