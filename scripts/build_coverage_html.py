@@ -198,7 +198,7 @@ def main():
         <div class="card"><div class="num">{with_run}</div><div class="lbl">have a matrix run<br><span class="muted">{pct(with_run)}</span></div></div>
         <div class="card"><div class="num">{reach['apply']}</div><div class="lbl">reach apply<br><span class="muted">{pct(reach['apply'])}</span></div></div>
         <div class="card green"><div class="num">{green}<span class="denom">/{total}</span></div><div class="lbl">fully GREEN<br><span class="muted">{pct(green)} of testable</span></div></div>
-        <div class="card unprov"><div class="num">{len(unprov_res)}</div><div class="lbl">excluded<br><span class="muted">license / no-capacity / deprecated</span></div></div>
+        <div class="card unprov"><div class="num">{len(unprov_res)}</div><div class="lbl">excluded (non-defect)<br><span class="muted">license / capacity / deprecated / cost / scope</span></div></div>
         <div class="card"><div class="num">{ds_green}<span class="denom">/{ds_smoke}</span></div>
           <div class="lbl">data sources read-verified<br><span class="muted">{ds_total} total · {ds_excl} excluded (need parent arg)</span></div></div>
       </div>
@@ -270,7 +270,7 @@ def main():
   </table>
   <h2 id="excluded">Excluded resources — not in testable surface ({len(unprov_res)})</h2>
   <p class="muted" style="margin:4px 0 10px">Resources <b>excluded from the testable surface</b> (the funnel denominator) above — <b>not</b> provider/fixture defects.
-  Reasons: a vendor <b>license</b> the account does not hold, physical hardware / entitlement / <b>capacity</b> the account lacks, or a <b>deprecated</b> service being retired.
+  Reasons: vendor <b>license</b> not held, physical / entitlement / <b>capacity</b> the account lacks, a <b>deprecated</b> service being retired, a real <b>cost</b> commitment, or intentionally <b>out-of-scope</b>.
   Split out the same way parent-arg-only data sources are, so "100% coverage" means 100% of what is actually testable. Curated in <code>coverage/excluded_resources.yaml</code>.</p>
   <table class="unprovtable">
     <thead><tr><th>resource</th><th>family</th><th>reason</th><th>why it cannot be provisioned</th></tr></thead>

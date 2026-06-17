@@ -74,11 +74,12 @@ cachestore_cluster:
   depends_on: []
   family: cachestore
   import: false
-  issues: []
+  issues:
+  - 'RETEST: registry-green via create+destroy probe (replan never recorded on the dashboard). Re-run through the standard matrix to record replan/idempotency and light up fully-green.'
   needs:
   - subnet_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: slow
   update: false
   vpc: pool
@@ -697,11 +698,12 @@ epas_cluster:
   depends_on: []
   family: epas
   import: false
-  issues: []
+  issues:
+  - 'RETEST: registry-green via create+destroy probe (replan never recorded on the dashboard). Re-run through the standard matrix to record replan/idempotency and light up fully-green.'
   needs:
   - subnet_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: slow
   update: false
   vpc: pool
@@ -761,7 +763,8 @@ firewall_firewall_rule:
   depends_on: []
   family: firewall
   import: false
-  issues: []
+  issues:
+  - 'GREEN reconfirmed on the patched provider (run 27659871231): full lifecycle validate->destroy, clean teardown.'
   needs: []
   parallel: normal
   status: green
@@ -799,7 +802,8 @@ iam_group:
   depends_on: []
   family: iam
   import: false
-  issues: []
+  issues:
+  - 'GREEN reconfirmed on the patched provider (run 27659871231): full lifecycle validate->destroy, clean teardown.'
   needs: []
   parallel: normal
   status: green
@@ -878,10 +882,11 @@ iam_user:
   depends_on: []
   family: iam
   import: false
-  issues: []
+  issues:
+  - '401 Unauthorized [HMAC] HMAC valid fail on create user (run 27659871231) — account/credential boundary (the test key cannot create IAM users), not a provider/fixture defect.'
   needs: []
   parallel: normal
-  status: green
+  status: broken
   timeout_class: fast
   update: false
   vpc: none
@@ -1032,11 +1037,12 @@ mariadb_cluster:
   depends_on: []
   family: mariadb
   import: false
-  issues: []
+  issues:
+  - 'RETEST: registry-green via create+destroy probe (replan never recorded on the dashboard). Re-run through the standard matrix to record replan/idempotency and light up fully-green.'
   needs:
   - subnet_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: slow
   update: false
   vpc: pool
@@ -1045,11 +1051,12 @@ mysql_cluster:
   depends_on: []
   family: mysql
   import: false
-  issues: []
+  issues:
+  - 'RETEST: registry-green via create+destroy probe (replan never recorded on the dashboard). Re-run through the standard matrix to record replan/idempotency and light up fully-green.'
   needs:
   - subnet_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: slow
   update: false
   vpc: pool
@@ -1070,11 +1077,12 @@ postgresql_cluster:
   depends_on: []
   family: postgresql
   import: false
-  issues: []
+  issues:
+  - 'RETEST: registry-green via create+destroy probe (replan never recorded on the dashboard). Re-run through the standard matrix to record replan/idempotency and light up fully-green.'
   needs:
   - subnet_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: slow
   update: false
   vpc: pool
@@ -1585,7 +1593,8 @@ vpc_vpc:
   depends_on: []
   family: vpc
   import: false
-  issues: []
+  issues:
+  - 'GREEN reconfirmed on the patched provider (run 27659871231): full lifecycle validate->destroy, clean teardown.'
   needs: []
   parallel: normal
   status: green
@@ -1674,7 +1683,8 @@ vpn_vpn_tunnel:
   depends_on: []
   family: vpn
   import: false
-  issues: []
+  issues:
+  - 'GREEN reconfirmed on the patched provider (run 27659871231): full lifecycle validate->destroy, clean teardown.'
   needs: []
   parallel: normal
   status: green

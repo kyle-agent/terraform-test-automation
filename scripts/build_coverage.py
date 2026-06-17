@@ -189,6 +189,31 @@ def merge_records(store, incoming):
     return store
 
 
+# A scenario's matrix `resource` field is the FIRST resource block declared in
+# its .tf (see scenarioResource() in tests/capability/matrix_test.go), which for
+# self-contained scenarios is a PREREQUISITE, not the target — so we must NOT key
+# the store by it. Instead derive the key from the scenario name (the same
+# convention coverage.json uses): identity for the 82 canonically-named
+# scenarios, these 4 aliases, ds_* kept as-is, import_smoke skipped.
+SCENARIO_ALIASES = {
+    "eventstreams_basic": "eventstreams_cluster",
+    "loadbalancer_basic": "loadbalancer_loadbalancer",
+    "security_group_basic": "security_group_security_group",
+    "securitygroup_rule_basic": "security_group_security_group_rule",
+}
+
+
+def scenario_key(scenario):
+    """Map a scenario name to its store key (resource type), or None to skip."""
+    if not scenario:
+        return None
+    if scenario.startswith("ds_"):
+        return scenario  # data-source smoke records are keyed by scenario name
+    if scenario == "import_smoke":
+        return None  # cross-cutting import test; no single primary resource
+    return PREFIX + SCENARIO_ALIASES.get(scenario, scenario)
+
+
 def records_from_matrix(path):
     """Read a capability-matrix.json run file into merge-ready records."""
     data = load_json(path, None)
@@ -201,7 +226,9 @@ def records_from_matrix(path):
     seen = run_timestamp(run_url)
     recs = []
     for c in data:
-        res = c.get("resource") or c.get("scenario")
+        # Key by scenario (robust); fall back to the matrix `resource` field only
+        # when no scenario is present.
+        res = scenario_key(c.get("scenario")) or c.get("resource")
         if not res:
             continue
         recs.append(
@@ -306,7 +333,7 @@ def build_markdown(store, surface, unprov=None):
         "| managed resources (provider surface) | %d | - |" % surface_total
     )
     out.append(
-        "| excluded (license / no-capacity / deprecated) | %d | - |"
+        "| excluded from testable surface (non-defect) | %d | - |"
         % len(unprov_types)
     )
     out.append("| **testable surface** | %d | 100%% |" % total)
@@ -381,12 +408,12 @@ def build_markdown(store, surface, unprov=None):
         out.append("")
         out.append(
             "Resources excluded from the testable funnel denominator — **not** "
-            "provider/fixture defects. Reasons: a vendor **license** the account "
-            "does not hold, physical hardware / entitlement / **capacity** the "
-            "account lacks, or a **deprecated** service being retired. Split out "
-            "the same way parent-arg-only data sources are, so \"100% coverage\" "
-            "means 100% of what is actually testable. Curated in "
-            "`coverage/excluded_resources.yaml`."
+            "provider/fixture defects. Reasons: vendor **license** not held, "
+            "physical / entitlement / **capacity** the account lacks, a "
+            "**deprecated** service being retired, a real **cost** commitment, or "
+            "intentionally **out-of-scope**. Split out the same way parent-arg-only "
+            "data sources are, so \"100% coverage\" means 100% of what is actually "
+            "testable. Curated in `coverage/excluded_resources.yaml`."
         )
         out.append("")
         out.append("| resource | family | reason | detail |")

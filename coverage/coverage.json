@@ -780,16 +780,16 @@
     }
   },
   "samsungcloudplatformv2_firewall_firewall_rule": {
-    "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-    "last_seen": "2026-06-05T01:30:00Z",
-    "note": "404 firewall not found",
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27659871231",
+    "last_seen": "2026-06-17T01:49:28Z",
+    "note": "",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
+      "apply": "ok",
+      "destroy": "ok",
       "import": "skip",
       "plan": "ok",
-      "replan": "skip",
+      "replan": "ok",
       "update": "skip",
       "validate": "ok"
     }
@@ -825,16 +825,16 @@
     }
   },
   "samsungcloudplatformv2_iam_group": {
-    "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27417604819",
-    "last_seen": "2026-06-12T15:31:48Z",
-    "note": "Error: Error creating user with samsungcloudplatformv2_iam_user.regr, on main.tf line 29, in resource \"samsungcloudplatformv2_iam_user\" \"regr\": 29: resource \"samsungcloudplatformv2_iam_user\" \"regr\" { Could not create user, unexpected error: 401 Unauthorized Reason: [HMAC] HMAC valid fail",
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27659871231",
+    "last_seen": "2026-06-17T01:49:28Z",
+    "note": "",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
+      "apply": "ok",
+      "destroy": "ok",
       "import": "skip",
       "plan": "ok",
-      "replan": "skip",
+      "replan": "ok",
       "update": "skip",
       "validate": "ok"
     }
@@ -901,9 +901,9 @@
   },
   "samsungcloudplatformv2_iam_user": {
     "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-    "last_seen": "2026-06-05T01:30:00Z",
-    "note": "401 [HMAC] HMAC valid fail \u2014 account/creds",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27659871231",
+    "last_seen": "2026-06-17T01:49:28Z",
+    "note": "Error: Error creating user with samsungcloudplatformv2_iam_user.regr, on main.tf line 37, in resource \"samsungcloudplatformv2_iam_user\" \"regr\": 37: resource \"samsungcloudplatformv2_iam_user\" \"regr\" { Could not create user, unexpected error: 401 Unauthorized Reason: [HMAC] HMAC valid fail",
     "stages": {
       "apply": "fail",
       "destroy": "skip",
@@ -1605,16 +1605,16 @@
     }
   },
   "samsungcloudplatformv2_vpc_vpc": {
-    "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27406093988",
-    "last_seen": "2026-06-12T13:05:23Z",
-    "note": "Error: Error creating vpc with samsungcloudplatformv2_vpc_vpc.requester, on main.tf line 39, in resource \"samsungcloudplatformv2_vpc_vpc\" \"requester\": 39: resource \"samsungcloudplatformv2_vpc_vpc\" \"requester\" { Could not create vpc, unexpected error: 400 Bad Request Reason: The number(5) of VPCs that can be created in this account has been exceeded. Please contact the administrator. Error: Error creating vpc",
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27659871231",
+    "last_seen": "2026-06-17T01:49:28Z",
+    "note": "",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
+      "apply": "ok",
+      "destroy": "ok",
       "import": "skip",
       "plan": "ok",
-      "replan": "skip",
+      "replan": "ok",
       "update": "skip",
       "validate": "ok"
     }
@@ -1695,16 +1695,16 @@
     }
   },
   "samsungcloudplatformv2_vpn_vpn_tunnel": {
-    "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-    "last_seen": "2026-06-05T01:30:00Z",
-    "note": "400 public IP ATTACHED / VPN gw limit 1 per VPC",
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27659871231",
+    "last_seen": "2026-06-17T01:49:28Z",
+    "note": "",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
+      "apply": "ok",
+      "destroy": "ok",
       "import": "skip",
       "plan": "ok",
-      "replan": "skip",
+      "replan": "ok",
       "update": "skip",
       "validate": "ok"
     }

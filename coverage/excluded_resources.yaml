@@ -11,7 +11,21 @@
 #                   on the test account (not a license, not a code defect).
 #   deprecated   -> service is slated for deprecation/retirement; not worth
 #                   carrying as an active coverage target.
+#   cost         -> creating it is a real financial commitment (e.g. a multi-year
+#                   reservation), not a cheap ephemeral resource.
+#   out-of-scope -> intentionally not a coverage target (per request).
 # Evidence provenance: api-test-automation knowledge/formal/services/* (2026-06).
+
+billing_planned_compute:
+  reason: cost
+  detail: >-
+    Create commits a real 1-year compute RESERVATION (financial commitment), not
+    a cheap ephemeral resource. Provider #78 (contract_type OneOf 01/03/05) is
+    fixed, but apply is intentionally not exercised. Excluded per request.
+
+configinspection:
+  reason: out-of-scope
+  detail: "Intentionally not a coverage target (excluded per request)."
 
 cloudmonitoring_event_policy:
   reason: deprecated
