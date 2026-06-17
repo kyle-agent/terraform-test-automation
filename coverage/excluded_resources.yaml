@@ -1,10 +1,7 @@
-# Platform-unprovisionable resources — NOT provider/fixture defects.
-#
-# These resources cannot be created on the dedicated single-tenant test account
-# for reasons OUTSIDE our code's control (a vendor license we do not hold, or
-# physical hardware / entitlement / capacity the account lacks). They are split
-# OUT of the testable funnel denominator (the same way parent-arg-only data
-# sources are) and shown greyed-out, in their own section, on the dashboard.
+# Excluded resources — split OUT of the testable funnel denominator (the same
+# way parent-arg-only data sources are) and shown greyed-out, in their own
+# section, on the dashboard. These are NOT provider/fixture defects — excluding
+# them keeps "100% coverage" meaning 100% of what is actually testable.
 #
 # Keyed by resource short name (without the samsungcloudplatformv2_ prefix).
 # reason:
@@ -12,7 +9,16 @@
 #                   never returns 2xx (functional validation is owner-license-gated).
 #   no-capacity  -> physical hardware / service entitlement / cost not available
 #                   on the test account (not a license, not a code defect).
+#   deprecated   -> service is slated for deprecation/retirement; not worth
+#                   carrying as an active coverage target.
 # Evidence provenance: api-test-automation knowledge/formal/services/* (2026-06).
+
+cloudmonitoring_event_policy:
+  reason: deprecated
+  detail: >-
+    CloudMonitoring is slated for deprecation; not carried as an active coverage
+    target. (A partial provider #54 types.* fix is committed but the service is
+    being retired, so the remaining raw-typed fields are not worth completing.)
 
 baremetal_baremetal:
   reason: no-capacity

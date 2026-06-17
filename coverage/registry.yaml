@@ -111,17 +111,17 @@ certificate_manager_self_sign:
 cloudmonitoring_event_policy:
   cost: cheap
   depends_on: []
-  exclude_reason: ''
+  exclude_reason: cloudmonitoring deprecated
   family: cloudmonitoring
   import: false
   issues:
-  - 'PARTIAL #54 (run 27657318484): the notification_recipient fix landed, but apply still
-    fails "Value Conversion Error: Received null value, target type cannot handle null" =
-    ANOTHER raw-typed model field remains (the broader #62 22-fields class — e.g. the nested
-    EventPolicy struct). Needs the remaining cloudmonitoring fields converted to types.*.'
+  - 'EXCLUDED: CloudMonitoring is slated for deprecation — not an active coverage target.
+    A partial provider #54 fix (notification_recipient -> types.List) is committed; the
+    remaining raw-typed fields are not worth completing on a retiring service. See
+    coverage/excluded_resources.yaml (reason: deprecated).'
   needs: []
   parallel: normal
-  status: broken
+  status: excluded
   timeout_class: fast
   update: false
   vpc: none
