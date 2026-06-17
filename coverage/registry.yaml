@@ -177,7 +177,7 @@ dns_hosted_zone:
   needs:
   - vpc_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -218,7 +218,7 @@ dns_record:
   needs:
   - vpc_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
