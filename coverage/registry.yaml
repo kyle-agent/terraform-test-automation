@@ -935,8 +935,8 @@ loadbalancer_basic:
   family: loadbalancer
   import: false
   issues:
-  - 'GREEN with patched provider #77 (Create wait-for-ACTIVE + Delete wait-for-gone): full lifecycle validate->apply->replan->destroy
-    ok (run 27212070186). Requires the patched provider (source-built mirror).'
+  - "update axis FAIL (run 27682344740): provider 'Value Conversion Error' on Update \u2014 same bug as\
+    \ fork #92 (loadbalancer_loadbalancer). Lifecycle green."
   needs: []
   parallel: normal
   status: green
@@ -948,7 +948,10 @@ loadbalancer_lb_health_check:
   depends_on: []
   family: loadbalancer
   import: false
-  issues: []
+  issues:
+  - "RETEST flake (run 27682344740): create 400 'chosen subnet does not contain a Load Balancer' \u2014\
+    \ prereq/timing (LB not ready in subnet). Not the update change (description default unchanged). Prior\
+    \ green preserved."
   needs:
   - subnet_id
   - vpc_id
@@ -978,8 +981,8 @@ loadbalancer_lb_member:
   family: loadbalancer
   import: false
   issues:
-  - 'GREEN with patched provider (#85/#67/#77 + lb_member/lb_server_group destroy-ordering: EDITING stabilize-wait
-    + retry); full lifecycle incl clean destroy (run 27238242719). Requires patched provider.'
+  - 'update axis FAIL (run 27682344740): member_weight change forces a replace whose create 400s ''Exist
+    member''s port'' (delete-before-create not honored). Lifecycle green; update not in-place-safe.'
   needs:
   - image_id
   - keypair_name
@@ -1220,7 +1223,9 @@ ske_cluster:
   depends_on: []
   family: ske
   import: false
-  issues: []
+  issues:
+  - "update axis FAIL (run 27682344740): provider 'Value Conversion Error' on Update \u2014 same bug as\
+    \ fork #92 (ske_cluster). Lifecycle green."
   needs:
   - kubernetes_version
   - security_group_id_list

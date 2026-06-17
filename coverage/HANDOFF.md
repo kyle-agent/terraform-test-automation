@@ -1,12 +1,41 @@
 # Coverage-expansion session handoff
 
-**Branch:** `main` — consolidated 2026-06-08 (PR #14); all prior `claude/*` scratch
-branches in this repo were deleted. Resume from `main`.
-**Last updated:** 2026-06-08
+**Branch:** `main` — session 2026-06-17 merged via PR #26. Dev branch `claude/epic-ride-9zotgp`.
+**Last updated:** 2026-06-17
 **Purpose:** Single source of truth for resuming the Terraform-provider coverage
 expansion work in a fresh session. **Start at [`AGENTS.md`](../AGENTS.md)** (mission +
-multi-agent architecture + session bootstrap), then this file, then
-`coverage/registry.yaml`.
+multi-agent architecture + session bootstrap), then this file, then `tasks/lessons.md`
+(correction rules), then `coverage/registry.yaml`. Run `/session-start` to automate this.
+
+---
+
+## 0. Session 2026-06-17 (LATEST) — update/import axis + harness skills
+
+**Shipped (PR #26 → main, live dashboard published):**
+- **update axis 4 → 23 ok**, **import 22 unsupported** (#81/#4). 22 `update.tfvars` authored
+  by 3 parallel subagents (in-place description/tags, verified non-RequiresReplace + Update
+  PATCHes), merged from sweep `27666766466`. Lifecycle green **54** (honest, see dns below).
+- **Harness skills adopted** (`.claude/skills/`, force-tracked like scp-api): `session-start`,
+  `session-checkpoint`, `retro` + new **`tasks/lessons.md`** (12 correction rules).
+- **provider#92** filed: vpc_port + virtualserver_server Update "Value Conversion Error
+  (unknown value)" (raw type in Update model). vpc_subnet update 400 "IP not valid".
+
+**Truth-ups / open issues:**
+- **dns_hosted_zone + dns_record → broken** (were stale-green). Were mis-classified `vpc:none`
+  despite `needs:[vpc_id]` → fixed to `vpc:pool`; apply/replan/update then pass but **destroy
+  409s and LEAKS the bootstrap pool VPC** (dns_private_dns.parent stays attached). Leaked VPC
+  was reaped (api-reaper, 4 resources). LEAK-RISK: do not blindly re-sweep these. Root cause of
+  the destroy 409 (provider Delete bug vs platform propagation timing) NOT yet pinned — the
+  exact per-resource delete error wasn't captured; needs a guarded re-run before filing an issue.
+- **cachestore_cluster** still broken: `redis1v1m2`/`redis1v2m4` both 400 "(Server type)" —
+  needs a live cachestore server-type catalog lookup (no provider data source).
+
+**In-flight at handoff:** 3 parallel subagents authoring `update.tfvars` for ~26 more
+lifecycle-green resources (loadbalancer/directconnect, iam/vpn/misc, dbaas/filestorage/ske).
+NEXT: consolidate their output → flip to untested → run update sweep (cheap families first;
+DBaaS/loadbalancer are heavy) → merge → publish. Known no-in-place-update (skip): cachestore
+n/a, certificate_manager_self_sign, network_logging_storage, servicewatch_log_stream,
+vpc_subnet_vip_port (Update is a no-op / fully immutable).
 
 ---
 

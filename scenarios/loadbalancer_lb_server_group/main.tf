@@ -33,6 +33,16 @@ variable "name_suffix" {
   description = "Per-run unique suffix (injected by the harness as TF_VAR_name_suffix)."
 }
 
+# In-place-updatable server-group description (lb_server_group_create.description is
+# Optional, no RequiresReplace; the provider's UpdateLbServerGroup PATCHes
+# LbMethod/Description/LbHealthCheckId). The capability-matrix update stage overrides
+# it; the default keeps create + offline validate unchanged.
+variable "server_group_description" {
+  type        = string
+  default     = "regression-test server group"
+  description = "LB server group description (in-place updatable)."
+}
+
 resource "samsungcloudplatformv2_vpc_vpc" "regr" {
   name        = "rlbgvpc${var.name_suffix}"
   cidr        = "192.168.0.0/24"
@@ -69,7 +79,7 @@ resource "samsungcloudplatformv2_loadbalancer_lb_server_group" "regr" {
   depends_on = [samsungcloudplatformv2_loadbalancer_loadbalancer.regr]
   lb_server_group_create = {
     name        = "rlbgs${var.name_suffix}"
-    description = "regression-test server group"
+    description = var.server_group_description
     protocol    = "TCP"
     lb_method   = "ROUND_ROBIN"
     vpc_id      = samsungcloudplatformv2_vpc_vpc.regr.id

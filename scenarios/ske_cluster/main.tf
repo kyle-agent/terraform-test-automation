@@ -62,6 +62,15 @@ variable "security_group_id_list" {
   default     = ["00000000-0000-0000-0000-000000000000"]
 }
 
+# In-place-updatable tag map. tag.ResourceSchema is Optional with no
+# RequiresReplace; the SKE cluster Update PATCHes tags via syncTags ->
+# tag.UpdateTags (waits for the cluster to return to RUNNING). The
+# capability-matrix "update" stage (update.tfvars) mutates this.
+variable "tags" {
+  type    = map(string)
+  default = { env = "regression" }
+}
+
 resource "samsungcloudplatformv2_ske_cluster" "regr" {
   # name pattern ^[a-z][a-z0-9-]*[a-z0-9]$, 3-30 chars. suffix is numeric
   # (github.run_id) so "rske<suffix>" stays valid (and "rske" when empty for
@@ -75,7 +84,5 @@ resource "samsungcloudplatformv2_ske_cluster" "regr" {
   volume_id                     = var.volume_id
   vpc_id                        = var.vpc_id
 
-  tags = {
-    env = "regression"
-  }
+  tags = var.tags
 }

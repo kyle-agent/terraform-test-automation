@@ -71,6 +71,15 @@ variable "ip_type" {
   default     = "PUBLIC"
 }
 
+# Safe in-place-updatable attribute: the provider's UpdateVpnGateway PATCHes
+# Description (Optional, no RequiresReplace). The capability-matrix update stage
+# mutates it via update.tfvars.
+variable "gateway_description" {
+  description = "VPN gateway description (in-place updatable)."
+  type        = string
+  default     = "Regression VPN gateway fixture"
+}
+
 # Dedicated VPC for this scenario so the VPN gateway lives in its own VPC.
 resource "samsungcloudplatformv2_vpc_vpc" "regr" {
   name        = "rvg${local.vpn_suffix_short}"
@@ -110,7 +119,7 @@ resource "samsungcloudplatformv2_vpn_vpn_gateway" "regr" {
   ip_id       = local.publicip_id
   ip_address  = local.publicip_addr
   ip_type     = var.ip_type
-  description = "Regression VPN gateway fixture"
+  description = var.gateway_description
 
   # The IGW must exist/attach to the VPC before the VPN gateway is created.
   depends_on = [

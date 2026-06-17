@@ -58,6 +58,15 @@ variable "allowable_ip_addresses" {
   ]
 }
 
+# In-place-updatable tag map (samsungcloudplatformv2 tag.ResourceSchema is
+# Optional, no RequiresReplace; the cluster Update PATCHes it via handlerUpdateTag
+# -> tag.UpdateTags, a metadata-only change with no cluster modify/restart).
+# The capability-matrix "update" stage (update.tfvars) mutates this.
+variable "tags" {
+  type    = map(string)
+  default = {}
+}
+
 resource "samsungcloudplatformv2_eventstreams_cluster" "regression" {
   name = var.cluster_name
   # akhq_enabled=true without akhq_id/akhq_password (and no AKHQ node group) is
@@ -104,4 +113,6 @@ resource "samsungcloudplatformv2_eventstreams_cluster" "regression" {
   ]
 
   subnet_id = var.subnet_id
+
+  tags = var.tags
 }

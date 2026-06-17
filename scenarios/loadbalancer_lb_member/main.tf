@@ -61,6 +61,16 @@ variable "server_type_id" {
   description = "Server type (flavor) id. Integration supplies a real id via TF_VAR_server_type_id."
 }
 
+# In-place-updatable member weight. The member has no description; member_weight
+# (1-1000, Optional, no RequiresReplace) is patched by the provider's UpdateLbMember
+# (MemberPort/MemberWeight/MemberState). The capability-matrix update stage overrides
+# it; the default keeps create + offline validate unchanged.
+variable "member_weight" {
+  type        = number
+  default     = 1
+  description = "LB member weight 1-1000 (in-place updatable)."
+}
+
 # Backend instance the member points at.
 resource "samsungcloudplatformv2_virtualserver_server" "regr" {
   name           = "rlbmv${var.name_suffix}"
@@ -116,7 +126,7 @@ resource "samsungcloudplatformv2_loadbalancer_lb_member" "regr" {
     name          = "rlbmb${var.name_suffix}"
     member_ip     = samsungcloudplatformv2_virtualserver_server.regr.networks["nic0"].fixed_ip
     member_port   = 80
-    member_weight = 1
+    member_weight = var.member_weight
     member_state  = "ENABLE" # enum: ENABLE | DISABLE
     object_id     = samsungcloudplatformv2_virtualserver_server.regr.id
     object_type   = "VM" # enum: VM | BM | MANUAL | MNGC; VM requires object_id
