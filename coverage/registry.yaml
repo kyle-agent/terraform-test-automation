@@ -762,10 +762,10 @@ firewall_firewall_rule:
   family: firewall
   import: false
   issues:
-  - 'RETEST: registry-green but dashboard stale (never recorded a full matrix); re-run on the patched provider to record green on the dashboard (vpc_subnet/transit_gateway pattern).'
+  - 'GREEN reconfirmed on the patched provider (run 27659871231): full lifecycle validate->destroy, clean teardown.'
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: self
@@ -801,10 +801,10 @@ iam_group:
   family: iam
   import: false
   issues:
-  - 'RETEST: registry-green but dashboard stale (never recorded a full matrix); re-run on the patched provider to record green on the dashboard (vpc_subnet/transit_gateway pattern).'
+  - 'GREEN reconfirmed on the patched provider (run 27659871231): full lifecycle validate->destroy, clean teardown.'
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -881,10 +881,10 @@ iam_user:
   family: iam
   import: false
   issues:
-  - 'RETEST: registry-green but dashboard stale (never recorded a full matrix); re-run on the patched provider to record green on the dashboard (vpc_subnet/transit_gateway pattern).'
+  - '401 Unauthorized [HMAC] HMAC valid fail on create user (run 27659871231) — account/credential boundary (the test key cannot create IAM users), not a provider/fixture defect.'
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: none
@@ -1589,10 +1589,10 @@ vpc_vpc:
   family: vpc
   import: false
   issues:
-  - 'RETEST: registry-green but dashboard stale (never recorded a full matrix); re-run on the patched provider to record green on the dashboard (vpc_subnet/transit_gateway pattern).'
+  - 'GREEN reconfirmed on the patched provider (run 27659871231): full lifecycle validate->destroy, clean teardown.'
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: true
   vpc: self
@@ -1679,10 +1679,10 @@ vpn_vpn_tunnel:
   family: vpn
   import: false
   issues:
-  - 'RETEST: registry-green but dashboard stale (never recorded a full matrix); re-run on the patched provider to record green on the dashboard (vpc_subnet/transit_gateway pattern).'
+  - 'GREEN reconfirmed on the patched provider (run 27659871231): full lifecycle validate->destroy, clean teardown.'
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: self

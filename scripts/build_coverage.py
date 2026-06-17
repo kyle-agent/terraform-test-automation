@@ -189,6 +189,31 @@ def merge_records(store, incoming):
     return store
 
 
+# A scenario's matrix `resource` field is the FIRST resource block declared in
+# its .tf (see scenarioResource() in tests/capability/matrix_test.go), which for
+# self-contained scenarios is a PREREQUISITE, not the target — so we must NOT key
+# the store by it. Instead derive the key from the scenario name (the same
+# convention coverage.json uses): identity for the 82 canonically-named
+# scenarios, these 4 aliases, ds_* kept as-is, import_smoke skipped.
+SCENARIO_ALIASES = {
+    "eventstreams_basic": "eventstreams_cluster",
+    "loadbalancer_basic": "loadbalancer_loadbalancer",
+    "security_group_basic": "security_group_security_group",
+    "securitygroup_rule_basic": "security_group_security_group_rule",
+}
+
+
+def scenario_key(scenario):
+    """Map a scenario name to its store key (resource type), or None to skip."""
+    if not scenario:
+        return None
+    if scenario.startswith("ds_"):
+        return scenario  # data-source smoke records are keyed by scenario name
+    if scenario == "import_smoke":
+        return None  # cross-cutting import test; no single primary resource
+    return PREFIX + SCENARIO_ALIASES.get(scenario, scenario)
+
+
 def records_from_matrix(path):
     """Read a capability-matrix.json run file into merge-ready records."""
     data = load_json(path, None)
@@ -201,7 +226,9 @@ def records_from_matrix(path):
     seen = run_timestamp(run_url)
     recs = []
     for c in data:
-        res = c.get("resource") or c.get("scenario")
+        # Key by scenario (robust); fall back to the matrix `resource` field only
+        # when no scenario is present.
+        res = scenario_key(c.get("scenario")) or c.get("resource")
         if not res:
             continue
         recs.append(
