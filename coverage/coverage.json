@@ -555,13 +555,13 @@
     }
   },
   "samsungcloudplatformv2_cachestore_cluster": {
-    "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27003141386",
-    "last_seen": "2026-06-05T08:51:00Z",
-    "note": "GREEN: terraform create+destroy clean on fresh bootstrap subnet (per-engine pool shard, ~14m round-trip; provider waits for ACTIVE, API auto-assigns service_ip).",
+    "highest_stage": "plan",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27661036920",
+    "last_seen": "2026-06-17T03:10:48Z",
+    "note": "Error: Error creating cluster with samsungcloudplatformv2_cachestore_cluster.regr, on main.tf line 51, in resource \"samsungcloudplatformv2_cachestore_cluster\" \"regr\": 51: resource \"samsungcloudplatformv2_cachestore_cluster\" \"regr\" { Could not create cluster, unexpected error: 400 Bad Request Reason: The request contains invalid data. (Server type)",
     "stages": {
-      "apply": "ok",
-      "destroy": "ok",
+      "apply": "fail",
+      "destroy": "skip",
       "import": "skip",
       "plan": "ok",
       "replan": "skip",
@@ -706,15 +706,15 @@
   },
   "samsungcloudplatformv2_epas_cluster": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27003141386",
-    "last_seen": "2026-06-05T08:51:00Z",
-    "note": "GREEN: terraform create+destroy clean on fresh bootstrap subnet (per-engine pool shard, ~14m round-trip; provider waits for ACTIVE, API auto-assigns service_ip).",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27661036920",
+    "last_seen": "2026-06-17T03:10:48Z",
+    "note": "",
     "stages": {
       "apply": "ok",
       "destroy": "ok",
       "import": "skip",
       "plan": "ok",
-      "replan": "skip",
+      "replan": "ok",
       "update": "skip",
       "validate": "ok"
     }
@@ -1036,15 +1036,15 @@
   },
   "samsungcloudplatformv2_mariadb_cluster": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27003141386",
-    "last_seen": "2026-06-05T08:51:00Z",
-    "note": "GREEN: terraform create+destroy clean on fresh bootstrap subnet (per-engine pool shard, ~14m round-trip; provider waits for ACTIVE, API auto-assigns service_ip).",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27661036920",
+    "last_seen": "2026-06-17T03:10:48Z",
+    "note": "",
     "stages": {
       "apply": "ok",
       "destroy": "ok",
       "import": "skip",
       "plan": "ok",
-      "replan": "skip",
+      "replan": "ok",
       "update": "skip",
       "validate": "ok"
     }
@@ -1066,15 +1066,15 @@
   },
   "samsungcloudplatformv2_mysql_cluster": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27003141386",
-    "last_seen": "2026-06-05T08:51:00Z",
-    "note": "GREEN: terraform create+destroy clean on fresh bootstrap subnet (per-engine pool shard, ~14m round-trip; provider waits for ACTIVE, API auto-assigns service_ip).",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27661036920",
+    "last_seen": "2026-06-17T03:10:48Z",
+    "note": "",
     "stages": {
       "apply": "ok",
       "destroy": "ok",
       "import": "skip",
       "plan": "ok",
-      "replan": "skip",
+      "replan": "ok",
       "update": "skip",
       "validate": "ok"
     }
@@ -1096,15 +1096,15 @@
   },
   "samsungcloudplatformv2_postgresql_cluster": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27001005481",
-    "last_seen": "2026-06-05T07:30:00Z",
-    "note": "GREEN: create+destroy clean on fresh bootstrap subnet (provider waits for ACTIVE; API auto-assigns service_ip). Confirmed via dbaas_probe + per-engine pool shard.",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27661036920",
+    "last_seen": "2026-06-17T03:10:48Z",
+    "note": "",
     "stages": {
       "apply": "ok",
       "destroy": "ok",
       "import": "skip",
       "plan": "ok",
-      "replan": "skip",
+      "replan": "ok",
       "update": "skip",
       "validate": "ok"
     }

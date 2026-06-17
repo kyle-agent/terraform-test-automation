@@ -75,11 +75,11 @@ cachestore_cluster:
   family: cachestore
   import: false
   issues:
-  - 'RETEST: registry-green via create+destroy probe (replan never recorded on the dashboard). Re-run through the standard matrix to record replan/idempotency and light up fully-green.'
+  - '400 Bad Request "The request contains invalid data. (Server type)" on create (run 27661036920) - the fixture server_type is no longer valid for cachestore. Fixture fix needed (refresh server_type from the engine-version/product catalog).'
   needs:
   - subnet_id
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: slow
   update: false
   vpc: pool
@@ -699,11 +699,11 @@ epas_cluster:
   family: epas
   import: false
   issues:
-  - 'RETEST: registry-green via create+destroy probe (replan never recorded on the dashboard). Re-run through the standard matrix to record replan/idempotency and light up fully-green.'
+  - 'GREEN incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy, clean teardown.'
   needs:
   - subnet_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: slow
   update: false
   vpc: pool
@@ -776,10 +776,11 @@ gslb_gslb:
   depends_on: []
   family: gslb
   import: false
-  issues: []
+  issues:
+  - 'RETEST with MATRIX_IMPORT=1 + MATRIX_UPDATE=1 to populate the import (ImportState #81) and update (in-place Update) axes on the dashboard.'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
@@ -803,10 +804,10 @@ iam_group:
   family: iam
   import: false
   issues:
-  - 'GREEN reconfirmed on the patched provider (run 27659871231): full lifecycle validate->destroy, clean teardown.'
+  - 'RETEST with MATRIX_IMPORT=1 + MATRIX_UPDATE=1 to populate the import (ImportState #81) and update (in-place Update) axes on the dashboard.'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -842,10 +843,11 @@ iam_policy:
   depends_on: []
   family: iam
   import: false
-  issues: []
+  issues:
+  - 'RETEST with MATRIX_IMPORT=1 + MATRIX_UPDATE=1 to populate the import (ImportState #81) and update (in-place Update) axes on the dashboard.'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -1025,10 +1027,11 @@ loggingaudit_trail:
   depends_on: []
   family: loggingaudit
   import: false
-  issues: []
+  issues:
+  - 'RETEST with MATRIX_IMPORT=1 + MATRIX_UPDATE=1 to populate the import (ImportState #81) and update (in-place Update) axes on the dashboard.'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -1038,11 +1041,11 @@ mariadb_cluster:
   family: mariadb
   import: false
   issues:
-  - 'RETEST: registry-green via create+destroy probe (replan never recorded on the dashboard). Re-run through the standard matrix to record replan/idempotency and light up fully-green.'
+  - 'GREEN incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy, clean teardown.'
   needs:
   - subnet_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: slow
   update: false
   vpc: pool
@@ -1052,11 +1055,11 @@ mysql_cluster:
   family: mysql
   import: false
   issues:
-  - 'RETEST: registry-green via create+destroy probe (replan never recorded on the dashboard). Re-run through the standard matrix to record replan/idempotency and light up fully-green.'
+  - 'GREEN incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy, clean teardown.'
   needs:
   - subnet_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: slow
   update: false
   vpc: pool
@@ -1078,11 +1081,11 @@ postgresql_cluster:
   family: postgresql
   import: false
   issues:
-  - 'RETEST: registry-green via create+destroy probe (replan never recorded on the dashboard). Re-run through the standard matrix to record replan/idempotency and light up fully-green.'
+  - 'GREEN incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy, clean teardown.'
   needs:
   - subnet_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: slow
   update: false
   vpc: pool
@@ -1091,10 +1094,11 @@ resourcemanager_resource_group:
   depends_on: []
   family: resourcemanager
   import: false
-  issues: []
+  issues:
+  - 'RETEST with MATRIX_IMPORT=1 + MATRIX_UPDATE=1 to populate the import (ImportState #81) and update (in-place Update) axes on the dashboard.'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -1118,10 +1122,11 @@ security_group_basic:
   depends_on: []
   family: security
   import: false
-  issues: []
+  issues:
+  - 'RETEST with MATRIX_IMPORT=1 + MATRIX_UPDATE=1 to populate the import (ImportState #81) and update (in-place Update) axes on the dashboard.'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: true
   vpc: pool
@@ -1594,10 +1599,10 @@ vpc_vpc:
   family: vpc
   import: false
   issues:
-  - 'GREEN reconfirmed on the patched provider (run 27659871231): full lifecycle validate->destroy, clean teardown.'
+  - 'RETEST with MATRIX_IMPORT=1 + MATRIX_UPDATE=1 to populate the import (ImportState #81) and update (in-place Update) axes on the dashboard.'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: true
   vpc: self
