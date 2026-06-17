@@ -110,6 +110,9 @@ def main():
     with_run = sum(1 for rec in res_recs.values() if rec)
     reach = {s: sum(1 for rec in res_recs.values() if rec and stage_ok(rec, s)) for s in CORE}
     green = sum(1 for rec in res_recs.values() if rec and all(stage_ok(rec, s) for s in CORE))
+    # update/import are SEPARATE axes (not part of lifecycle-green): mostly skip.
+    upd_ok = sum(1 for rec in res_recs.values() if rec and stage_ok(rec, "update"))
+    imp_ok = sum(1 for rec in res_recs.values() if rec and stage_ok(rec, "import"))
 
     # ---- data sources ----
     ds_status = {}
@@ -197,7 +200,7 @@ def main():
         <div class="card"><div class="num">{total}</div><div class="lbl">managed resources</div></div>
         <div class="card"><div class="num">{with_run}</div><div class="lbl">have a matrix run<br><span class="muted">{pct(with_run)}</span></div></div>
         <div class="card"><div class="num">{reach['apply']}</div><div class="lbl">reach apply<br><span class="muted">{pct(reach['apply'])}</span></div></div>
-        <div class="card green"><div class="num">{green}<span class="denom">/{total}</span></div><div class="lbl">fully GREEN<br><span class="muted">{pct(green)} of testable</span></div></div>
+        <div class="card green"><div class="num">{green}<span class="denom">/{total}</span></div><div class="lbl">lifecycle GREEN<br><span class="muted">{pct(green)} · create→replace→destroy</span></div></div>
         <div class="card unprov"><div class="num">{len(unprov_res)}</div><div class="lbl">excluded (non-defect)<br><span class="muted">license / capacity / deprecated / cost / scope</span></div></div>
         <div class="card"><div class="num">{ds_green}<span class="denom">/{ds_smoke}</span></div>
           <div class="lbl">data sources read-verified<br><span class="muted">{ds_total} total · {ds_excl} excluded (need parent arg)</span></div></div>
@@ -205,7 +208,9 @@ def main():
       <div class="bar">
         <span>validate {reach['validate']}</span><span>plan {reach['plan']}</span>
         <span>apply {reach['apply']}</span><span>replan {reach['replan']}</span><span>destroy {reach['destroy']}</span>
-      </div>"""
+        <span class="axis">update {upd_ok}</span><span class="axis">import {imp_ok}</span>
+      </div>
+      <p class="muted" style="margin:2px 0 0;font-size:11.5px">&#9888; <b>lifecycle green</b> = create→replace→destroy only. <b>update</b> (in-place Update handler) and <b>import</b> (ImportState, #81) are separate axes, gated/optional in the runner and mostly skipped — a resource can be lifecycle-green yet have a broken Update or no import.</p>"""
 
     html = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -225,6 +230,7 @@ def main():
  .muted{{color:#8c959f}}
  .bar{{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 18px;font-size:12px;color:#57606a}}
  .bar span{{background:#fff;border:1px solid #d0d7de;border-radius:20px;padding:3px 10px}}
+ .bar span.axis{{border-style:dashed;color:#8c959f;background:#f6f8fa}}
  table{{width:100%;border-collapse:collapse;background:#fff;border:1px solid #d0d7de;border-radius:10px;overflow:hidden}}
  th,td{{padding:6px 8px;text-align:left;border-bottom:1px solid #eaeef2;font-size:12.5px}}
  th{{background:#f6f8fa;position:sticky;top:0}}
@@ -261,7 +267,7 @@ def main():
     <span><b style="background:var(--none)"></b>no run</span>
     <span class="muted">· hover a resource for the last error/note</span>
   </div>
-  <h2 id="resources">Managed resources ({green}/{total} fully green)</h2>
+  <h2 id="resources">Managed resources ({green}/{total} lifecycle green)</h2>
   <table>
     <thead><tr><th>resource</th>{head_cells}<th>last run</th></tr></thead>
     <tbody>
