@@ -82,6 +82,15 @@ variable "remote_subnets" {
   default     = ["10.0.0.0/24"]
 }
 
+# Safe in-place-updatable attribute: the provider's UpdateVpnTunnel PATCHes
+# Description (Optional, no RequiresReplace). The capability-matrix update stage
+# mutates it via update.tfvars.
+variable "tunnel_description" {
+  description = "VPN tunnel description (in-place updatable)."
+  type        = string
+  default     = "Regression VPN tunnel fixture"
+}
+
 # Dedicated VPC for this scenario so the VPN gateway lives in its own VPC and
 # does not hit the per-VPC VPN gateway limit shared with vpn_vpn_gateway.
 resource "samsungcloudplatformv2_vpc_vpc" "regr" {
@@ -139,7 +148,7 @@ resource "samsungcloudplatformv2_vpn_vpn_gateway" "regr" {
 resource "samsungcloudplatformv2_vpn_vpn_tunnel" "regr" {
   name           = var.tunnel_name
   vpn_gateway_id = samsungcloudplatformv2_vpn_vpn_gateway.regr.id
-  description    = "Regression VPN tunnel fixture"
+  description    = var.tunnel_description
 
   phase1 = {
     ike_version                  = 2

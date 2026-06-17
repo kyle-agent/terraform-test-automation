@@ -32,11 +32,20 @@ variable "bandwidth" {
   default     = 1
 }
 
+# In-place-updatable description (Optional, maxLength 50, no RequiresReplace; the
+# provider's UpdateDirectConnect PATCHes only this field). The capability-matrix
+# update stage overrides it; the default keeps create + offline validate unchanged.
+variable "description" {
+  description = "Direct Connect description (in-place updatable, maxLength 50)."
+  type        = string
+  default     = "Regression Direct Connect fixture"
+}
+
 resource "samsungcloudplatformv2_directconnect_direct_connect" "regr" {
   bandwidth         = var.bandwidth
   name              = var.name
   vpc_id            = var.vpc_id
-  description       = "Regression Direct Connect fixture"
+  description       = var.description
   firewall_enabled  = true
   firewall_loggable = false
 

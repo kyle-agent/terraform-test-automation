@@ -22,11 +22,20 @@ variable "access_key_type" {
   default     = "PERMANENT"
 }
 
+# is_enabled is the ONLY field the provider's UpdateAccessKey actually PATCHes
+# (description is sent only at create), so it is the lone safe in-place-updatable
+# attribute. The capability-matrix update stage flips it via update.tfvars.
+variable "access_key_is_enabled" {
+  type        = bool
+  description = "Whether the access key is enabled. The update stage toggles this in place."
+  default     = true
+}
+
 # IAM access key fixture: guards that an access key for the calling identity can
 # be declared with an explicit type/description/enabled flag and re-plans cleanly
 # (the secret_key/access_key outputs are Computed and must not force replacement).
 resource "samsungcloudplatformv2_iam_access_key" "regr" {
   access_key_type = var.access_key_type
   description     = var.access_key_description
-  is_enabled      = true
+  is_enabled      = var.access_key_is_enabled
 }

@@ -34,6 +34,16 @@ variable "name_suffix" {
   description = "Per-run unique suffix (injected by the harness as TF_VAR_name_suffix)."
 }
 
+# In-place-updatable LB description (loadbalancer_create.description is Optional, no
+# RequiresReplace; the provider's UpdateLoadbalancer PATCHes only this field). The
+# capability-matrix update stage overrides it via update.tfvars; the default keeps
+# create + offline validate unchanged.
+variable "lb_description" {
+  type        = string
+  default     = "regression-test-lb"
+  description = "Load balancer description (in-place updatable)."
+}
+
 resource "samsungcloudplatformv2_vpc_vpc" "regr" {
   name        = "rlbbvpc${var.name_suffix}"
   cidr        = "192.168.0.0/24"
@@ -52,7 +62,7 @@ resource "samsungcloudplatformv2_vpc_subnet" "regr" {
 resource "samsungcloudplatformv2_loadbalancer_loadbalancer" "regr" {
   loadbalancer_create = {
     name                     = "rlbb${var.name_suffix}"
-    description              = "regression-test-lb"
+    description              = var.lb_description
     layer_type               = "L4"
     firewall_enabled         = false
     firewall_logging_enabled = false

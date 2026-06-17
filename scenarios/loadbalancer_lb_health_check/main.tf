@@ -40,10 +40,20 @@ variable "subnet_id" {
   description = "Subnet for the health check. Integration supplies a real id via TF_VAR_subnet_id."
 }
 
+# In-place-updatable health-check description (lb_health_check_create.description is
+# Optional, no RequiresReplace; the provider's UpdateLbHealthCheck PATCHes it). The
+# capability-matrix update stage overrides it; the default keeps create + offline
+# validate unchanged.
+variable "health_check_description" {
+  type        = string
+  default     = "regression-test health check"
+  description = "LB health check description (in-place updatable)."
+}
+
 resource "samsungcloudplatformv2_loadbalancer_lb_health_check" "regr" {
   lb_health_check_create = {
     name                  = "rhc${var.name_suffix}"
-    description           = "regression-test health check"
+    description           = var.health_check_description
     protocol              = "TCP"
     health_check_port     = 80
     health_check_interval = 5

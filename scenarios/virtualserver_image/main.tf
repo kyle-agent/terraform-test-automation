@@ -56,6 +56,17 @@ variable "image_visibility" {
   default     = "private"
 }
 
+# The image has no description; tags are in-place-updatable via the provider's
+# handlerUpdateTag (Update wires Tags -> UpdateTags, no RequiresReplace). The
+# capability-matrix update stage mutates the tag map via update.tfvars.
+variable "image_tags" {
+  type        = map(string)
+  description = "Tags applied to the image (in-place updatable)."
+  default = {
+    "regr" = "terraform"
+  }
+}
+
 # Virtual server image fixture.
 #
 # Registers a custom image from a URL (the url-based create path; instance_id is
@@ -74,7 +85,5 @@ resource "samsungcloudplatformv2_virtualserver_image" "regr" {
   visibility       = var.image_visibility
   protected        = false
 
-  tags = {
-    "regr" = "terraform"
-  }
+  tags = var.image_tags
 }

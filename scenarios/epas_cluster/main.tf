@@ -32,6 +32,15 @@ variable "server_type_name" {
   default = "db1v2m4"
 }
 
+# In-place-updatable tag map (samsungcloudplatformv2 tag.ResourceSchema is
+# Optional, no RequiresReplace; the cluster Update PATCHes it via handlerUpdateTag
+# -> tag.UpdateTags, a metadata-only change with no cluster modify/restart).
+# The capability-matrix "update" stage (update.tfvars) mutates this.
+variable "tags" {
+  type    = map(string)
+  default = {}
+}
+
 # Engine versions are account/region-specific, so resolve a valid id at runtime
 # instead of hardcoding one. Prefer a version that is not end-of-service.
 data "samsungcloudplatformv2_epas_engine_version" "regr" {}
@@ -77,6 +86,8 @@ resource "samsungcloudplatformv2_epas_cluster" "regr" {
   maintenance_option = {
     use_maintenance_option = false
   }
+
+  tags = var.tags
 
   instance_groups = [
     {
