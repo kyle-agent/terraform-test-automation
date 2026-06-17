@@ -75,11 +75,11 @@ cachestore_cluster:
   family: cachestore
   import: false
   issues:
-  - '400 Bad Request "The request contains invalid data. (Server type)" on create (run 27661036920) - the fixture server_type is no longer valid for cachestore. Fixture fix needed (refresh server_type from the engine-version/product catalog).'
+  - 'RETEST: fixture server_type_name redis1v1m2 -> redis1v2m4 (prior 400 invalid Server type, run 27661036920). Verify create now succeeds + replan/destroy.'
   needs:
   - subnet_id
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: slow
   update: false
   vpc: pool

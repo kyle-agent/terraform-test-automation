@@ -29,7 +29,11 @@ variable "dbaas_engine_version_id" {
 }
 variable "server_type_name" {
   type    = string
-  default = "redis1v1m2"
+  # redis1v1m2 (1 vCore / 2 GB) was rejected with 400 "(Server type)" (run
+  # 27661036920) — below the offered tier. redis1v2m4 (2 vCore / 4 GB) is the
+  # api-test catalog's documented Standard redis1 example. Exact ids are
+  # account/region-specific; refresh from the server-type list API if this 400s.
+  default = "redis1v2m4"
 }
 
 # Engine versions are account/region-specific, so resolve a valid id at runtime
