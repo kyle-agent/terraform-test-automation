@@ -31,7 +31,7 @@ variable "snapshot_retention_count" {
 # snapshot_schedule block.
 resource "samsungcloudplatformv2_filestorage_snapshot_schedule" "regr" {
   volume_id                = var.volume_id
-  snapshot_retention_count = 4
+  snapshot_retention_count = var.snapshot_retention_count
 
   # day_of_week pattern: ^(SUN|MON|TUE|WED|THU|FRI|SAT)$
   # hour pattern: ^([0-9]|1[0-9]|2[0-3])$ (no leading zero)

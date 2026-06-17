@@ -149,7 +149,7 @@ directconnect_direct_connect:
   needs:
   - vpc_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
@@ -715,7 +715,7 @@ epas_cluster:
   needs:
   - subnet_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: slow
   update: false
   vpc: pool
@@ -728,7 +728,7 @@ eventstreams_basic:
   needs:
   - subnet_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: slow
   update: false
   vpc: pool
@@ -754,7 +754,7 @@ filestorage_snapshot_schedule:
   needs:
   - volume_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
@@ -766,7 +766,7 @@ filestorage_volume:
   issues: []
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
@@ -804,7 +804,7 @@ iam_access_key:
     ok once the account access-key quota slot was freed (run 27241816399). Requires patched provider.'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -871,7 +871,7 @@ iam_role:
     Requires patched provider.'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -939,7 +939,7 @@ loadbalancer_basic:
     ok (run 27212070186). Requires the patched provider (source-built mirror).'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: self
@@ -953,7 +953,7 @@ loadbalancer_lb_health_check:
   - subnet_id
   - vpc_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
@@ -987,7 +987,7 @@ loadbalancer_lb_member:
   - subnet_id
   - vpc_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
@@ -1001,7 +1001,7 @@ loadbalancer_lb_server_group:
     Requires patched provider.'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: self
@@ -1056,7 +1056,7 @@ mariadb_cluster:
   needs:
   - subnet_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: slow
   update: false
   vpc: pool
@@ -1071,7 +1071,7 @@ mysql_cluster:
   needs:
   - subnet_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: slow
   update: false
   vpc: pool
@@ -1098,7 +1098,7 @@ postgresql_cluster:
   needs:
   - subnet_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: slow
   update: false
   vpc: pool
@@ -1228,7 +1228,7 @@ ske_cluster:
   - volume_id
   - vpc_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: slow
   update: false
   vpc: pool
@@ -1292,7 +1292,7 @@ virtualserver_image:
     bug.'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -1690,7 +1690,7 @@ vpn_vpn_gateway:
   - ip_id
   - vpc_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: self
@@ -1704,7 +1704,7 @@ vpn_vpn_tunnel:
     teardown.'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: self
