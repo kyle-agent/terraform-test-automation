@@ -8,6 +8,8 @@ name: API Reaper
 # reaper script / this workflow.
 on:
   workflow_dispatch: {}
+  # Triggered 2026-06-17: reap leaked pool VPC rpv276783136630 (dns_hosted_zone/dns_record
+  # destroy 409 left dns_private_dns attached -> bootstrap VPC teardown 409, run 27678313663).
   # Manual only. The nightly cron was removed (no periodic runs on the dedicated
   # account); trigger a sweep by dispatching this workflow or by pushing the reaper
   # scripts below. Push sweeps run immediately (SWEEP_MIN_AGE_HOURS=0, SWEEP_ALL=1).
