@@ -1,0 +1,46 @@
+# Platform-unprovisionable resources — NOT provider/fixture defects.
+#
+# These resources cannot be created on the dedicated single-tenant test account
+# for reasons OUTSIDE our code's control (a vendor license we do not hold, or
+# physical hardware / entitlement / capacity the account lacks). They are split
+# OUT of the testable funnel denominator (the same way parent-arg-only data
+# sources are) and shown greyed-out, in their own section, on the dashboard.
+#
+# Keyed by resource short name (without the samsungcloudplatformv2_ prefix).
+# reason:
+#   license      -> requires a vendor license the account does not hold; create
+#                   never returns 2xx (functional validation is owner-license-gated).
+#   no-capacity  -> physical hardware / service entitlement / cost not available
+#                   on the test account (not a license, not a code defect).
+# Evidence provenance: api-test-automation knowledge/formal/services/* (2026-06).
+
+baremetal_baremetal:
+  reason: no-capacity
+  detail: >-
+    Physical bare-metal server. Test key is not entitled (reaper gets 403 on the
+    baremetal service) and the dedicated account has no BM hardware capacity.
+
+baremetal_blockstorage_volume:
+  reason: no-capacity
+  detail: >-
+    Requires a live Bare Metal server to attach to (선행 서비스: Bare Metal Server);
+    transitively unprovisionable because baremetal_baremetal is.
+
+multinodegpucluster_gpunode:
+  reason: no-capacity
+  detail: >-
+    Bare-metal GPU servers (8×H100/B300), minimum 2 nodes at creation. Gated by
+    GPU hardware capacity + billing cost on the test account, not a license.
+
+sqlserver_cluster:
+  reason: license
+  detail: >-
+    Microsoft SQL Server is a license-gated engine the account does not hold a
+    license for; cluster create never returns 2xx (api-test: reachability-only,
+    license-gated). Functional validation is owner-license-gated.
+
+vertica_cluster:
+  reason: license
+  detail: >-
+    Vertica is license-gated (VerticaClusterCreateRequest carries a license field)
+    and the account holds no license (api-test: reachability-only, license-gated).

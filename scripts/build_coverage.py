@@ -45,6 +45,7 @@ REPO = os.path.dirname(HERE)
 COV_DIR = os.path.join(REPO, "coverage")
 COV_JSON = os.path.join(COV_DIR, "coverage.json")
 SURFACE_JSON = os.path.join(COV_DIR, "provider_surface.json")
+UNPROV_YAML = os.path.join(COV_DIR, "unprovisionable.yaml")
 COV_MD = os.path.join(REPO, "COVERAGE.md")
 
 STAGES = ["validate", "plan", "apply", "replan", "destroy"]
@@ -75,6 +76,26 @@ def load_surface():
             "will be incomplete\n" % SURFACE_JSON
         )
     return {"resources": m.get("resources", {}), "datasources": m.get("datasources", {})}
+
+
+def load_unprovisionable():
+    """Curated map of resources the test account cannot provision (license /
+    no-capacity). Keyed by short resource name -> {reason, detail}. Split out of
+    the testable funnel denominator and rendered in their own greyed section.
+    YAML is parsed if PyYAML is available; missing/unparseable file -> {} (the
+    dashboard then treats the full surface as testable, as before).
+    """
+    if not os.path.exists(UNPROV_YAML):
+        return {}
+    try:
+        import yaml  # repo dependency (validate_registry.py, gen_scenarios.py)
+        with open(UNPROV_YAML, encoding="utf-8") as fh:
+            data = yaml.safe_load(fh) or {}
+        return {k: v for k, v in data.items() if isinstance(v, dict)}
+    except Exception as exc:  # pragma: no cover - defensive
+        sys.stderr.write("warn: cannot read %s (%s); treating all resources as "
+                         "testable\n" % (UNPROV_YAML, exc))
+        return {}
 
 
 def short_name(res):
@@ -213,7 +234,8 @@ def family_of(short, surface):
     return short.split("_", 1)[0] or "(unknown)"
 
 
-def build_markdown(store, surface):
+def build_markdown(store, surface, unprov=None):
+    unprov = unprov or {}
     # Resource rows: provider surface resources plus any stray store record
     # that is neither a ds_* smoke scenario nor a known data source.
     all_types = set(surface["resources"])
@@ -222,16 +244,23 @@ def build_markdown(store, surface):
             continue
         all_types.add(short_name(k))
     all_types = sorted(all_types)
-    total = len(all_types)
+    surface_total = len(all_types)
+
+    # Split out the platform-unprovisionable resources (license / no-capacity):
+    # they are NOT defects and are excluded from the *testable* denominator, the
+    # same way parent-arg-only data sources are. Tracked in their own section.
+    unprov_types = [r for r in all_types if r in unprov]
+    testable = [r for r in all_types if r not in unprov]
+    total = len(testable)
 
     def rec_of(short):
         return store.get(PREFIX + short) or store.get(short)
 
-    # Funnel: count resources reaching each stage as "ok".
+    # Funnel: count testable resources reaching each stage as "ok".
     reach = {s: 0 for s in STAGES}
     with_scenario = 0
     fully_green = 0
-    for res in all_types:
+    for res in testable:
         rec = rec_of(res)
         if not rec:
             continue
@@ -270,9 +299,16 @@ def build_markdown(store, surface):
     # ----- funnel ----- #
     out.append("## Funnel")
     out.append("")
-    out.append("| metric | count | of total |")
+    out.append("| metric | count | of testable |")
     out.append("|---|---:|---:|")
-    out.append("| managed resources (provider surface) | %d | 100%% |" % total)
+    out.append(
+        "| managed resources (provider surface) | %d | - |" % surface_total
+    )
+    out.append(
+        "| platform-unprovisionable (license / no-capacity, excluded) | %d | - |"
+        % len(unprov_types)
+    )
+    out.append("| **testable surface** | %d | 100%% |" % total)
     out.append(
         "| with a capability-matrix scenario run | %d | %d%% |"
         % (with_scenario, round(100.0 * with_scenario / denom))
@@ -289,7 +325,7 @@ def build_markdown(store, surface):
 
     # ----- per-family table ----- #
     by_family = OrderedDict()
-    for res in all_types:
+    for res in testable:
         fam = family_of(res, surface)
         by_family.setdefault(fam, []).append(res)
 
@@ -334,6 +370,34 @@ def build_markdown(store, surface):
                     cell(rec, "destroy"),
                     hi or "-",
                     clip(rec["note"] if rec else ""),
+                )
+            )
+        out.append("")
+
+    # ----- platform-unprovisionable resources ----- #
+    if unprov_types:
+        out.append("## Platform-unprovisionable resources")
+        out.append("")
+        out.append(
+            "Resources the dedicated test account **cannot create** for reasons "
+            "outside the provider/fixtures — a vendor **license** we do not hold, "
+            "or physical hardware / entitlement / **capacity** the account lacks. "
+            "These are **not defects** and are excluded from the testable surface "
+            "above (the funnel denominator), the same way parent-arg-only data "
+            "sources are. Curated in `coverage/unprovisionable.yaml`."
+        )
+        out.append("")
+        out.append("| resource | family | reason | detail |")
+        out.append("|---|---|---|---|")
+        for r in sorted(unprov_types):
+            meta = unprov.get(r, {})
+            out.append(
+                "| `%s` | %s | %s | %s |"
+                % (
+                    r,
+                    family_of(r, surface),
+                    meta.get("reason", "-"),
+                    clip(meta.get("detail", "")),
                 )
             )
         out.append("")
@@ -395,6 +459,7 @@ def build_markdown(store, surface):
 # --------------------------------------------------------------------------- #
 def main(argv):
     surface = load_surface()
+    unprov = load_unprovisionable()
 
     store = load_json(COV_JSON, {})
     if not isinstance(store, dict):
@@ -415,7 +480,7 @@ def main(argv):
         json.dump(ordered, fh, indent=2, sort_keys=True)
         fh.write("\n")
 
-    md = build_markdown(store, surface)
+    md = build_markdown(store, surface, unprov)
     with open(COV_MD, "w", encoding="utf-8") as fh:
         fh.write(md)
 

@@ -1425,8 +1425,9 @@ vpc_subnet:
   family: vpc
   import: false
   issues:
-  - 'GREEN with patched provider #59 (dns_nameservers []string->types.List); full lifecycle ok (run 27235979211).
-    Requires patched provider.'
+  - 'GREEN with patched provider #59 (dns_nameservers []string->types.List); full lifecycle
+    ok. RECONFIRMED on fork main build-ref (run 27653148345, 2026-06-16) after a 2026-06-12
+    broken-build-ref sweep had regressed it to plan-only on the dashboard. Requires patched provider.'
   needs:
   - vpc_id
   parallel: low
@@ -1483,8 +1484,9 @@ vpc_transit_gateway:
   family: vpc
   import: false
   issues:
-  - 'GREEN with patched provider #76 (TGW status-waiter no longer hangs); full lifecycle incl clean destroy
-    (run 27241816399). Requires patched provider.'
+  - 'GREEN with patched provider #76 (TGW status-waiter no longer hangs); full lifecycle incl
+    clean destroy. RECONFIRMED on fork main build-ref (run 27653148345, 2026-06-16) after a
+    2026-06-12 broken-build-ref sweep had regressed it to plan-only. Requires patched provider.'
   needs: []
   parallel: normal
   status: green

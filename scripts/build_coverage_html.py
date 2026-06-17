@@ -14,6 +14,7 @@ import datetime
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 COV = os.path.join(ROOT, "coverage", "coverage.json")
 SURFACE = os.path.join(ROOT, "coverage", "provider_surface.json")
+UNPROV = os.path.join(ROOT, "coverage", "unprovisionable.yaml")
 OUT_DIR = os.path.join(ROOT, "docs")
 OUT = os.path.join(OUT_DIR, "index.html")
 
@@ -33,6 +34,20 @@ def load(path, default):
             return json.load(f)
     except Exception:
         return default
+
+
+def load_unprov(path):
+    """Curated platform-unprovisionable resources (license / no-capacity).
+    short name -> {reason, detail}. Missing/unparseable -> {}."""
+    if not os.path.exists(path):
+        return {}
+    try:
+        import yaml
+        with open(path) as f:
+            data = yaml.safe_load(f) or {}
+        return {k: v for k, v in data.items() if isinstance(v, dict)}
+    except Exception:
+        return {}
 
 
 def short(t):
@@ -56,6 +71,7 @@ def ds_read_status(rec):
 def main():
     cov = load(COV, {})
     surface = load(SURFACE, {})
+    unprov = load_unprov(UNPROV)
     resources = surface.get("resources", {})
     datasources = surface.get("datasources", {})
 
@@ -67,10 +83,16 @@ def main():
     for k in cov:
         if not k.startswith("ds_"):
             all_res.add(short(k))
-    total = len(all_res)
+    surface_total = len(all_res)
+    # Split out platform-unprovisionable resources (license / no-capacity): not
+    # defects, excluded from the testable denominator, shown greyed in their
+    # own section below.
+    unprov_res = sorted(r for r in all_res if r in unprov)
+    testable_res = [r for r in all_res if r not in unprov]
+    total = len(testable_res)
 
     by_family = {}
-    for r in sorted(all_res):
+    for r in sorted(testable_res):
         fam = (resources.get(r) or {}).get("family") or r.split("_", 1)[0]
         by_family.setdefault(fam, []).append(r)
 
@@ -84,7 +106,7 @@ def main():
     def stage_ok(rec, s):
         return (rec.get("stages") or {}).get(s) == "ok"
 
-    res_recs = {r: rec_of(r) for r in all_res}
+    res_recs = {r: rec_of(r) for r in testable_res}
     with_run = sum(1 for rec in res_recs.values() if rec)
     reach = {s: sum(1 for rec in res_recs.values() if rec and stage_ok(rec, s)) for s in CORE}
     green = sum(1 for rec in res_recs.values() if rec and all(stage_ok(rec, s) for s in CORE))
@@ -155,13 +177,28 @@ def main():
                            f'<td class="cell {cls}">{st}</td>'
                            f'<td class="dsnote">{note[:160]}</td></tr>')
 
+    # ---- HTML: unprovisionable table (greyed, separate) ----
+    unprov_rows = []
+    for r in unprov_res:
+        meta = unprov.get(r, {})
+        reason = meta.get("reason", "-")
+        detail = (meta.get("detail") or "").replace('"', "&quot;").strip()
+        fam = (resources.get(r) or {}).get("family") or r.split("_", 1)[0]
+        unprov_rows.append(
+            f'<tr class="unprovrow"><td class="rname">{r}</td>'
+            f'<td>{fam}</td>'
+            f'<td><span class="rtag {reason}">{reason}</span></td>'
+            f'<td class="dsnote">{detail[:240]}</td></tr>'
+        )
+
     head_cells = "".join(f"<th>{s}</th>" for s in stages)
     funnel = f"""
       <div class="cards">
         <div class="card"><div class="num">{total}</div><div class="lbl">managed resources</div></div>
         <div class="card"><div class="num">{with_run}</div><div class="lbl">have a matrix run<br><span class="muted">{pct(with_run)}</span></div></div>
         <div class="card"><div class="num">{reach['apply']}</div><div class="lbl">reach apply<br><span class="muted">{pct(reach['apply'])}</span></div></div>
-        <div class="card green"><div class="num">{green}</div><div class="lbl">fully GREEN<br><span class="muted">{pct(green)}</span></div></div>
+        <div class="card green"><div class="num">{green}<span class="denom">/{total}</span></div><div class="lbl">fully GREEN<br><span class="muted">{pct(green)} of testable</span></div></div>
+        <div class="card unprov"><div class="num">{len(unprov_res)}</div><div class="lbl">unprovisionable<br><span class="muted">license / no-capacity · excluded</span></div></div>
         <div class="card"><div class="num">{ds_green}<span class="denom">/{ds_smoke}</span></div>
           <div class="lbl">data sources read-verified<br><span class="muted">{ds_total} total · {ds_excl} excluded (need parent arg)</span></div></div>
       </div>
@@ -199,6 +236,11 @@ def main():
  .cell.unsup{{background:var(--unsup)}} .cell.blocked{{background:var(--blocked)}}
  .cell.none{{background:var(--none);color:#8c959f}}
  .dsnote{{color:#57606a;font-size:12px}}
+ .card.unprov{{border-style:dashed;background:#f6f8fa}} .card.unprov .num{{color:#8c959f}}
+ table.unprovtable tr.unprovrow td{{background:#f6f8fa;color:#6e7781}}
+ table.unprovtable tr.unprovrow .rname{{color:#57606a}}
+ .rtag{{display:inline-block;padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;color:#fff;background:var(--skip)}}
+ .rtag.license{{background:#8250df}} .rtag.no-capacity{{background:#6e7781}}
  .legend{{margin:14px 0;font-size:12px;color:#57606a;display:flex;gap:10px;flex-wrap:wrap}}
  .legend b{{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}}
  a{{color:#0969da;text-decoration:none}} a:hover{{text-decoration:underline}}
@@ -224,6 +266,16 @@ def main():
     <thead><tr><th>resource</th>{head_cells}<th>last run</th></tr></thead>
     <tbody>
       {''.join(rows)}
+    </tbody>
+  </table>
+  <h2 id="unprovisionable">Platform-unprovisionable resources ({len(unprov_res)})</h2>
+  <p class="muted" style="margin:4px 0 10px">Resources the dedicated test account <b>cannot create</b> for reasons outside the provider/fixtures —
+  a vendor <b>license</b> we do not hold, or physical hardware / entitlement / <b>capacity</b> the account lacks. These are <b>not defects</b> and are
+  <b>excluded from the testable surface</b> (the funnel denominator) above, the same way parent-arg-only data sources are. Curated in <code>coverage/unprovisionable.yaml</code>.</p>
+  <table class="unprovtable">
+    <thead><tr><th>resource</th><th>family</th><th>reason</th><th>why it cannot be provisioned</th></tr></thead>
+    <tbody>
+      {''.join(unprov_rows)}
     </tbody>
   </table>
   <h2 id="datasources">Data sources ({ds_green}/{ds_smoke} read-verified · {ds_excl} excluded)</h2>
