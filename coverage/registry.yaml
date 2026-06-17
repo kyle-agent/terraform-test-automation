@@ -172,13 +172,15 @@ dns_hosted_zone:
   family: dns
   import: false
   issues:
-  - MISCLASSIFIED vpc:none despite needs:[vpc_id] -> novpc lane gave no TF_VAR_vpc_id, so the dns_private_dns.parent
-    prereq 404'd (zero-UUID) on runs 27666766466+27677534413. Moved to vpc:pool (matches dns_private_dns);
-    re-testing.
+  - 'destroy 409 -> LEAK (run 27678313663): scenario destroy fails to remove dns_private_dns.parent, leaving
+    it attached to the bootstrap pool VPC -> bootstrap teardown 409 ''Cannot terminate due to associated
+    resources'' leaked the VPC (reaped via api-reaper). apply/replan/update ok. The prior ''green'' was
+    stale (vpc:none made apply fail; vpc:pool makes destroy leak). LEAK-RISK: do not blindly re-sweep
+    -- each attempt leaks a pool VPC until the dns_private_dns destroy-ordering/propagation is fixed.'
   needs:
   - vpc_id
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool
@@ -214,13 +216,15 @@ dns_record:
   family: dns
   import: false
   issues:
-  - MISCLASSIFIED vpc:none despite needs:[vpc_id] -> novpc lane gave no TF_VAR_vpc_id, so the dns_private_dns.parent
-    prereq 404'd (zero-UUID) on runs 27666766466+27677534413. Moved to vpc:pool (matches dns_private_dns);
-    re-testing.
+  - 'destroy 409 -> LEAK (run 27678313663): scenario destroy fails to remove dns_private_dns.parent, leaving
+    it attached to the bootstrap pool VPC -> bootstrap teardown 409 ''Cannot terminate due to associated
+    resources'' leaked the VPC (reaped via api-reaper). apply/replan/update ok. The prior ''green'' was
+    stale (vpc:none made apply fail; vpc:pool makes destroy leak). LEAK-RISK: do not blindly re-sweep
+    -- each attempt leaks a pool VPC until the dns_private_dns destroy-ordering/propagation is fixed.'
   needs:
   - vpc_id
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool

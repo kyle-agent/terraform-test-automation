@@ -645,17 +645,17 @@
     }
   },
   "samsungcloudplatformv2_dns_hosted_zone": {
-    "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
-    "last_seen": "2026-06-06T07:34:00Z",
-    "note": "GREEN: discovery sweep run 27055812382 (create+destroy clean)",
+    "highest_stage": "replan",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27678313663",
+    "last_seen": "2026-06-17T09:44:47Z",
+    "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_dns_hosted_zone.regr",
     "stages": {
       "apply": "ok",
-      "destroy": "ok",
-      "import": "skip",
+      "destroy": "fail",
+      "import": "unsupported",
       "plan": "ok",
       "replan": "ok",
-      "update": "skip",
+      "update": "ok",
       "validate": "ok"
     }
   },
@@ -690,17 +690,17 @@
     }
   },
   "samsungcloudplatformv2_dns_record": {
-    "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
-    "last_seen": "2026-06-06T07:34:00Z",
-    "note": "GREEN: discovery sweep run 27055812382 (create+destroy clean)",
+    "highest_stage": "replan",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27678313663",
+    "last_seen": "2026-06-17T09:44:47Z",
+    "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_dns_hosted_zone.parent",
     "stages": {
       "apply": "ok",
-      "destroy": "ok",
-      "import": "skip",
+      "destroy": "fail",
+      "import": "unsupported",
       "plan": "ok",
       "replan": "ok",
-      "update": "skip",
+      "update": "ok",
       "validate": "ok"
     }
   },
