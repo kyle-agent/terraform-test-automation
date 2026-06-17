@@ -16,6 +16,7 @@
  .muted{color:#8c959f}
  .bar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 18px;font-size:12px;color:#57606a}
  .bar span{background:#fff;border:1px solid #d0d7de;border-radius:20px;padding:3px 10px}
+ .bar span.axis{border-style:dashed;color:#8c959f;background:#f6f8fa}
  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #d0d7de;border-radius:10px;overflow:hidden}
  th,td{padding:6px 8px;text-align:left;border-bottom:1px solid #eaeef2;font-size:12.5px}
  th{background:#f6f8fa;position:sticky;top:0}
@@ -39,7 +40,7 @@
 </style></head><body>
 <header>
   <h1>SCP Terraform provider — capability coverage</h1>
-  <div class="sub">Generated 2026-06-17 02:06 UTC · source: capability matrix (issue #13) · stages: validate → plan → apply → replan → destroy (+ optional update/import) · data sources read-verified via ds_&lt;family&gt; smoke scenarios</div>
+  <div class="sub">Generated 2026-06-17 02:20 UTC · source: capability matrix (issue #13) · stages: validate → plan → apply → replan → destroy (+ optional update/import) · data sources read-verified via ds_&lt;family&gt; smoke scenarios</div>
 </header>
 <main>
   
@@ -47,7 +48,7 @@
         <div class="card"><div class="num">79</div><div class="lbl">managed resources</div></div>
         <div class="card"><div class="num">76</div><div class="lbl">have a matrix run<br><span class="muted">96.2%</span></div></div>
         <div class="card"><div class="num">58</div><div class="lbl">reach apply<br><span class="muted">73.4%</span></div></div>
-        <div class="card green"><div class="num">52<span class="denom">/79</span></div><div class="lbl">fully GREEN<br><span class="muted">65.8% of testable</span></div></div>
+        <div class="card green"><div class="num">52<span class="denom">/79</span></div><div class="lbl">lifecycle GREEN<br><span class="muted">65.8% · create→replace→destroy</span></div></div>
         <div class="card unprov"><div class="num">8</div><div class="lbl">excluded (non-defect)<br><span class="muted">license / capacity / deprecated / cost / scope</span></div></div>
         <div class="card"><div class="num">83<span class="denom">/83</span></div>
           <div class="lbl">data sources read-verified<br><span class="muted">168 total · 85 excluded (need parent arg)</span></div></div>
@@ -55,7 +56,9 @@
       <div class="bar">
         <span>validate 76</span><span>plan 75</span>
         <span>apply 58</span><span>replan 53</span><span>destroy 57</span>
+        <span class="axis">update 0</span><span class="axis">import 0</span>
       </div>
+      <p class="muted" style="margin:2px 0 0;font-size:11.5px">&#9888; <b>lifecycle green</b> = create→replace→destroy only. <b>update</b> (in-place Update handler) and <b>import</b> (ImportState, #81) are separate axes, gated/optional in the runner and mostly skipped — a resource can be lifecycle-green yet have a broken Update or no import.</p>
   <div class="legend">
     <span><b style="background:var(--ok)"></b>ok</span>
     <span><b style="background:var(--fail)"></b>fail</span>
@@ -65,7 +68,7 @@
     <span><b style="background:var(--none)"></b>no run</span>
     <span class="muted">· hover a resource for the last error/note</span>
   </div>
-  <h2 id="resources">Managed resources (52/79 fully green)</h2>
+  <h2 id="resources">Managed resources (52/79 lifecycle green)</h2>
   <table>
     <thead><tr><th>resource</th><th>validate</th><th>plan</th><th>apply</th><th>replan</th><th>update</th><th>import</th><th>destroy</th><th>last run</th></tr></thead>
     <tbody>

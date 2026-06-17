@@ -286,6 +286,12 @@ def build_markdown(store, surface, unprov=None):
 
     # Funnel: count testable resources reaching each stage as "ok".
     reach = {s: 0 for s in STAGES}
+    # update/import are SEPARATE axes (not part of the lifecycle-green bar): the
+    # in-place Update handler and ImportState. They are gated/optional in the
+    # runner (MATRIX_UPDATE / MATRIX_IMPORT) and mostly "skip", so we surface
+    # their coverage explicitly rather than fold them into the headline number.
+    reach_update = 0
+    reach_import = 0
     with_scenario = 0
     fully_green = 0
     for res in testable:
@@ -296,6 +302,10 @@ def build_markdown(store, surface, unprov=None):
         for s in STAGES:
             if rec["stages"].get(s) == OK:
                 reach[s] += 1
+        if rec["stages"].get("update") == OK:
+            reach_update += 1
+        if rec["stages"].get("import") == OK:
+            reach_import += 1
         if all(rec["stages"].get(s) == OK for s in STAGES):
             fully_green += 1
 
@@ -347,7 +357,27 @@ def build_markdown(store, surface, unprov=None):
             % (s, reach[s], round(100.0 * reach[s] / denom))
         )
     out.append(
-        "| **fully green** (all stages ok) | %d | %.1f%% |" % (fully_green, pct)
+        "| **lifecycle green** (validate→plan→apply→replan→destroy ok) | %d | %.1f%% |"
+        % (fully_green, pct)
+    )
+    out.append(
+        "| in-place **update** verified (separate axis) | %d | %d%% |"
+        % (reach_update, round(100.0 * reach_update / denom))
+    )
+    out.append(
+        "| **import** verified (separate axis, ImportState #81) | %d | %d%% |"
+        % (reach_import, round(100.0 * reach_import / denom))
+    )
+    out.append("")
+    out.append(
+        "> **\"lifecycle green\" is the create→replace→destroy lifecycle, NOT a full "
+        "CRUD green.** Two axes are tracked separately and are still mostly "
+        "unexercised: **update** (the in-place Update handler — gated by "
+        "`MATRIX_UPDATE=1` and an `update.tfvars`; real defects live here, cf. "
+        "provider #33/#71/#72) and **import** (`terraform import` / ImportState — "
+        "gated by `MATRIX_IMPORT=1`; most resources don't implement it, #81). A "
+        "resource can be lifecycle-green yet have a broken Update handler or no "
+        "import support."
     )
     out.append("")
 
@@ -377,7 +407,7 @@ def build_markdown(store, surface, unprov=None):
             if rec_of(r)
             and all(rec_of(r)["stages"].get(s) == OK for s in STAGES)
         )
-        out.append("### %s (%d/%d fully green)" % (fam, green, len(members)))
+        out.append("### %s (%d/%d lifecycle green)" % (fam, green, len(members)))
         out.append("")
         out.append(
             "| resource | validate | plan | apply | replan | destroy | "
@@ -524,7 +554,7 @@ def main(argv):
         1 for r in res_recs if all(r["stages"].get(s) == OK for s in STAGES)
     )
     sys.stderr.write(
-        "coverage: %d resource records, %d fully green; wrote %s + %s\n"
+        "coverage: %d resource records, %d lifecycle green; wrote %s + %s\n"
         % (len(res_recs), green, COV_JSON, COV_MD)
     )
     return 0
