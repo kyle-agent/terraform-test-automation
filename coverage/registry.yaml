@@ -172,15 +172,16 @@ dns_hosted_zone:
   family: dns
   import: false
   issues:
-  - "RETEST: apply flaked on run 27666766466 (shared prereq dns_private_dns.parent 404, zero-UUID) \u2014\
-    \ coverage.json green preserved; re-confirm + capture update axis."
+  - MISCLASSIFIED vpc:none despite needs:[vpc_id] -> novpc lane gave no TF_VAR_vpc_id, so the dns_private_dns.parent
+    prereq 404'd (zero-UUID) on runs 27666766466+27677534413. Moved to vpc:pool (matches dns_private_dns);
+    re-testing.
   needs:
   - vpc_id
   parallel: normal
   status: untested
   timeout_class: fast
   update: false
-  vpc: none
+  vpc: pool
 dns_private_dns:
   cost: cheap
   depends_on: []
@@ -213,15 +214,16 @@ dns_record:
   family: dns
   import: false
   issues:
-  - "RETEST: apply flaked on run 27666766466 (shared prereq dns_private_dns.parent 404, zero-UUID) \u2014\
-    \ coverage.json green preserved; re-confirm + capture update axis."
+  - MISCLASSIFIED vpc:none despite needs:[vpc_id] -> novpc lane gave no TF_VAR_vpc_id, so the dns_private_dns.parent
+    prereq 404'd (zero-UUID) on runs 27666766466+27677534413. Moved to vpc:pool (matches dns_private_dns);
+    re-testing.
   needs:
   - vpc_id
   parallel: normal
   status: untested
   timeout_class: fast
   update: false
-  vpc: none
+  vpc: pool
 ds_backup:
   cost: cheap
   depends_on: []

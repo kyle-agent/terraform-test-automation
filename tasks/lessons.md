@@ -63,3 +63,8 @@ A lesson without a concrete trigger + action is not a lesson — delete it.
 - trigger: bulk-flipping many registry.yaml entries' status/issues in one pass.
 - do: load with `yaml.safe_load`, mutate the dict, re-dump with `yaml.safe_dump(sort_keys=True, default_flow_style=False, width=100)` (the documented canonical style). A line-based loop that does `lines[j:k]=...` while iterating shifts later indices off a pre-computed block map → it silently set the *issues* but not the *status* on 2 of 22 entries. yaml round-trip is the safe path (it also normalizes drifted hand-edits).
 - conf: high · seen: 2026-06-17 · obs: 1
+
+### A scenario with needs:[vpc_id] must be vpc:pool, never vpc:none
+- trigger: a scenario whose fixture references var.vpc_id (directly or via a prereq like dns_private_dns.parent connected_vpc_ids) is classified vpc:none in registry.yaml.
+- do: set vpc:pool so the pool lane bootstraps a VPC and injects TF_VAR_vpc_id. vpc:none runs the novpc lane with NO bootstrap, so var.vpc_id defaults to the zero-UUID (00000000-...) and the create 404s. dns_hosted_zone/dns_record were mis-set to vpc:none despite needs:[vpc_id] and failed reproducibly until moved to pool (dns_private_dns, the same prereq, was correctly vpc:pool).
+- conf: high · seen: 2026-06-17 · obs: 1
