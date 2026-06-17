@@ -35,7 +35,7 @@ variable "region" {
 resource "samsungcloudplatformv2_billing_planned_compute" "regr" {
   account_id    = var.account_id
   action        = "CREATE"
-  contract_type = "YEAR_1"
+  contract_type = "01" # API enum: 01=1-year, 03=3-year, 05=5-year (provider #78). "YEAR_1" was a display-name guess and is rejected.
   os_type       = "LINUX"
   region        = var.region
   server_type   = "s1v1m2"

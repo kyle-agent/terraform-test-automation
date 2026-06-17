@@ -59,8 +59,9 @@ env:
   # released binary, so provider fixes (e.g. #77 loadbalancer wait-for-ACTIVE) are tested
   # end-to-end. setup_provider_mirror.sh clones + `go build`s into the mirror.
   SCP_PROVIDER_SOURCE_BUILD: '1'
-  # fork main: claude/wonderful-keller-h05ucp was merged there (PR #90) and deleted.
-  SCP_PROVIDER_BUILD_REF: main
+  # Build the provider-under-development so this session's fixes (#54/#56/#78/#80
+  # + earlier #61/#88/#89) are tested end-to-end. Repoint to `main` once they merge.
+  SCP_PROVIDER_BUILD_REF: claude/epic-ride-9zotgp
 
 jobs:
   # ---- Derive the execution plan from registry.yaml ----

@@ -4,10 +4,12 @@ backup_backup:
   family: backup
   import: false
   issues:
-  - 500 ISE (platform)
+  - 'RETEST on patched provider #80 (GetDetailFromError no longer panics on a non-string
+    validation-error detail). Prior failure was a 500 ISE during error decode; verify the
+    provider now surfaces a clean diagnostic (or applies) instead of crashing.'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
@@ -109,13 +111,16 @@ certificate_manager_self_sign:
 cloudmonitoring_event_policy:
   cost: cheap
   depends_on: []
-  exclude_reason: cloudmonitoring deprecated
+  exclude_reason: ''
   family: cloudmonitoring
   import: false
-  issues: []
+  issues:
+  - 'RETEST on patched provider #54 (notification_recipient was a ListNestedAttribute with an
+    empty NestedObject vs a raw []struct model field -> Value Conversion Error on every create;
+    now types.List + full NestedObject). Verify create no longer errors client-side.'
   needs: []
   parallel: normal
-  status: excluded
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
