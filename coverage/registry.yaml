@@ -172,12 +172,12 @@ dns_hosted_zone:
   family: dns
   import: false
   issues:
-  - RETEST with MATRIX_UPDATE=1 (new update.tfvars, in-place description/tags) + MATRIX_IMPORT=1 to populate
-    the update axis on the dashboard.
+  - "RETEST: apply flaked on run 27666766466 (shared prereq dns_private_dns.parent 404, zero-UUID) \u2014\
+    \ coverage.json green preserved; re-confirm + capture update axis."
   needs:
   - vpc_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -186,13 +186,11 @@ dns_private_dns:
   depends_on: []
   family: dns
   import: false
-  issues:
-  - RETEST with MATRIX_UPDATE=1 (new update.tfvars, in-place description/tags) + MATRIX_IMPORT=1 to populate
-    the update axis on the dashboard.
+  issues: []
   needs:
   - vpc_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -215,12 +213,12 @@ dns_record:
   family: dns
   import: false
   issues:
-  - RETEST with MATRIX_UPDATE=1 (new update.tfvars, in-place description/tags) + MATRIX_IMPORT=1 to populate
-    the update axis on the dashboard.
+  - "RETEST: apply flaked on run 27666766466 (shared prereq dns_private_dns.parent 404, zero-UUID) \u2014\
+    \ coverage.json green preserved; re-confirm + capture update axis."
   needs:
   - vpc_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -771,12 +769,10 @@ firewall_firewall_rule:
   depends_on: []
   family: firewall
   import: false
-  issues:
-  - RETEST with MATRIX_UPDATE=1 (new update.tfvars, in-place description/tags) + MATRIX_IMPORT=1 to populate
-    the update axis on the dashboard.
+  issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: self
@@ -785,12 +781,10 @@ gslb_gslb:
   depends_on: []
   family: gslb
   import: false
-  issues:
-  - RETEST with MATRIX_UPDATE=1 (new update.tfvars, in-place description/tags) + MATRIX_IMPORT=1 to populate
-    the update axis on the dashboard.
+  issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -1038,12 +1032,10 @@ loggingaudit_trail:
   depends_on: []
   family: loggingaudit
   import: false
-  issues:
-  - RETEST with MATRIX_UPDATE=1 (new update.tfvars, in-place description/tags) + MATRIX_IMPORT=1 to populate
-    the update axis on the dashboard.
+  issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -1109,12 +1101,10 @@ resourcemanager_resource_group:
   depends_on: []
   family: resourcemanager
   import: false
-  issues:
-  - RETEST with MATRIX_UPDATE=1 (new update.tfvars, in-place description/tags) + MATRIX_IMPORT=1 to populate
-    the update axis on the dashboard.
+  issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -1164,12 +1154,10 @@ servicewatch_alert:
   depends_on: []
   family: servicewatch
   import: false
-  issues:
-  - RETEST with MATRIX_UPDATE=1 (new update.tfvars, in-place description/tags) + MATRIX_IMPORT=1 to populate
-    the update axis on the dashboard.
+  issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -1178,12 +1166,10 @@ servicewatch_dashboard:
   depends_on: []
   family: servicewatch
   import: false
-  issues:
-  - RETEST with MATRIX_UPDATE=1 (new update.tfvars, in-place description/tags) + MATRIX_IMPORT=1 to populate
-    the update axis on the dashboard.
+  issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -1192,12 +1178,10 @@ servicewatch_event_rule:
   depends_on: []
   family: servicewatch
   import: false
-  issues:
-  - RETEST with MATRIX_UPDATE=1 (new update.tfvars, in-place description/tags) + MATRIX_IMPORT=1 to populate
-    the update axis on the dashboard.
+  issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -1206,12 +1190,10 @@ servicewatch_log_group:
   depends_on: []
   family: servicewatch
   import: false
-  issues:
-  - RETEST with MATRIX_UPDATE=1 (new update.tfvars, in-place description/tags) + MATRIX_IMPORT=1 to populate
-    the update axis on the dashboard.
+  issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -1313,12 +1295,10 @@ virtualserver_keypair:
   depends_on: []
   family: virtualserver
   import: false
-  issues:
-  - RETEST with MATRIX_UPDATE=1 (new update.tfvars, in-place description/tags) + MATRIX_IMPORT=1 to populate
-    the update axis on the dashboard.
+  issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -1328,15 +1308,15 @@ virtualserver_server:
   family: virtualserver
   import: false
   issues:
-  - RETEST with MATRIX_UPDATE=1 (new update.tfvars, in-place description/tags) + MATRIX_IMPORT=1 to populate
-    the update axis on the dashboard.
+  - "update axis FAIL (run 27666766466): same provider 'Value Conversion Error (unknown value)' on update\
+    \ apply \u2014 Update-path raw-type bug. Lifecycle green; update not in-place-safe."
   needs:
   - image_id
   - keypair_name
   - server_type_id
   - subnet_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -1345,12 +1325,10 @@ virtualserver_server_group:
   depends_on: []
   family: virtualserver
   import: false
-  issues:
-  - RETEST with MATRIX_UPDATE=1 (new update.tfvars, in-place description/tags) + MATRIX_IMPORT=1 to populate
-    the update axis on the dashboard.
+  issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -1359,12 +1337,10 @@ virtualserver_volume:
   depends_on: []
   family: virtualserver
   import: false
-  issues:
-  - RETEST with MATRIX_UPDATE=1 (new update.tfvars, in-place description/tags) + MATRIX_IMPORT=1 to populate
-    the update axis on the dashboard.
+  issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -1391,12 +1367,10 @@ vpc_internet_gateway:
   depends_on: []
   family: vpc
   import: false
-  issues:
-  - RETEST with MATRIX_UPDATE=1 (new update.tfvars, in-place description/tags) + MATRIX_IMPORT=1 to populate
-    the update axis on the dashboard.
+  issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: self
@@ -1405,14 +1379,12 @@ vpc_nat_gateway:
   depends_on: []
   family: vpc
   import: false
-  issues:
-  - RETEST with MATRIX_UPDATE=1 (new update.tfvars, in-place description/tags) + MATRIX_IMPORT=1 to populate
-    the update axis on the dashboard.
+  issues: []
   needs:
   - publicip_id
   - subnet_id
   parallel: low
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -1422,12 +1394,13 @@ vpc_port:
   family: vpc
   import: false
   issues:
-  - RETEST with MATRIX_UPDATE=1 (new update.tfvars, in-place description/tags) + MATRIX_IMPORT=1 to populate
-    the update axis on the dashboard.
+  - "update axis FAIL (run 27666766466): provider 'Value Conversion Error: Received unknown value, target\
+    \ type cannot handle unknown values' during update apply \u2014 provider bug in the vpc_port Update\
+    \ path. Lifecycle green; update not in-place-safe."
   needs:
   - subnet_id
   parallel: low
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -1467,12 +1440,10 @@ vpc_publicip:
   depends_on: []
   family: vpc
   import: false
-  issues:
-  - RETEST with MATRIX_UPDATE=1 (new update.tfvars, in-place description/tags) + MATRIX_IMPORT=1 to populate
-    the update axis on the dashboard.
+  issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -1482,12 +1453,12 @@ vpc_subnet:
   family: vpc
   import: false
   issues:
-  - RETEST with MATRIX_UPDATE=1 (new update.tfvars, in-place description/tags) + MATRIX_IMPORT=1 to populate
-    the update axis on the dashboard.
+  - "update axis FAIL (run 27666766466): 400 'IP address is not valid ()' when updating description \u2014\
+    \ provider re-sends subnet body with an empty IP on update. Lifecycle green; update not in-place-safe."
   needs:
   - vpc_id
   parallel: low
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -1496,13 +1467,11 @@ vpc_subnet_vip:
   depends_on: []
   family: vpc
   import: false
-  issues:
-  - RETEST with MATRIX_UPDATE=1 (new update.tfvars, in-place description/tags) + MATRIX_IMPORT=1 to populate
-    the update axis on the dashboard.
+  issues: []
   needs:
   - subnet_id
   parallel: low
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -1541,12 +1510,10 @@ vpc_transit_gateway:
   exclude_reason: ''
   family: vpc
   import: false
-  issues:
-  - RETEST with MATRIX_UPDATE=1 (new update.tfvars, in-place description/tags) + MATRIX_IMPORT=1 to populate
-    the update axis on the dashboard.
+  issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none

@@ -661,16 +661,16 @@
   },
   "samsungcloudplatformv2_dns_private_dns": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
-    "last_seen": "2026-06-06T07:34:00Z",
-    "note": "GREEN: discovery sweep run 27055812382 (create+destroy clean)",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27666766466",
+    "last_seen": "2026-06-17T08:54:25Z",
+    "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_dns_private_dns.regr",
     "stages": {
       "apply": "ok",
       "destroy": "ok",
-      "import": "skip",
+      "import": "unsupported",
       "plan": "ok",
       "replan": "ok",
-      "update": "skip",
+      "update": "ok",
       "validate": "ok"
     }
   },
@@ -781,23 +781,23 @@
   },
   "samsungcloudplatformv2_firewall_firewall_rule": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27659871231",
-    "last_seen": "2026-06-17T01:49:28Z",
-    "note": "",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27666766466",
+    "last_seen": "2026-06-17T08:54:25Z",
+    "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_firewall_firewall_rule.regr",
     "stages": {
       "apply": "ok",
       "destroy": "ok",
-      "import": "skip",
+      "import": "unsupported",
       "plan": "ok",
       "replan": "ok",
-      "update": "skip",
+      "update": "ok",
       "validate": "ok"
     }
   },
   "samsungcloudplatformv2_gslb_gslb": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27663213235",
-    "last_seen": "2026-06-17T03:43:42Z",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27666766466",
+    "last_seen": "2026-06-17T08:54:25Z",
     "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_gslb_gslb.regr",
     "stages": {
       "apply": "ok",
@@ -805,7 +805,7 @@
       "import": "unsupported",
       "plan": "ok",
       "replan": "ok",
-      "update": "skip",
+      "update": "ok",
       "validate": "ok"
     }
   },
@@ -1021,8 +1021,8 @@
   },
   "samsungcloudplatformv2_loggingaudit_trail": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27663213235",
-    "last_seen": "2026-06-17T03:43:42Z",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27666766466",
+    "last_seen": "2026-06-17T08:54:25Z",
     "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_loggingaudit_trail.regr",
     "stages": {
       "apply": "ok",
@@ -1030,7 +1030,7 @@
       "import": "unsupported",
       "plan": "ok",
       "replan": "ok",
-      "update": "skip",
+      "update": "ok",
       "validate": "ok"
     }
   },
@@ -1111,8 +1111,8 @@
   },
   "samsungcloudplatformv2_resourcemanager_resource_group": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27663213235",
-    "last_seen": "2026-06-17T03:43:42Z",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27666766466",
+    "last_seen": "2026-06-17T08:54:25Z",
     "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_resourcemanager_resource_group.regr",
     "stages": {
       "apply": "ok",
@@ -1120,7 +1120,7 @@
       "import": "unsupported",
       "plan": "ok",
       "replan": "ok",
-      "update": "skip",
+      "update": "ok",
       "validate": "ok"
     }
   },
@@ -1171,61 +1171,61 @@
   },
   "samsungcloudplatformv2_servicewatch_alert": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
-    "last_seen": "2026-06-06T07:34:00Z",
-    "note": "GREEN: discovery sweep run 27055812382 (create+destroy clean)",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27666766466",
+    "last_seen": "2026-06-17T08:54:25Z",
+    "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_servicewatch_alert.regr",
     "stages": {
       "apply": "ok",
       "destroy": "ok",
-      "import": "skip",
+      "import": "unsupported",
       "plan": "ok",
       "replan": "ok",
-      "update": "skip",
+      "update": "ok",
       "validate": "ok"
     }
   },
   "samsungcloudplatformv2_servicewatch_dashboard": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
-    "last_seen": "2026-06-06T07:34:00Z",
-    "note": "GREEN: discovery sweep run 27055812382 (create+destroy clean)",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27666766466",
+    "last_seen": "2026-06-17T08:54:25Z",
+    "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_servicewatch_dashboard.regr",
     "stages": {
       "apply": "ok",
       "destroy": "ok",
-      "import": "skip",
+      "import": "unsupported",
       "plan": "ok",
       "replan": "ok",
-      "update": "skip",
+      "update": "ok",
       "validate": "ok"
     }
   },
   "samsungcloudplatformv2_servicewatch_event_rule": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
-    "last_seen": "2026-06-06T07:34:00Z",
-    "note": "GREEN: discovery sweep run 27055812382 (create+destroy clean)",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27666766466",
+    "last_seen": "2026-06-17T08:54:25Z",
+    "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_servicewatch_event_rule.regr",
     "stages": {
       "apply": "ok",
       "destroy": "ok",
-      "import": "skip",
+      "import": "unsupported",
       "plan": "ok",
       "replan": "ok",
-      "update": "skip",
+      "update": "ok",
       "validate": "ok"
     }
   },
   "samsungcloudplatformv2_servicewatch_log_group": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
-    "last_seen": "2026-06-06T07:34:00Z",
-    "note": "GREEN: discovery sweep run 27055812382 (create+destroy clean)",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27666766466",
+    "last_seen": "2026-06-17T08:54:25Z",
+    "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_servicewatch_log_group.regr",
     "stages": {
       "apply": "ok",
       "destroy": "ok",
-      "import": "skip",
+      "import": "unsupported",
       "plan": "ok",
       "replan": "ok",
-      "update": "skip",
+      "update": "ok",
       "validate": "ok"
     }
   },
@@ -1291,61 +1291,61 @@
   },
   "samsungcloudplatformv2_virtualserver_keypair": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-    "last_seen": "2026-06-05T01:30:00Z",
-    "note": "",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27666766466",
+    "last_seen": "2026-06-17T08:54:25Z",
+    "note": "import: could not resolve primary resource addr/id:",
     "stages": {
       "apply": "ok",
       "destroy": "ok",
       "import": "skip",
       "plan": "ok",
       "replan": "ok",
-      "update": "skip",
+      "update": "ok",
       "validate": "ok"
     }
   },
   "samsungcloudplatformv2_virtualserver_server": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-    "last_seen": "2026-06-05T01:30:00Z",
-    "note": "",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27666766466",
+    "last_seen": "2026-06-17T08:54:25Z",
+    "note": "update apply failed: Error: Value Conversion Error with samsungcloudplatformv2_virtualserver_server.regr, An unexpected error was encountered trying to build a value. This is always an error in the provider. Please report the following to the provider developer: Received unknown value, however the target type cannot handle unknown values. Use the corresponding `types` package type or a custom type that handles unknown values. Path: | import unsupported (no ImportState; see #4): samsungcloudplatformv2_virtualserver_server.regr",
     "stages": {
       "apply": "ok",
       "destroy": "ok",
-      "import": "skip",
+      "import": "unsupported",
       "plan": "ok",
       "replan": "ok",
-      "update": "skip",
+      "update": "fail",
       "validate": "ok"
     }
   },
   "samsungcloudplatformv2_virtualserver_server_group": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
-    "last_seen": "2026-06-06T07:34:00Z",
-    "note": "GREEN: discovery sweep run 27055812382 (create+destroy clean)",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27666766466",
+    "last_seen": "2026-06-17T08:54:25Z",
+    "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_virtualserver_server_group.regr",
     "stages": {
       "apply": "ok",
       "destroy": "ok",
-      "import": "skip",
+      "import": "unsupported",
       "plan": "ok",
       "replan": "ok",
-      "update": "skip",
+      "update": "ok",
       "validate": "ok"
     }
   },
   "samsungcloudplatformv2_virtualserver_volume": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-    "last_seen": "2026-06-05T01:30:00Z",
-    "note": "",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27666766466",
+    "last_seen": "2026-06-17T08:54:25Z",
+    "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_virtualserver_volume.regr",
     "stages": {
       "apply": "ok",
       "destroy": "ok",
-      "import": "skip",
+      "import": "unsupported",
       "plan": "ok",
       "replan": "ok",
-      "update": "skip",
+      "update": "ok",
       "validate": "ok"
     }
   },
@@ -1366,46 +1366,46 @@
   },
   "samsungcloudplatformv2_vpc_internet_gateway": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26795974710",
-    "last_seen": "2026-06-02T03:13:51Z",
-    "note": "",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27666766466",
+    "last_seen": "2026-06-17T08:54:25Z",
+    "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_vpc_internet_gateway.regr",
     "stages": {
       "apply": "ok",
       "destroy": "ok",
-      "import": "skip",
+      "import": "unsupported",
       "plan": "ok",
       "replan": "ok",
-      "update": "skip",
+      "update": "ok",
       "validate": "ok"
     }
   },
   "samsungcloudplatformv2_vpc_nat_gateway": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
-    "last_seen": "2026-06-06T07:34:00Z",
-    "note": "GREEN: discovery sweep run 27055812382 (create+destroy clean)",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27666766466",
+    "last_seen": "2026-06-17T08:54:25Z",
+    "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_vpc_nat_gateway.regr",
     "stages": {
       "apply": "ok",
       "destroy": "ok",
-      "import": "skip",
+      "import": "unsupported",
       "plan": "ok",
       "replan": "ok",
-      "update": "skip",
+      "update": "ok",
       "validate": "ok"
     }
   },
   "samsungcloudplatformv2_vpc_port": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
-    "last_seen": "2026-06-06T07:34:00Z",
-    "note": "GREEN: discovery sweep run 27055812382 (create+destroy clean)",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27666766466",
+    "last_seen": "2026-06-17T08:54:25Z",
+    "note": "update apply failed: Error: Value Conversion Error with samsungcloudplatformv2_vpc_port.regr, on main.tf line 47, in resource \"samsungcloudplatformv2_vpc_port\" \"regr\": 47: resource \"samsungcloudplatformv2_vpc_port\" \"regr\" { An unexpected error was encountered trying to build a value. This is always an error in the provider. Please report the following to the provider developer: Received unknown value, however the target type cannot handle unknown values. Use the corresponding `types` package type or a custom type that handles | import unsupported (no ImportState; see #4): samsungcloudplatformv2_vpc_port.regr",
     "stages": {
       "apply": "ok",
       "destroy": "ok",
-      "import": "skip",
+      "import": "unsupported",
       "plan": "ok",
       "replan": "ok",
-      "update": "skip",
+      "update": "fail",
       "validate": "ok"
     }
   },
@@ -1441,46 +1441,46 @@
   },
   "samsungcloudplatformv2_vpc_publicip": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-    "last_seen": "2026-06-05T01:30:00Z",
-    "note": "",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27666766466",
+    "last_seen": "2026-06-17T08:54:25Z",
+    "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_vpc_publicip.publicip",
     "stages": {
       "apply": "ok",
       "destroy": "ok",
-      "import": "skip",
+      "import": "unsupported",
       "plan": "ok",
       "replan": "ok",
-      "update": "skip",
+      "update": "ok",
       "validate": "ok"
     }
   },
   "samsungcloudplatformv2_vpc_subnet": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27653148345",
-    "last_seen": "2026-06-16T22:58:51Z",
-    "note": "",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27666766466",
+    "last_seen": "2026-06-17T08:54:25Z",
+    "note": "update apply failed: Error: Error Updating subnet with samsungcloudplatformv2_vpc_subnet.subnet, on main.tf line 59, in resource \"samsungcloudplatformv2_vpc_subnet\" \"subnet\": 59: resource \"samsungcloudplatformv2_vpc_subnet\" \"subnet\" { Could not update subnet, unexpected error: 400 Bad Request Reason: IP address is not valid. () | import unsupported (no ImportState; see #4): samsungcloudplatformv2_vpc_subnet.subnet",
     "stages": {
       "apply": "ok",
       "destroy": "ok",
-      "import": "skip",
+      "import": "unsupported",
       "plan": "ok",
       "replan": "ok",
-      "update": "skip",
+      "update": "fail",
       "validate": "ok"
     }
   },
   "samsungcloudplatformv2_vpc_subnet_vip": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
-    "last_seen": "2026-06-06T07:34:00Z",
-    "note": "GREEN: discovery sweep run 27055812382 (create+destroy clean)",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27666766466",
+    "last_seen": "2026-06-17T08:54:25Z",
+    "note": "import: could not resolve primary resource addr/id:",
     "stages": {
       "apply": "ok",
       "destroy": "ok",
       "import": "skip",
       "plan": "ok",
       "replan": "ok",
-      "update": "skip",
+      "update": "ok",
       "validate": "ok"
     }
   },
@@ -1516,16 +1516,16 @@
   },
   "samsungcloudplatformv2_vpc_transit_gateway": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27653148345",
-    "last_seen": "2026-06-16T22:58:51Z",
-    "note": "",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27666766466",
+    "last_seen": "2026-06-17T08:54:25Z",
+    "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_vpc_transit_gateway.regr",
     "stages": {
       "apply": "ok",
       "destroy": "ok",
-      "import": "skip",
+      "import": "unsupported",
       "plan": "ok",
       "replan": "ok",
-      "update": "skip",
+      "update": "ok",
       "validate": "ok"
     }
   },
