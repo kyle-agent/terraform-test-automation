@@ -511,9 +511,9 @@
   },
   "samsungcloudplatformv2_backup_backup": {
     "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-    "last_seen": "2026-06-05T01:30:00Z",
-    "note": "500 server error (#80)",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27657318484",
+    "last_seen": "2026-06-17T00:42:47Z",
+    "note": "Error: Error creating backup with samsungcloudplatformv2_backup_backup.regr, on main.tf line 30, in resource \"samsungcloudplatformv2_backup_backup\" \"regr\": 30: resource \"samsungcloudplatformv2_backup_backup\" \"regr\" { Could not create backup, unexpected error: 500 Internal Server Error Reason: Internal Server Error",
     "stages": {
       "apply": "fail",
       "destroy": "skip",
@@ -601,8 +601,8 @@
   },
   "samsungcloudplatformv2_cloudmonitoring_event_policy": {
     "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26790089908",
-    "last_seen": "2026-06-02T00:16:40Z",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27657318484",
+    "last_seen": "2026-06-17T00:42:47Z",
     "note": "Error: Value Conversion Error with samsungcloudplatformv2_cloudmonitoring_event_policy.regr, on main.tf line 46, in resource \"samsungcloudplatformv2_cloudmonitoring_event_policy\" \"regr\": 46: resource \"samsungcloudplatformv2_cloudmonitoring_event_policy\" \"regr\" { An unexpected error was encountered trying to build a value. This is always an error in the provider. Please report the following to the provider developer: Received null value, however the target type cannot handle null values. Use the corresponding `types` package type, a pointer type or a custom type that",
     "stages": {
       "apply": "fail",

@@ -4,12 +4,12 @@ backup_backup:
   family: backup
   import: false
   issues:
-  - 'RETEST on patched provider #80 (GetDetailFromError no longer panics on a non-string
-    validation-error detail). Prior failure was a 500 ISE during error decode; verify the
-    provider now surfaces a clean diagnostic (or applies) instead of crashing.'
+  - 'PLATFORM 500 on create (run 27657318484). Provider #80 VERIFIED: the response decode
+    no longer panics — it now surfaces a clean "500 Internal Server Error" diagnostic. The
+    500 itself is server-side (not provider-fixable).'
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool
@@ -115,12 +115,13 @@ cloudmonitoring_event_policy:
   family: cloudmonitoring
   import: false
   issues:
-  - 'RETEST on patched provider #54 (notification_recipient was a ListNestedAttribute with an
-    empty NestedObject vs a raw []struct model field -> Value Conversion Error on every create;
-    now types.List + full NestedObject). Verify create no longer errors client-side.'
+  - 'PARTIAL #54 (run 27657318484): the notification_recipient fix landed, but apply still
+    fails "Value Conversion Error: Received null value, target type cannot handle null" =
+    ANOTHER raw-typed model field remains (the broader #62 22-fields class — e.g. the nested
+    EventPolicy struct). Needs the remaining cloudmonitoring fields converted to types.*.'
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: none
