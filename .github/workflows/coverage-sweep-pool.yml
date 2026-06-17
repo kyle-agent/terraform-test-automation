@@ -49,6 +49,12 @@ permissions:
   issues: write
 
 env:
+  # Exercise the two optional capability-matrix axes so the dashboard's
+  # update/import coverage stops being 0%. import needs no fixture (it imports
+  # the applied resource into a throwaway state → ok/unsupported/skip); update
+  # only runs for scenarios that ship an update.tfvars (others stay skip).
+  MATRIX_IMPORT: '1'
+  MATRIX_UPDATE: '1'
   SCP_TF_ACCESS_KEY: ${{ secrets.SCP_TF_ACCESS_KEY }}
   SCP_TF_SECRET_KEY: ${{ secrets.SCP_TF_SECRET_KEY }}
   SCP_TF_AUTH_URL: ${{ vars.SCP_TF_AUTH_URL }}
