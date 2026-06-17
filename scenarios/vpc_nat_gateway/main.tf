@@ -22,11 +22,17 @@ variable "subnet_id" {
   default     = "00000000-0000-0000-0000-000000000000"
 }
 
+variable "nat_gateway_description" {
+  type        = string
+  description = "Description for the NAT gateway."
+  default     = "regr-test"
+}
+
 # NAT gateway fixture guarding networking coverage: a NAT gateway bound to a
 # subnet and a public IP must re-plan cleanly with no spurious update or replace.
 # Required args: publicip_id, subnet_id. Optional: description, tags.
 resource "samsungcloudplatformv2_vpc_nat_gateway" "regr" {
   publicip_id = var.publicip_id
   subnet_id   = var.subnet_id
-  description = "regr-test"
+  description = var.nat_gateway_description
 }

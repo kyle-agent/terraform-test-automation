@@ -40,6 +40,15 @@ variable "subnet_id" {
   default     = "00000000-0000-0000-0000-000000000000"
 }
 
+# The server has no top-level description; tags are an in-place-updatable
+# attribute (handlerUpdateTag, not in the immutable field list). The capability
+# matrix update stage mutates this map.
+variable "tags" {
+  type        = map(string)
+  description = "Resource tags (in-place-updatable via the server's tag update handler)."
+  default     = { "regr" = "terraform" }
+}
+
 # Virtual server fixture.
 # Guards the core compute create path: required boot_volume (single nested),
 # keypair, image, server_type and the required networks map. The primary NIC is
@@ -68,7 +77,5 @@ resource "samsungcloudplatformv2_virtualserver_server" "regr" {
     }
   }
 
-  tags = {
-    "regr" = "terraform"
-  }
+  tags = var.tags
 }

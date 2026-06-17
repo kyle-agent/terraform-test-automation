@@ -25,6 +25,15 @@ variable "vpc_id" {
   default     = "00000000-0000-0000-0000-000000000000"
 }
 
+# Hosted-zone description; the only in-place-updatable field on this resource
+# (the provider's Update rejects any change except description). The optional
+# update stage mutates this via update.tfvars.
+variable "hz_description" {
+  type        = string
+  description = "Hosted zone description (only in-place-updatable attribute)."
+  default     = "regression-test hosted zone"
+}
+
 # DNS hosted zone regression fixture. A hosted zone requires a parent private
 # DNS zone, so this fixture creates that prerequisite in-line (chained) and feeds
 # its id into hosted_zone_create.private_dns_id. A second apply with no config
@@ -39,7 +48,7 @@ resource "samsungcloudplatformv2_dns_private_dns" "parent" {
 
 resource "samsungcloudplatformv2_dns_hosted_zone" "regr" {
   hosted_zone_create = {
-    description    = "regression-test hosted zone"
+    description    = var.hz_description
     name           = "regr${var.name_suffix}.example.com"
     private_dns_id = samsungcloudplatformv2_dns_private_dns.parent.id
     type           = "private"

@@ -32,9 +32,17 @@ variable "resource_types" {
   default     = ["compute:virtualserver"]
 }
 
+# Resource-group description; Optional, in-place-updatable (no RequiresReplace;
+# the provider's Update calls UpdateResourceGroup). Mutated by update.tfvars.
+variable "group_description" {
+  description = "Resource group description (in-place-updatable attribute)."
+  type        = string
+  default     = "Regression resource group fixture"
+}
+
 resource "samsungcloudplatformv2_resourcemanager_resource_group" "regr" {
   name           = var.group_name
-  description    = "Regression resource group fixture"
+  description    = var.group_description
   region         = var.region
   resource_types = var.resource_types
 

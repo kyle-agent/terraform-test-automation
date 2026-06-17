@@ -35,6 +35,12 @@ variable "fixed_ip_address" {
   default     = "192.168.0.10"
 }
 
+variable "port_description" {
+  type        = string
+  description = "Description for the port."
+  default     = "regr-test"
+}
+
 # Port fixture guarding networking coverage: a port with a fixed IP in a subnet
 # must re-plan cleanly with no spurious update or replacement.
 # Required args: name, subnet_id. Optional: description, fixed_ip_address, tags.
@@ -42,5 +48,5 @@ resource "samsungcloudplatformv2_vpc_port" "regr" {
   name             = "${var.port_name}${var.name_suffix}"
   subnet_id        = var.subnet_id
   fixed_ip_address = var.fixed_ip_address
-  description      = "regr-test"
+  description      = var.port_description
 }

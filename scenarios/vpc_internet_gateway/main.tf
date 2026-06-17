@@ -23,6 +23,12 @@ variable "igw_type" {
   default     = "IGW"
 }
 
+variable "igw_description" {
+  type        = string
+  description = "Description for the internet gateway."
+  default     = "regr-test"
+}
+
 # Internet gateway fixture guarding networking coverage.
 #
 # SELF-CONTAINED: the shared bootstrap VPC already has an Internet Gateway
@@ -48,7 +54,7 @@ resource "samsungcloudplatformv2_vpc_subnet" "regr" {
 resource "samsungcloudplatformv2_vpc_internet_gateway" "regr" {
   type              = var.igw_type
   vpc_id            = samsungcloudplatformv2_vpc_vpc.regr.id
-  description       = "regr-test"
+  description       = var.igw_description
   firewall_enabled  = true
   firewall_loggable = false
 }

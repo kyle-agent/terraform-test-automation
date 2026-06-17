@@ -24,6 +24,15 @@ variable "name_suffix" {
   default     = ""
 }
 
+# Keypair name/public_key are immutable in the provider (Update rejects a Name
+# change), so tags are the only in-place-updatable attribute. The capability
+# matrix update stage mutates this map to exercise tag.UpdateTags.
+variable "tags" {
+  type        = map(string)
+  description = "Resource tags (the only in-place-updatable attribute of a keypair)."
+  default     = { "regr" = "terraform" }
+}
+
 # Virtual server keypair fixture.
 # Guards against idempotency regressions on the keypair resource: re-running
 # plan/apply with no config change must be a clean no-op with no replacement.
@@ -31,7 +40,5 @@ variable "name_suffix" {
 # with UseStateForUnknown(), a second plan would churn (-/+) the resource.
 resource "samsungcloudplatformv2_virtualserver_keypair" "keypair" {
   name = "${var.name}${var.name_suffix}"
-  tags = {
-    "regr" : "terraform"
-  }
+  tags = var.tags
 }

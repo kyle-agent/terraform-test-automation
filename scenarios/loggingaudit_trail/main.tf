@@ -58,6 +58,14 @@ variable "trail_bucket_region" {
   default     = "kr-west1"
 }
 
+# Trail description; in-place-updatable (the provider's Update calls SetTrail and
+# re-reads trail_description, no RequiresReplace). Mutated by update.tfvars.
+variable "trail_description" {
+  type        = string
+  description = "Audit trail description (in-place-updatable attribute)."
+  default     = "Regression fixture: organization-wide audit trail."
+}
+
 # Minimal LoggingAudit trail fixture guarding loggingaudit_trail coverage.
 # The *_yn attributes are required Y/N flags; account IDs default to zero-UUIDs
 # and should be overridden via TF_VAR_* for a real integration run.
@@ -67,7 +75,7 @@ resource "samsungcloudplatformv2_loggingaudit_trail" "regr" {
   # it); same account since organization_trail_yn = "N".
   log_archive_account_id = var.account_id
   trail_name             = "${var.trail_name}${var.suffix}"
-  trail_description      = "Regression fixture: organization-wide audit trail."
+  trail_description      = var.trail_description
   bucket_name            = local.trail_bucket
   depends_on             = [terraform_data.trail_bucket]
   bucket_region          = var.trail_bucket_region

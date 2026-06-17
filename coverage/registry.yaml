@@ -4,9 +4,9 @@ backup_backup:
   family: backup
   import: false
   issues:
-  - 'PLATFORM 500 on create (run 27657318484). Provider #80 VERIFIED: the response decode
-    no longer panics — it now surfaces a clean "500 Internal Server Error" diagnostic. The
-    500 itself is server-side (not provider-fixable).'
+  - "PLATFORM 500 on create (run 27657318484). Provider #80 VERIFIED: the response decode no longer panics\
+    \ \u2014 it now surfaces a clean \"500 Internal Server Error\" diagnostic. The 500 itself is server-side\
+    \ (not provider-fixable)."
   needs: []
   parallel: normal
   status: broken
@@ -75,7 +75,9 @@ cachestore_cluster:
   family: cachestore
   import: false
   issues:
-  - '400 Bad Request "The request contains invalid data. (Server type)" on create (run 27661036920) - the fixture server_type is no longer valid for cachestore. Fixture fix needed (refresh server_type from the engine-version/product catalog).'
+  - 400 "invalid data (Server type)" persists with both redis1v1m2 and redis1v2m4 (runs 27661036920, 27666147128).
+    Valid server_type_name must come from the live cachestore server-type/product catalog (no provider
+    data source; needs an scp-api lookup with creds). Pending fixture fix.
   needs:
   - subnet_id
   parallel: normal
@@ -116,10 +118,9 @@ cloudmonitoring_event_policy:
   family: cloudmonitoring
   import: false
   issues:
-  - 'EXCLUDED: CloudMonitoring is slated for deprecation — not an active coverage target.
-    A partial provider #54 fix (notification_recipient -> types.List) is committed; the
-    remaining raw-typed fields are not worth completing on a retiring service. See
-    coverage/excluded_resources.yaml (reason: deprecated).'
+  - "EXCLUDED: CloudMonitoring is slated for deprecation \u2014 not an active coverage target. A partial\
+    \ provider #54 fix (notification_recipient -> types.List) is committed; the remaining raw-typed fields\
+    \ are not worth completing on a retiring service. See coverage/excluded_resources.yaml (reason: deprecated)."
   needs: []
   parallel: normal
   status: excluded
@@ -170,14 +171,19 @@ dns_hosted_zone:
   depends_on: []
   family: dns
   import: false
-  issues: []
+  issues:
+  - 'destroy 409 -> LEAK (run 27678313663): scenario destroy fails to remove dns_private_dns.parent, leaving
+    it attached to the bootstrap pool VPC -> bootstrap teardown 409 ''Cannot terminate due to associated
+    resources'' leaked the VPC (reaped via api-reaper). apply/replan/update ok. The prior ''green'' was
+    stale (vpc:none made apply fail; vpc:pool makes destroy leak). LEAK-RISK: do not blindly re-sweep
+    -- each attempt leaks a pool VPC until the dns_private_dns destroy-ordering/propagation is fixed.'
   needs:
   - vpc_id
   parallel: normal
-  status: green
+  status: broken
   timeout_class: fast
   update: false
-  vpc: none
+  vpc: pool
 dns_private_dns:
   cost: cheap
   depends_on: []
@@ -209,14 +215,19 @@ dns_record:
   depends_on: []
   family: dns
   import: false
-  issues: []
+  issues:
+  - 'destroy 409 -> LEAK (run 27678313663): scenario destroy fails to remove dns_private_dns.parent, leaving
+    it attached to the bootstrap pool VPC -> bootstrap teardown 409 ''Cannot terminate due to associated
+    resources'' leaked the VPC (reaped via api-reaper). apply/replan/update ok. The prior ''green'' was
+    stale (vpc:none made apply fail; vpc:pool makes destroy leak). LEAK-RISK: do not blindly re-sweep
+    -- each attempt leaks a pool VPC until the dns_private_dns destroy-ordering/propagation is fixed.'
   needs:
   - vpc_id
   parallel: normal
-  status: green
+  status: broken
   timeout_class: fast
   update: false
-  vpc: none
+  vpc: pool
 ds_backup:
   cost: cheap
   depends_on: []
@@ -699,7 +710,8 @@ epas_cluster:
   family: epas
   import: false
   issues:
-  - 'GREEN incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy, clean teardown.'
+  - 'GREEN incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy,
+    clean teardown.'
   needs:
   - subnet_id
   parallel: normal
@@ -763,8 +775,7 @@ firewall_firewall_rule:
   depends_on: []
   family: firewall
   import: false
-  issues:
-  - 'GREEN reconfirmed on the patched provider (run 27659871231): full lifecycle validate->destroy, clean teardown.'
+  issues: []
   needs: []
   parallel: normal
   status: green
@@ -776,8 +787,7 @@ gslb_gslb:
   depends_on: []
   family: gslb
   import: false
-  issues:
-  - 'GREEN (run 27663213235). update=n/a(no update.tfvars); import=unsupported (no ImportState, #81).'
+  issues: []
   needs: []
   parallel: normal
   status: green
@@ -885,7 +895,8 @@ iam_user:
   family: iam
   import: false
   issues:
-  - '401 Unauthorized [HMAC] HMAC valid fail on create user (run 27659871231) — account/credential boundary (the test key cannot create IAM users), not a provider/fixture defect.'
+  - "401 Unauthorized [HMAC] HMAC valid fail on create user (run 27659871231) \u2014 account/credential\
+    \ boundary (the test key cannot create IAM users), not a provider/fixture defect."
   needs: []
   parallel: normal
   status: broken
@@ -1027,8 +1038,7 @@ loggingaudit_trail:
   depends_on: []
   family: loggingaudit
   import: false
-  issues:
-  - 'GREEN (run 27663213235). update=n/a(no update.tfvars); import=unsupported (no ImportState, #81).'
+  issues: []
   needs: []
   parallel: normal
   status: green
@@ -1041,7 +1051,8 @@ mariadb_cluster:
   family: mariadb
   import: false
   issues:
-  - 'GREEN incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy, clean teardown.'
+  - 'GREEN incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy,
+    clean teardown.'
   needs:
   - subnet_id
   parallel: normal
@@ -1055,7 +1066,8 @@ mysql_cluster:
   family: mysql
   import: false
   issues:
-  - 'GREEN incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy, clean teardown.'
+  - 'GREEN incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy,
+    clean teardown.'
   needs:
   - subnet_id
   parallel: normal
@@ -1081,7 +1093,8 @@ postgresql_cluster:
   family: postgresql
   import: false
   issues:
-  - 'GREEN incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy, clean teardown.'
+  - 'GREEN incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy,
+    clean teardown.'
   needs:
   - subnet_id
   parallel: normal
@@ -1094,8 +1107,7 @@ resourcemanager_resource_group:
   depends_on: []
   family: resourcemanager
   import: false
-  issues:
-  - 'GREEN (run 27663213235). update=n/a(no update.tfvars); import=unsupported (no ImportState, #81).'
+  issues: []
   needs: []
   parallel: normal
   status: green
@@ -1301,7 +1313,9 @@ virtualserver_server:
   depends_on: []
   family: virtualserver
   import: false
-  issues: []
+  issues:
+  - "update axis FAIL (run 27666766466): same provider 'Value Conversion Error (unknown value)' on update\
+    \ apply \u2014 Update-path raw-type bug, fork issue #92. Lifecycle green; update not in-place-safe."
   needs:
   - image_id
   - keypair_name
@@ -1329,9 +1343,7 @@ virtualserver_volume:
   depends_on: []
   family: virtualserver
   import: false
-  issues:
-  - 'GREEN (run 27243446403): the #69 tag was stale - fixture size is already divisible by 8; full lifecycle
-    ok. No provider change needed.'
+  issues: []
   needs: []
   parallel: normal
   status: green
@@ -1387,7 +1399,10 @@ vpc_port:
   depends_on: []
   family: vpc
   import: false
-  issues: []
+  issues:
+  - "update axis FAIL (run 27666766466): provider 'Value Conversion Error: Received unknown value, target\
+    \ type cannot handle unknown values' during update apply \u2014 provider bug, fork issue #92. Lifecycle\
+    \ green; update not in-place-safe."
   needs:
   - subnet_id
   parallel: low
@@ -1444,9 +1459,8 @@ vpc_subnet:
   family: vpc
   import: false
   issues:
-  - 'GREEN with patched provider #59 (dns_nameservers []string->types.List); full lifecycle
-    ok. RECONFIRMED on fork main build-ref (run 27653148345, 2026-06-16) after a 2026-06-12
-    broken-build-ref sweep had regressed it to plan-only on the dashboard. Requires patched provider.'
+  - "update axis FAIL (run 27666766466): 400 'IP address is not valid ()' when updating description \u2014\
+    \ provider re-sends subnet body with an empty IP on update. Lifecycle green; update not in-place-safe."
   needs:
   - vpc_id
   parallel: low
@@ -1502,10 +1516,7 @@ vpc_transit_gateway:
   exclude_reason: ''
   family: vpc
   import: false
-  issues:
-  - 'GREEN with patched provider #76 (TGW status-waiter no longer hangs); full lifecycle incl
-    clean destroy. RECONFIRMED on fork main build-ref (run 27653148345, 2026-06-16) after a
-    2026-06-12 broken-build-ref sweep had regressed it to plan-only. Requires patched provider.'
+  issues: []
   needs: []
   parallel: normal
   status: green
@@ -1689,7 +1700,8 @@ vpn_vpn_tunnel:
   family: vpn
   import: false
   issues:
-  - 'GREEN reconfirmed on the patched provider (run 27659871231): full lifecycle validate->destroy, clean teardown.'
+  - 'GREEN reconfirmed on the patched provider (run 27659871231): full lifecycle validate->destroy, clean
+    teardown.'
   needs: []
   parallel: normal
   status: green

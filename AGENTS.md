@@ -110,6 +110,7 @@ Everything an agent needs to resume is in git. Read these, in order:
 | `AGENTS.md` (this) | mission, agents, bootstrap | humans + curator |
 | `docs/roadmap.md` | end goal + live work breakdown | orchestrator |
 | `coverage/HANDOFF.md` | rolling session handoff (latest findings, account state) | every agent |
+| `tasks/lessons.md` | correction rules / recurring traps (so a session doesn't re-discover a bug) | `/retro`, `/session-checkpoint` |
 | `coverage/registry.yaml` | per-scenario status (axis ②) | coverage-regression |
 | `docs/PROVIDER_ISSUES.md` | confirmed provider defects (axis ①) | provider-verification + issue-registrar |
 | `coverage/domain.yaml` | machine-readable SCP domain knowledge | domain-knowledge-curator |
@@ -122,9 +123,13 @@ written to one of these files does not exist for the next session.
 
 ## 4. Session bootstrap (how to continue identically)
 
-A fresh session (any agent) does:
+A fresh session (any agent) does — or just runs **`/session-start`**, which automates
+steps 1–4 below (read-only) and names Priority 1; checkpoint state at the end with
+**`/session-checkpoint`**, and capture durable traps with **`/retro`** (skills live in
+[`.claude/skills/`](.claude/skills/)):
 1. Read `AGENTS.md` (this) → know the mission + which agent you are.
-2. Read `docs/roadmap.md` + `coverage/HANDOFF.md` → know current state & next work.
+2. Read `docs/roadmap.md` + `coverage/HANDOFF.md` + `tasks/lessons.md` → current state,
+   next work, and correction rules to avoid re-tripping.
 3. Load domain knowledge: `coverage/domain.yaml` (machine) and the relevant
    `docs/domain/*` page (human) for the service you're touching.
 4. For axis ②: read `coverage/registry.yaml` for scenario status.
