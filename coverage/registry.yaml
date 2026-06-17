@@ -74,11 +74,12 @@ cachestore_cluster:
   depends_on: []
   family: cachestore
   import: false
-  issues: []
+  issues:
+  - 'RETEST: registry-green via create+destroy probe (replan never recorded on the dashboard). Re-run through the standard matrix to record replan/idempotency and light up fully-green.'
   needs:
   - subnet_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: slow
   update: false
   vpc: pool
@@ -697,11 +698,12 @@ epas_cluster:
   depends_on: []
   family: epas
   import: false
-  issues: []
+  issues:
+  - 'RETEST: registry-green via create+destroy probe (replan never recorded on the dashboard). Re-run through the standard matrix to record replan/idempotency and light up fully-green.'
   needs:
   - subnet_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: slow
   update: false
   vpc: pool
@@ -1035,11 +1037,12 @@ mariadb_cluster:
   depends_on: []
   family: mariadb
   import: false
-  issues: []
+  issues:
+  - 'RETEST: registry-green via create+destroy probe (replan never recorded on the dashboard). Re-run through the standard matrix to record replan/idempotency and light up fully-green.'
   needs:
   - subnet_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: slow
   update: false
   vpc: pool
@@ -1048,11 +1051,12 @@ mysql_cluster:
   depends_on: []
   family: mysql
   import: false
-  issues: []
+  issues:
+  - 'RETEST: registry-green via create+destroy probe (replan never recorded on the dashboard). Re-run through the standard matrix to record replan/idempotency and light up fully-green.'
   needs:
   - subnet_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: slow
   update: false
   vpc: pool
@@ -1073,11 +1077,12 @@ postgresql_cluster:
   depends_on: []
   family: postgresql
   import: false
-  issues: []
+  issues:
+  - 'RETEST: registry-green via create+destroy probe (replan never recorded on the dashboard). Re-run through the standard matrix to record replan/idempotency and light up fully-green.'
   needs:
   - subnet_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: slow
   update: false
   vpc: pool
