@@ -306,7 +306,7 @@ def build_markdown(store, surface, unprov=None):
         "| managed resources (provider surface) | %d | - |" % surface_total
     )
     out.append(
-        "| excluded (license / no-capacity / deprecated) | %d | - |"
+        "| excluded from testable surface (non-defect) | %d | - |"
         % len(unprov_types)
     )
     out.append("| **testable surface** | %d | 100%% |" % total)
@@ -381,12 +381,12 @@ def build_markdown(store, surface, unprov=None):
         out.append("")
         out.append(
             "Resources excluded from the testable funnel denominator — **not** "
-            "provider/fixture defects. Reasons: a vendor **license** the account "
-            "does not hold, physical hardware / entitlement / **capacity** the "
-            "account lacks, or a **deprecated** service being retired. Split out "
-            "the same way parent-arg-only data sources are, so \"100% coverage\" "
-            "means 100% of what is actually testable. Curated in "
-            "`coverage/excluded_resources.yaml`."
+            "provider/fixture defects. Reasons: vendor **license** not held, "
+            "physical / entitlement / **capacity** the account lacks, a "
+            "**deprecated** service being retired, a real **cost** commitment, or "
+            "intentionally **out-of-scope**. Split out the same way parent-arg-only "
+            "data sources are, so \"100% coverage\" means 100% of what is actually "
+            "testable. Curated in `coverage/excluded_resources.yaml`."
         )
         out.append("")
         out.append("| resource | family | reason | detail |")

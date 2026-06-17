@@ -761,10 +761,11 @@ firewall_firewall_rule:
   depends_on: []
   family: firewall
   import: false
-  issues: []
+  issues:
+  - 'RETEST: registry-green but dashboard stale (never recorded a full matrix); re-run on the patched provider to record green on the dashboard (vpc_subnet/transit_gateway pattern).'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: self
@@ -799,10 +800,11 @@ iam_group:
   depends_on: []
   family: iam
   import: false
-  issues: []
+  issues:
+  - 'RETEST: registry-green but dashboard stale (never recorded a full matrix); re-run on the patched provider to record green on the dashboard (vpc_subnet/transit_gateway pattern).'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -878,10 +880,11 @@ iam_user:
   depends_on: []
   family: iam
   import: false
-  issues: []
+  issues:
+  - 'RETEST: registry-green but dashboard stale (never recorded a full matrix); re-run on the patched provider to record green on the dashboard (vpc_subnet/transit_gateway pattern).'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -1585,10 +1588,11 @@ vpc_vpc:
   depends_on: []
   family: vpc
   import: false
-  issues: []
+  issues:
+  - 'RETEST: registry-green but dashboard stale (never recorded a full matrix); re-run on the patched provider to record green on the dashboard (vpc_subnet/transit_gateway pattern).'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: true
   vpc: self
@@ -1674,10 +1678,11 @@ vpn_vpn_tunnel:
   depends_on: []
   family: vpn
   import: false
-  issues: []
+  issues:
+  - 'RETEST: registry-green but dashboard stale (never recorded a full matrix); re-run on the patched provider to record green on the dashboard (vpc_subnet/transit_gateway pattern).'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: self
