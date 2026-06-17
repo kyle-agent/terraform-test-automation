@@ -14,7 +14,7 @@ import datetime
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 COV = os.path.join(ROOT, "coverage", "coverage.json")
 SURFACE = os.path.join(ROOT, "coverage", "provider_surface.json")
-UNPROV = os.path.join(ROOT, "coverage", "unprovisionable.yaml")
+UNPROV = os.path.join(ROOT, "coverage", "excluded_resources.yaml")
 OUT_DIR = os.path.join(ROOT, "docs")
 OUT = os.path.join(OUT_DIR, "index.html")
 
@@ -37,7 +37,7 @@ def load(path, default):
 
 
 def load_unprov(path):
-    """Curated platform-unprovisionable resources (license / no-capacity).
+    """Curated excluded resources (license / no-capacity / deprecated).
     short name -> {reason, detail}. Missing/unparseable -> {}."""
     if not os.path.exists(path):
         return {}
@@ -198,7 +198,7 @@ def main():
         <div class="card"><div class="num">{with_run}</div><div class="lbl">have a matrix run<br><span class="muted">{pct(with_run)}</span></div></div>
         <div class="card"><div class="num">{reach['apply']}</div><div class="lbl">reach apply<br><span class="muted">{pct(reach['apply'])}</span></div></div>
         <div class="card green"><div class="num">{green}<span class="denom">/{total}</span></div><div class="lbl">fully GREEN<br><span class="muted">{pct(green)} of testable</span></div></div>
-        <div class="card unprov"><div class="num">{len(unprov_res)}</div><div class="lbl">unprovisionable<br><span class="muted">license / no-capacity · excluded</span></div></div>
+        <div class="card unprov"><div class="num">{len(unprov_res)}</div><div class="lbl">excluded<br><span class="muted">license / no-capacity / deprecated</span></div></div>
         <div class="card"><div class="num">{ds_green}<span class="denom">/{ds_smoke}</span></div>
           <div class="lbl">data sources read-verified<br><span class="muted">{ds_total} total · {ds_excl} excluded (need parent arg)</span></div></div>
       </div>
@@ -240,7 +240,7 @@ def main():
  table.unprovtable tr.unprovrow td{{background:#f6f8fa;color:#6e7781}}
  table.unprovtable tr.unprovrow .rname{{color:#57606a}}
  .rtag{{display:inline-block;padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;color:#fff;background:var(--skip)}}
- .rtag.license{{background:#8250df}} .rtag.no-capacity{{background:#6e7781}}
+ .rtag.license{{background:#8250df}} .rtag.no-capacity{{background:#6e7781}} .rtag.deprecated{{background:#bc4c00}}
  .legend{{margin:14px 0;font-size:12px;color:#57606a;display:flex;gap:10px;flex-wrap:wrap}}
  .legend b{{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}}
  a{{color:#0969da;text-decoration:none}} a:hover{{text-decoration:underline}}
@@ -268,10 +268,10 @@ def main():
       {''.join(rows)}
     </tbody>
   </table>
-  <h2 id="unprovisionable">Platform-unprovisionable resources ({len(unprov_res)})</h2>
-  <p class="muted" style="margin:4px 0 10px">Resources the dedicated test account <b>cannot create</b> for reasons outside the provider/fixtures —
-  a vendor <b>license</b> we do not hold, or physical hardware / entitlement / <b>capacity</b> the account lacks. These are <b>not defects</b> and are
-  <b>excluded from the testable surface</b> (the funnel denominator) above, the same way parent-arg-only data sources are. Curated in <code>coverage/unprovisionable.yaml</code>.</p>
+  <h2 id="excluded">Excluded resources — not in testable surface ({len(unprov_res)})</h2>
+  <p class="muted" style="margin:4px 0 10px">Resources <b>excluded from the testable surface</b> (the funnel denominator) above — <b>not</b> provider/fixture defects.
+  Reasons: a vendor <b>license</b> the account does not hold, physical hardware / entitlement / <b>capacity</b> the account lacks, or a <b>deprecated</b> service being retired.
+  Split out the same way parent-arg-only data sources are, so "100% coverage" means 100% of what is actually testable. Curated in <code>coverage/excluded_resources.yaml</code>.</p>
   <table class="unprovtable">
     <thead><tr><th>resource</th><th>family</th><th>reason</th><th>why it cannot be provisioned</th></tr></thead>
     <tbody>

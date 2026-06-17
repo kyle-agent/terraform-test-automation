@@ -45,7 +45,7 @@ REPO = os.path.dirname(HERE)
 COV_DIR = os.path.join(REPO, "coverage")
 COV_JSON = os.path.join(COV_DIR, "coverage.json")
 SURFACE_JSON = os.path.join(COV_DIR, "provider_surface.json")
-UNPROV_YAML = os.path.join(COV_DIR, "unprovisionable.yaml")
+EXCLUDED_YAML = os.path.join(COV_DIR, "excluded_resources.yaml")
 COV_MD = os.path.join(REPO, "COVERAGE.md")
 
 STAGES = ["validate", "plan", "apply", "replan", "destroy"]
@@ -78,23 +78,24 @@ def load_surface():
     return {"resources": m.get("resources", {}), "datasources": m.get("datasources", {})}
 
 
-def load_unprovisionable():
-    """Curated map of resources the test account cannot provision (license /
-    no-capacity). Keyed by short resource name -> {reason, detail}. Split out of
-    the testable funnel denominator and rendered in their own greyed section.
-    YAML is parsed if PyYAML is available; missing/unparseable file -> {} (the
-    dashboard then treats the full surface as testable, as before).
+def load_excluded():
+    """Curated map of resources excluded from the testable surface (reason ∈
+    license / no-capacity / deprecated). Keyed by short resource name ->
+    {reason, detail}. Split out of the testable funnel denominator and rendered
+    in their own greyed section. YAML is parsed if PyYAML is available;
+    missing/unparseable file -> {} (the dashboard then treats the full surface
+    as testable, as before).
     """
-    if not os.path.exists(UNPROV_YAML):
+    if not os.path.exists(EXCLUDED_YAML):
         return {}
     try:
         import yaml  # repo dependency (validate_registry.py, gen_scenarios.py)
-        with open(UNPROV_YAML, encoding="utf-8") as fh:
+        with open(EXCLUDED_YAML, encoding="utf-8") as fh:
             data = yaml.safe_load(fh) or {}
         return {k: v for k, v in data.items() if isinstance(v, dict)}
     except Exception as exc:  # pragma: no cover - defensive
         sys.stderr.write("warn: cannot read %s (%s); treating all resources as "
-                         "testable\n" % (UNPROV_YAML, exc))
+                         "testable\n" % (EXCLUDED_YAML, exc))
         return {}
 
 
@@ -305,7 +306,7 @@ def build_markdown(store, surface, unprov=None):
         "| managed resources (provider surface) | %d | - |" % surface_total
     )
     out.append(
-        "| platform-unprovisionable (license / no-capacity, excluded) | %d | - |"
+        "| excluded (license / no-capacity / deprecated) | %d | - |"
         % len(unprov_types)
     )
     out.append("| **testable surface** | %d | 100%% |" % total)
@@ -376,15 +377,16 @@ def build_markdown(store, surface, unprov=None):
 
     # ----- platform-unprovisionable resources ----- #
     if unprov_types:
-        out.append("## Platform-unprovisionable resources")
+        out.append("## Excluded resources (not in testable surface)")
         out.append("")
         out.append(
-            "Resources the dedicated test account **cannot create** for reasons "
-            "outside the provider/fixtures — a vendor **license** we do not hold, "
-            "or physical hardware / entitlement / **capacity** the account lacks. "
-            "These are **not defects** and are excluded from the testable surface "
-            "above (the funnel denominator), the same way parent-arg-only data "
-            "sources are. Curated in `coverage/unprovisionable.yaml`."
+            "Resources excluded from the testable funnel denominator — **not** "
+            "provider/fixture defects. Reasons: a vendor **license** the account "
+            "does not hold, physical hardware / entitlement / **capacity** the "
+            "account lacks, or a **deprecated** service being retired. Split out "
+            "the same way parent-arg-only data sources are, so \"100% coverage\" "
+            "means 100% of what is actually testable. Curated in "
+            "`coverage/excluded_resources.yaml`."
         )
         out.append("")
         out.append("| resource | family | reason | detail |")
@@ -459,7 +461,7 @@ def build_markdown(store, surface, unprov=None):
 # --------------------------------------------------------------------------- #
 def main(argv):
     surface = load_surface()
-    unprov = load_unprovisionable()
+    unprov = load_excluded()
 
     store = load_json(COV_JSON, {})
     if not isinstance(store, dict):

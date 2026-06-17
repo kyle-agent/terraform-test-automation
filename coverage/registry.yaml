@@ -4,7 +4,9 @@ backup_backup:
   family: backup
   import: false
   issues:
-  - 500 ISE (platform)
+  - 'PLATFORM 500 on create (run 27657318484). Provider #80 VERIFIED: the response decode
+    no longer panics — it now surfaces a clean "500 Internal Server Error" diagnostic. The
+    500 itself is server-side (not provider-fixable).'
   needs: []
   parallel: normal
   status: broken
@@ -112,7 +114,11 @@ cloudmonitoring_event_policy:
   exclude_reason: cloudmonitoring deprecated
   family: cloudmonitoring
   import: false
-  issues: []
+  issues:
+  - 'EXCLUDED: CloudMonitoring is slated for deprecation — not an active coverage target.
+    A partial provider #54 fix (notification_recipient -> types.List) is committed; the
+    remaining raw-typed fields are not worth completing on a retiring service. See
+    coverage/excluded_resources.yaml (reason: deprecated).'
   needs: []
   parallel: normal
   status: excluded
