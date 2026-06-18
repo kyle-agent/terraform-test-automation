@@ -112,14 +112,43 @@ provider source we can read:
 
 ## Empirical results (released v4.0.0 full sweep)
 
-_Run `27724880374` (SELECT_STATUS=green,broken,untested on the v4.0.0 binary). Results
-appended on completion — used to (a) confirm #89 (loggingaudit_trail), (b) catch any v4
-schema-breaking changes that invalidate our v3-era fixtures vs genuine v4 defects, and
-(c) reveal v4's new resources (searchengine_cluster, sqlserver_cluster, ske_nodepool)._
+Run `27724880374` (green,broken,untested on the v4.0.0 binary). Conclusion: **failure** —
+3 shards (`fast-1/2/3`) crashed with **no artifact** (a provider **panic** — #26/#80
+unchecked type assertion — crashes the test binary, so loadbalancer*/directconnect*/firewall*/
+many vpc_* have no v4 data), and the run hit the **5-VPC quota wall** mid-sweep, cascading
+`apply` failures onto every VPC-dependent scenario in `selfvpc`/parts of `novpc`. So the
+lifecycle comparison is only partially valid; the sound takeaways are the import axis and
+two genuine flips.
 
-| scenario | our patched | v4.0.0 | interpretation |
-|---|---|---|---|
-| _(to be filled from the v4 sweep matrices)_ | | | |
+**Import axis (the real, defensible v4 win):** **10 scenarios now `import=ok`** on v4 (all
+were `unsupported`/`skip` on our baseline): `iam_access_key`, `iam_group`,
+`iam_group_policy_bindings`, `iam_policy`, `iam_role`, `loggingaudit_trail`,
+`resourcemanager_resource_group`, `ske_cluster`, `ske_nodepool` (new), `virtualserver_image`.
+Rollout is **partial** — vpc_*, db clusters, servicewatch_* still report `import=unsupported`.
+
+**Genuine lifecycle flips (baseline-green → v4-broke), only 2 of 11:**
+
+| scenario | v4 stage | verdict |
+|---|---|---|
+| certificate_manager_self_sign | apply=fail | **genuine v4 bug** — "Provider produced inconsistent result after apply" on `.not_after_dt` (related to #57 date-format) |
+| iam_role_policy_bindings | apply=fail | **= #75** — iam_role create `400 "Input should be a valid list"` reproduced on v4 (our #75 fix still needed) |
+
+The other 9 "flips" (vpc_vpc, firewall_firewall_rule, vpc_internet_gateway, loadbalancer_basic,
+loadbalancer_lb_server_group, loadbalancer_loadbalancer_public_nat_ip, vpn_vpn_gateway,
+vpn_vpn_tunnel, vpc_subnet_vip_nat_ip) are **VPC-quota cascade noise** (apply failed on
+`400 number(5) of VPCs exceeded`), not v4 regressions — re-run after quota is freed.
+
+**New v4 resources:** `ske_nodepool` — **green + import=ok**. `iam_group_member` — apply=fail.
+Also `vpc_vpc_peering_approval` validate-fails with `Unsupported argument: approver_vpc_name`
+(v4 schema rename — relevant to #61/#84).
+
+**Leak from the v4 run:** `vpc_subnet_vip_nat_ip` destroy=fail → leaked `vpc_publicip`
+(no ImportState to adopt it) → reaped via api-reaper.
+
+> **Caveat:** a v4 GREEN does NOT prove a bug is fixed — our patches target edge cases the
+> happy-path fixtures may not exercise (e.g. iam_role/iam_access_key/vpc_publicip/TGW/
+> servicewatch_alert are green on v4 yet code-delta shows the latent defect remains). The
+> code-delta (Sections A/B) — not the empirical green — is authoritative for "what v4 fixed."
 
 ---
 
