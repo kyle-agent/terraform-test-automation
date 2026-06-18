@@ -1643,12 +1643,13 @@ vpc_vpc_peering:
   family: vpc
   import: false
   issues:
-  - "RETEST 2026-06-18: fork main now auto-resolves approver_vpc_name from approver_vpc_id (vpcpeering.go:207-220)\
-    \ \u2014 postdates last peering test (run 27406093988). Re-verify create->destroy on current patched\
-    \ build."
+  - "#61 fix INEFFECTIVE: patched build confirmed ('built patched provider', run 27736779212) yet create\
+    \ STILL 400s 'no value given for required property approver_vpc_name' \u2014 the auto-resolve-from-approver_vpc_id\
+    \ (vpcpeering.go:207-220) does not populate the API request. Provider fix needs rework. Leak-prone\
+    \ (partial-create left 2 VPCs, 409 cleanup)."
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: self
@@ -1673,12 +1674,11 @@ vpc_vpc_peering_rule:
   family: vpc
   import: false
   issues:
-  - "RETEST 2026-06-18: fork main now auto-resolves approver_vpc_name from approver_vpc_id (vpcpeering.go:207-220)\
-    \ \u2014 postdates last peering test (run 27406093988). Re-verify create->destroy on current patched\
-    \ build."
+  - 'blocked by vpc_vpc_peering (#61 ineffective) + 5-VPC quota exhaustion (run 27736779212: approver
+    VPC create 400 ''number(5) exceeded'').'
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: self
