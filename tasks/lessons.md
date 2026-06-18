@@ -73,3 +73,18 @@ A lesson without a concrete trigger + action is not a lesson — delete it.
 - trigger: a scenario shows destroy=fail but you need the exact provider delete error to file an issue.
 - do: don't burn a re-run hoping to capture it — the matrix runner mis-prioritizes the note (it showed an "import unsupported" line for a destroy-failed row) and does NOT put the terraform destroy stderr in the note or job stdout. The raw delete error is unrecoverable from artifacts/logs. Diagnose from the downstream symptom instead (e.g. the bootstrap VPC 409 'Cannot terminate due to associated resources' that a leaked child causes) and file on that evidence. dns_private_dns destroy-leak -> fork #93. (A runner fix to surface destroy stderr would remove this blind spot.)
 - conf: high · seen: 2026-06-17 · obs: 1
+
+### The fork #61 vpc_vpc_peering auto-resolve fix is INEFFECTIVE
+- trigger: tempted to re-test vpc_vpc_peering expecting the fork #61 fix to green it.
+- do: don't — run 27736779212 built the PATCHED provider (log: "built patched provider") yet create STILL 400s "no value given for required property approver_vpc_name". The auto-resolve-from-approver_vpc_id logic (vpcpeering.go:207-220) does not populate the API request. peering stays broken until the provider fix is reworked (or the fixture sets approver_vpc_name explicitly AND that path actually forwards it). Also leak-prone: a failed peering partial-create leaves 2 VPCs (409 cleanup).
+- conf: high · seen: 2026-06-18 · obs: 1
+
+### Most of the broken set is hard-blocked — don't burn sweeps re-testing them
+- trigger: looking to raise coverage by flipping broken -> green.
+- do: triage first. The realistically-greenable broken are few; the rest are NOT provider/fixture-fixable: platform-500 ISE (backup_backup, budget_budget, certificate_manager, dns_public_domain_name, loadbalancer_lb_listener), account-permission (iam_user, iam_user_policy_bindings, iam_group_member), cross-account (vpc_vpc_peering_approval needs a 2nd account to approve). Greenable candidates need real engineering: provider fixes (peering #61) or fixture ordering (TGW family) or DBaaS engine fixtures (searchengine/sqlserver #83). Don't blind-sweep the whole broken set.
+- conf: high · seen: 2026-06-18 · obs: 1
+
+### Multi-VPC scenarios leak and exhaust the 5-VPC quota — test in isolation + reap
+- trigger: testing vpc_vpc_peering / any scenario that creates 2+ VPCs, or running a big sweep after prior runs.
+- do: a failed peering partial-create leaves both VPCs (terraform cleanup 409s "Cannot terminate due to associated resources"), and these stack with prior sweep leaks until "400 number(5) of VPCs exceeded" cascades onto every VPC-dependent scenario. Test multi-VPC scenarios alone, push-trigger api-reaper (SWEEP_ALL=1) before AND after, and confirm quota is clear before reading reds (a quota-cascade red is environmental, not a real defect).
+- conf: high · seen: 2026-06-18 · obs: 2

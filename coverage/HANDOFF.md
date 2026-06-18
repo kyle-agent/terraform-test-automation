@@ -1,11 +1,38 @@
 # Coverage-expansion session handoff
 
-**Branch:** `main` — session 2026-06-17 merged via PR #26. Dev branch `claude/epic-ride-9zotgp`.
-**Last updated:** 2026-06-17
+**Branch:** `main` — session 2026-06-18 (v4 reconciliation). Dev branch `claude/epic-ride-9zotgp`.
+**Last updated:** 2026-06-18
 **Purpose:** Single source of truth for resuming the Terraform-provider coverage
 expansion work in a fresh session. **Start at [`AGENTS.md`](../AGENTS.md)** (mission +
 multi-agent architecture + session bootstrap), then this file, then `tasks/lessons.md`
 (correction rules), then `coverage/registry.yaml`. Run `/session-start` to automate this.
+
+---
+
+## 0. Session 2026-06-18 (LATEST) — v4.0.0 reconciliation + coverage reality check
+
+**v4.0.0 reconciliation (upstream released v4.0.0; we test our patched v3.3.x+fixes):**
+- Tested the **released v4.0.0 binary** (`SCP_PROVIDER_SOURCE_BUILD=0`/`VERSION=4.0.0`,
+  branch-only; reverted to `=1` patched mode after). v4 SDK is private → can't build v4.
+- **v4 fixed only 4 of ~60 issues** → closed #59/#25/#71/#89. v4's real wins: **ImportState on
+  37 resources** (we had 1; empirically 10 scenarios import=ok) + ~13 validators.
+- **Labels on the fork** (single-query hand-off): `v4-must-fix` (12 P0), `v4-still-lacks` (45,
+  all provider-fixable lacks), `fix-verified-green` (7, ready patches).
+- **Deliverables:** `docs/V4_RECONCILIATION.md` (full), `docs/V4_MUST_FIX.{md,html,txt}` (P0
+  hand-off) — **published**: https://kyle-agent.github.io/terraform-test-automation/V4_MUST_FIX.html
+
+**Coverage reality check (broken→green is mostly tapped out):**
+- registry: **green 89 / broken 24 / excluded 8**; coverage.json strict lifecycle-green **54/79**.
+- Most broken are **hard-blocked** (platform-500, account-perm, cross-account — see lessons).
+- **peering #61 fix is INEFFECTIVE** (re-test 27736779212 on a confirmed patched build still
+  400s "no value given for approver_vpc_name"). peering reverted to broken.
+- VPC quota was exhausted by leaks → reaped clean (run 27737291663). Quota free now.
+
+**NEXT (greenable broken needs real engineering — pick one):** (a) rework provider #61
+auto-resolve in fork `vpcpeering.go` → peering green + a verified patch; (b) DBaaS #83
+fixtures (searchengine/sqlserver — create ACCEPTED, self-contained, low leak risk);
+(c) TGW family fixture ordering (private_nat/transit_gateway_firewall — depends_on/wait,
+complex + multi-VPC leak-prone). Multi-VPC tests: isolate + reap before/after (lessons).
 
 ---
 
