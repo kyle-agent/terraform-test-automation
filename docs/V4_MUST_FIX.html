@@ -5,176 +5,222 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>v4.0.0 우선 수정 요청 (P0)</title>
 </head>
-<body style="margin:0;padding:24px;background:#ffffff;color:#1f2328;font-family:-apple-system,'Segoe UI',Roboto,'Malgun Gothic',sans-serif;font-size:14px;line-height:1.6;">
+<body style="margin:0;padding:24px;background:#ffffff;color:#24292f;font-family:-apple-system,'Segoe UI',Roboto,'Malgun Gothic',sans-serif;font-size:14px;line-height:1.6;">
 <div style="max-width:860px;margin:0 auto;">
 
-  <h1 style="font-size:22px;margin:0 0 4px;border-bottom:3px solid #0969da;padding-bottom:8px;">v4.0.0 우선 수정 요청 (P0) — 개발팀 전달용</h1>
+  <h1 style="font-size:22px;margin:0 0 6px;border-bottom:1px solid #d0d7de;padding-bottom:10px;">v4.0.0 우선 수정 요청 (P0)</h1>
   <p style="color:#57606a;margin:8px 0 4px;">대상: <code style="background:#f6f8fa;padding:1px 5px;border-radius:4px;">terraform-provider-samsungcloudplatformv2</code> <b>v4.0.0</b> (released, bc2a1a6)</p>
-  <p style="margin:8px 0;">블랙박스 terraform 커버리지로 확인한 <b>필수(P0) 결함 12건</b>입니다. 기준 = "이게 없으면 리소스를 <b>생성할 수 없거나</b>, destroy 시 <b>리소스가 누수되거나</b>, 프로바이더가 <b>멈춤/패닉</b>". 각 항목: <b>문제 → 현재 v4 소스(파일:라인) → 수정안 → 검증</b>. 코드 위치는 v4.0.0 소스 기준.</p>
-  <p style="margin:8px 0;color:#57606a;">fork 이슈 라벨 — <code style="background:#fff1e5;padding:1px 5px;border-radius:4px;">v4-must-fix</code> 이 P0 12건 · <code style="background:#f6f8fa;padding:1px 5px;border-radius:4px;">v4-still-lacks</code> 전체 미반영 45건 · <code style="background:#e6f4ea;padding:1px 5px;border-radius:4px;">fix-verified-green</code> 검증된 패치 7건.</p>
+  <p style="margin:8px 0;">블랙박스 terraform 커버리지로 확인한 <b>필수(P0) 결함 12건</b>입니다. 기준 = "이게 없으면 리소스를 <b>생성할 수 없거나</b>, destroy 시 <b>리소스가 누수되거나</b>, 프로바이더가 <b>멈춤/패닉</b>". 각 항목은 <b>문제 → 수정 전 소스 → 수정 후 소스</b>로 정리했습니다. 코드 위치는 v4.0.0 소스 기준.</p>
 
   <!-- ============ A ============ -->
-  <h2 style="font-size:17px;background:#cf222e;color:#fff;padding:7px 12px;border-radius:6px;margin:26px 0 14px;">A. 생성 자체가 막힘 (리소스 사용 불가)</h2>
+  <h2 style="font-size:16px;background:#f6f8fa;border:1px solid #d0d7de;padding:8px 12px;border-radius:6px;margin:26px 0 14px;">A. 생성 자체가 막힘 (리소스 사용 불가)</h2>
 
-  <div style="border:1px solid #d0d7de;border-left:4px solid #cf222e;border-radius:6px;padding:12px 16px;margin:0 0 14px;">
-    <h3 style="margin:0 0 8px;font-size:15px;">#67 — virtualserver_server: <code style="background:#f6f8fa;padding:1px 5px;border-radius:4px;">state</code> 미지정 시 create 항상 실패</h3>
+  <div style="border:1px solid #d0d7de;border-radius:6px;padding:12px 16px;margin:0 0 14px;">
+    <h3 style="margin:0 0 8px;font-size:15px;">virtualserver_server — <code style="background:#f6f8fa;padding:1px 5px;border-radius:4px;">state</code> 미지정 시 create 항상 실패</h3>
     <p style="margin:6px 0;"><b>문제.</b> state(Optional+Computed)를 설정하지 않으면(문서 기본 사용법) apply가 <i>"Invalid server state. Server state must be 'ACTIVE' during creation."</i>로 실패. 컴퓨트 티어 전체가 사실상 생성 불가. (미지정 시 plan에서 unknown 인데 가드가 null 이 아닌 빈 문자열로 읽어 분기됨.)</p>
-    <p style="margin:6px 0;"><b>현재 v4 소스.</b> <code>samsungcloudplatform/service/virtualserver/server.go</code></p>
-    <pre style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;overflow:auto;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12.5px;white-space:pre;">// :290  State 스키마 — Default 없음
+    <p style="margin:10px 0 4px;color:#57606a;"><b>수정 전</b> — <code>service/virtualserver/server.go</code></p>
+    <pre style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;overflow:auto;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12.5px;white-space:pre;">// :290  State 스키마 — Default / plan modifier 없음
 common.ToSnakeCase("State"): schema.StringAttribute{ Optional: true, Computed: true },
 
 // :1614  create 가드 — IsUnknown 미검사
 if !plan.State.IsNull() {
     if plan.State.ValueString() != "ACTIVE" {
-        resp.Diagnostics.AddError("Error Creating Server",
-            "...State: "+plan.State.ValueString())   // unknown -> "" -> 실패
+        resp.Diagnostics.AddError("Error Creating Server", "...State: "+plan.State.ValueString())
+        return                       // unknown -> "" -> 항상 실패
+    }
+}</pre>
+    <p style="margin:10px 0 4px;color:#57606a;"><b>수정 후</b></p>
+    <pre style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre;">common.ToSnakeCase("State"): schema.StringAttribute{
+    Optional: true, Computed: true,
+    PlanModifiers: []planmodifier.String{ stringplanmodifier.UseStateForUnknown() },
+},
+
+if !plan.State.IsNull() &amp;&amp; !plan.State.IsUnknown() {     // unknown은 통과
+    if plan.State.ValueString() != "ACTIVE" {
+        resp.Diagnostics.AddError("Error Creating Server", "...")
         return
     }
 }</pre>
-    <p style="margin:6px 0;"><b>수정.</b> unknown을 가드에서 제외(명시적 비-ACTIVE만 거부): <code>if !plan.State.IsNull() &amp;&amp; !plan.State.IsUnknown() { ... }</code> + state에 <code>stringplanmodifier.UseStateForUnknown()</code> 추가.</p>
-    <p style="margin:6px 0;"><b>검증.</b> state 없는 최소 config로 apply → ACTIVE 생성, replan clean, destroy OK.</p>
   </div>
 
-  <div style="border:1px solid #d0d7de;border-left:4px solid #cf222e;border-radius:6px;padding:12px 16px;margin:0 0 14px;">
-    <h3 style="margin:0 0 8px;font-size:15px;">#75 — iam_role: 문서 예시대로 create 시 400 "Input should be a valid list"</h3>
-    <p style="margin:6px 0;"><b>문제.</b> 문서의 assume_role_policy_document 예시 형태로 만들면 apply에서 <code>400 ... Input should be a valid list</code>. 가장 기본적인 IAM role 생성 불가.</p>
-    <p style="margin:6px 0;"><b>현재 v4 소스.</b> <code>samsungcloudplatform/client/iam/iam.go:599</code> (CreateRole)</p>
-    <pre style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre;">var policyIds []string     // nil 슬라이스 -> JSON "null" 직렬화 (API는 [] 기대)</pre>
-    <p style="margin:6px 0;"><b>수정.</b> 빈 컬렉션을 null 이 아닌 [] 로: <code>policyIds := []string{}</code> (principals 등 동일). 추가로 400 에러에 필드 surfacing.</p>
-    <p style="margin:6px 0;"><b>검증.</b> 문서 예시 config로 role 생성 → replan clean → destroy.</p>
+  <div style="border:1px solid #d0d7de;border-radius:6px;padding:12px 16px;margin:0 0 14px;">
+    <h3 style="margin:0 0 8px;font-size:15px;">iam_role — 문서 예시대로 create 시 400 "Input should be a valid list"</h3>
+    <p style="margin:6px 0;"><b>문제.</b> 문서의 assume_role_policy_document 예시 형태로 만들면 apply에서 <code>400 ... Input should be a valid list</code>. 빈 리스트가 <code>null</code>로 직렬화되어 API가 거부. 가장 기본적인 IAM role 생성 불가.</p>
+    <p style="margin:10px 0 4px;color:#57606a;"><b>수정 전</b> — <code>client/iam/iam.go:599</code> (CreateRole)</p>
+    <pre style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre;">var policyIds []string          // nil 슬라이스 -> JSON "null"
+// principals 등 다른 required 리스트도 동일</pre>
+    <p style="margin:10px 0 4px;color:#57606a;"><b>수정 후</b></p>
+    <pre style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre;">policyIds := []string{}         // 빈 리스트 -> JSON "[]"
+// (그 외 required 리스트도 []T{}로 초기화. 400 에러에 필드명 surfacing 권장)</pre>
   </div>
 
-  <div style="border:1px solid #d0d7de;border-left:4px solid #cf222e;border-radius:6px;padding:12px 16px;margin:0 0 14px;">
-    <h3 style="margin:0 0 8px;font-size:15px;">#60 — vpc_cidr: Read/Delete 미구현 (refresh마다 증발 + destroy 에러) <span style="color:#cf222e;">[critical]</span></h3>
+  <div style="border:1px solid #d0d7de;border-radius:6px;padding:12px 16px;margin:0 0 14px;">
+    <h3 style="margin:0 0 8px;font-size:15px;">vpc_cidr — Read/Delete 미구현 (refresh마다 증발 + destroy 에러) <span style="color:#57606a;">[critical]</span></h3>
     <p style="margin:6px 0;"><b>문제.</b> Read가 항상 state에서 리소스를 제거 → 매 refresh마다 사라짐. Delete 미구현 → destroy 에러.</p>
-    <p style="margin:6px 0;"><b>현재 v4 소스.</b> <code>samsungcloudplatform/service/vpc/vpc_cidr.go</code></p>
-    <pre style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre;">// Read: 본문이 사실상 TODO + 무조건 RemoveResource
-//   resp.State.RemoveResource(ctx)
-// Delete: 미구현 에러
+    <p style="margin:10px 0 4px;color:#57606a;"><b>수정 전</b> — <code>service/vpc/vpc_cidr.go</code></p>
+    <pre style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre;">// Read: 사실상 TODO + 무조건 제거
+resp.State.RemoveResource(ctx)
+
+// Delete: 미구현
 resp.Diagnostics.AddError("Delete Not Implemented", "...")</pre>
-    <p style="margin:6px 0;"><b>수정.</b> 실제 Read(GetVpcWithStatus + remove-on-404)와 실제 Delete(RemoveVpcCidr + 사라질 때까지 poll) 구현.</p>
-    <p style="margin:6px 0;"><b>검증.</b> apply → 동일 plan no-op(증발 없음) → destroy로 CIDR 제거.</p>
+    <p style="margin:10px 0 4px;color:#57606a;"><b>수정 후</b></p>
+    <pre style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre;">// Read: 실제 조회 + 404면 제거
+vpc, err := r.client.GetVpcWithStatus(ctx, id)
+if isNotFound(err) { resp.State.RemoveResource(ctx); return }
+// ... state에 cidr 반영
+
+// Delete: 실제 삭제 + 사라질 때까지 대기
+r.client.RemoveVpcCidr(ctx, vpcId, cidrId)
+waitForCidrGone(ctx, r.client, cidrId)</pre>
   </div>
 
-  <div style="border:1px solid #d0d7de;border-left:4px solid #cf222e;border-radius:6px;padding:12px 16px;margin:0 0 14px;">
-    <h3 style="margin:0 0 8px;font-size:15px;">#61 / #84.1 — vpc_vpc_peering: approver_vpc_name 미노출로 생성 불가</h3>
-    <p style="margin:6px 0;"><b>문제.</b> API가 create에 approver_vpc_name을 요구하는데 입력 스키마에 없음 → <code>no value given for required property approver_vpc_name</code>. 속성을 추가하면 validate에서 <code>Unsupported argument</code>. 즉 terraform으로 peering 생성 불가. (description도 미설정 시 명시적 null로 전송.)</p>
-    <p style="margin:6px 0;"><b>현재 v4 소스.</b> <code>samsungcloudplatform/client/vpcv1/vpc.go:79</code> (CreateVpcPeering)</p>
-    <pre style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre;">Description: *scpvpc.NewNullableString(request.Description.ValueStringPointer()), // 무조건 null
-// VpcPeeringCreateRequest{...} 에 ApproverVpcName 자체가 없음.
-// ApproverVpcName 은 읽기전용 Computed 중첩블록(model.go)에만 존재 — 입력 불가.</pre>
-    <p style="margin:6px 0;"><b>수정.</b> approver_vpc_name을 입력 속성으로 노출 + create 바디에 forward. description은 설정된 경우에만 첨부.</p>
-    <p style="margin:6px 0;"><b>검증.</b> approver_vpc_name 지정 config로 peering 생성/삭제 성공.</p>
+  <div style="border:1px solid #d0d7de;border-radius:6px;padding:12px 16px;margin:0 0 14px;">
+    <h3 style="margin:0 0 8px;font-size:15px;">vpc_vpc_peering — approver_vpc_name 미노출로 생성 불가</h3>
+    <p style="margin:6px 0;"><b>문제.</b> API가 create에 approver_vpc_name을 요구하는데 입력 스키마에 없음 → <code>no value given for required property approver_vpc_name</code>. 속성을 추가하면 validate에서 <code>Unsupported argument</code>. 즉 terraform으로 peering 생성 불가. (description도 미설정 시 명시적 null 전송.)</p>
+    <p style="margin:10px 0 4px;color:#57606a;"><b>수정 전</b> — <code>client/vpcv1/vpc.go:79</code> (CreateVpcPeering)</p>
+    <pre style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre;">req := VpcPeeringCreateRequest{
+    Description: *scpvpc.NewNullableString(request.Description.ValueStringPointer()), // 무조건 null
+    // ApproverVpcName 필드 자체가 없음 (읽기전용 Computed 블록에만 존재)
+}</pre>
+    <p style="margin:10px 0 4px;color:#57606a;"><b>수정 후</b></p>
+    <pre style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre;">// 스키마: approver_vpc_name 을 입력 속성(Required/Optional)으로 노출
+req := VpcPeeringCreateRequest{ ApproverVpcName: request.ApproverVpcName.ValueString() }
+if !request.Description.IsNull() {           // 설정된 경우에만 첨부
+    req.Description = *scpvpc.NewNullableString(request.Description.ValueStringPointer())
+}</pre>
   </div>
 
   <!-- ============ B ============ -->
-  <h2 style="font-size:17px;background:#bf3989;color:#fff;padding:7px 12px;border-radius:6px;margin:26px 0 14px;">B. destroy 실패 → 리소스 누수 (비용/쿼터/보안)</h2>
+  <h2 style="font-size:16px;background:#f6f8fa;border:1px solid #d0d7de;padding:8px 12px;border-radius:6px;margin:26px 0 14px;">B. destroy 실패 → 리소스 누수 (비용/쿼터/보안)</h2>
 
-  <div style="border:1px solid #d0d7de;border-left:4px solid #bf3989;border-radius:6px;padding:12px 16px;margin:0 0 14px;">
-    <h3 style="margin:0 0 8px;font-size:15px;">#77 — loadbalancer: create가 ACTIVE 대기 안 함 → destroy 실패 → 과금 LB 누수</h3>
+  <div style="border:1px solid #d0d7de;border-radius:6px;padding:12px 16px;margin:0 0 14px;">
+    <h3 style="margin:0 0 8px;font-size:15px;">loadbalancer — create가 ACTIVE 대기 안 함 → destroy 실패 → 과금 LB 누수</h3>
     <p style="margin:6px 0;"><b>문제.</b> Create가 LB가 CREATING 인 채로 반환 → 직후 destroy가 <i>"not in a deletable state (state: CREATING)"</i>로 실패 → 과금 LB 누수 + 이름 점유.</p>
-    <p style="margin:6px 0;"><b>현재 v4 소스.</b> <code>samsungcloudplatform/service/loadbalancer/loadbalancer.go</code></p>
-    <pre style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre;">// :247 Create — CreateLoadbalancer 후 상태 폴링 없이 바로 State.Set
-// :344 Delete — DeleteLoadbalancer 직접 호출, deletable 대기 없음
-// (대조: service/virtualserver/server.go 는 Create에서 ACTIVE까지 폴링함)</pre>
-    <p style="margin:6px 0;"><b>수정.</b> Create 후 GetLoadbalancer로 ACTIVE까지 폴링(ERROR 단락+timeout), Delete는 전이상태면 deletable까지 대기 후 삭제, 404는 성공. <b>주의:</b> v4 <code>client.WaitForStatus</code>(common.go:53) 시그니처 변경(timeout/delay/minTimeout/maxConsecutiveErrors 추가).</p>
-    <p style="margin:6px 0;"><b>검증.</b> LB apply 직후 destroy → 성공, 누수 LB 없음.</p>
+    <p style="margin:10px 0 4px;color:#57606a;"><b>수정 전</b> — <code>service/loadbalancer/loadbalancer.go</code></p>
+    <pre style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre;">// :247 Create — 폴링 없이 바로 반환
+r.client.CreateLoadbalancer(ctx, plan)
+resp.State.Set(ctx, plan)
+
+// :344 Delete — deletable 대기 없이 바로 삭제
+r.client.DeleteLoadbalancer(ctx, id)</pre>
+    <p style="margin:10px 0 4px;color:#57606a;"><b>수정 후</b></p>
+    <pre style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre;">r.client.CreateLoadbalancer(ctx, plan)
+client.WaitForStatus(ctx, r.client, []string{"CREATING"}, []string{"ACTIVE"}, getFunc) // ERROR 단락
+resp.State.Set(ctx, plan)
+
+// Delete: 전이상태면 deletable까지 대기 후 삭제, 404는 성공
+client.WaitForStatus(ctx, r.client, []string{"CREATING","EDITING"}, []string{"ACTIVE"}, getFunc)
+r.client.DeleteLoadbalancer(ctx, id)
+// 주의: v4 WaitForStatus 시그니처에 timeout/delay/minTimeout/maxConsecutiveErrors 추가됨</pre>
   </div>
 
-  <div style="border:1px solid #d0d7de;border-left:4px solid #bf3989;border-radius:6px;padding:12px 16px;margin:0 0 14px;">
-    <h3 style="margin:0 0 8px;font-size:15px;">#58 — iam_access_key: enabled 키 삭제 불가 → 살아있는 자격증명 누수 <span style="color:#bf3989;">[security]</span></h3>
+  <div style="border:1px solid #d0d7de;border-radius:6px;padding:12px 16px;margin:0 0 14px;">
+    <h3 style="margin:0 0 8px;font-size:15px;">iam_access_key — enabled 키 삭제 불가 → 살아있는 자격증명 누수 <span style="color:#57606a;">[security]</span></h3>
     <p style="margin:6px 0;"><b>문제.</b> is_enabled=true 로 만든 키는 destroy가 <code>Access key is Enabled.</code> 로 실패 → 활성 자격증명이 추적 불가 상태로 방치(보안).</p>
-    <p style="margin:6px 0;"><b>현재 v4 소스.</b> <code>samsungcloudplatform/service/iam/accesskey.go:396</code> — Delete가 DeleteAccessKey 직접 호출(disable 단계 없음). client/iam/iam.go 에 disable 경로 없음(UpdateAccessKey는 존재).</p>
-    <pre style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre;">if state.IsEnabled.ValueBool() {
+    <p style="margin:10px 0 4px;color:#57606a;"><b>수정 전</b> — <code>service/iam/accesskey.go:396</code></p>
+    <pre style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre;">err := r.client.DeleteAccessKey(ctx, id)   // enabled면 400 실패</pre>
+    <p style="margin:10px 0 4px;color:#57606a;"><b>수정 후</b></p>
+    <pre style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre;">if state.IsEnabled.ValueBool() {           // 먼저 비활성화
     state.IsEnabled = types.BoolValue(false)
     if _, err := r.client.UpdateAccessKey(ctx, id, state); err != nil { /* diag+return */ }
 }
 err := r.client.DeleteAccessKey(ctx, id)   // 404는 성공 처리</pre>
-    <p style="margin:6px 0;"><b>수정.</b> Delete에서 enabled면 먼저 비활성화 후 삭제(idempotent), 404 성공.</p>
-    <p style="margin:6px 0;"><b>검증.</b> enabled 키 apply 후 destroy → 성공, 누수 없음.</p>
   </div>
 
-  <div style="border:1px solid #d0d7de;border-left:4px solid #bf3989;border-radius:6px;padding:12px 16px;margin:0 0 14px;">
-    <h3 style="margin:0 0 8px;font-size:15px;">#79 / #93 — dns_private_dns: destroy가 안 풀려 VPC에 붙은 채 → VPC 409 누수</h3>
+  <div style="border:1px solid #d0d7de;border-radius:6px;padding:12px 16px;margin:0 0 14px;">
+    <h3 style="margin:0 0 8px;font-size:15px;">dns_private_dns — destroy가 안 풀려 VPC에 붙은 채 → VPC 409 누수</h3>
     <p style="margin:6px 0;"><b>문제.</b> 부모 dns_private_dns(VPC에 connected_vpc_ids 바인딩) + 자식 dns_hosted_zone/dns_record 구성에서 destroy가 부모를 제거하지 못함 → VPC 삭제 시 <code>409 Cannot terminate due to associated resources</code> → dns_private_dns + VPC 누수. (apply/replan/update green, destroy만 실패.)</p>
-    <p style="margin:6px 0;"><b>현재 v4 소스.</b> <code>samsungcloudplatform/service/dns/...</code> — Delete가 DeletePrivateDns 직접 호출, connected VPC unbind/비활성/완전삭제 대기 없음.</p>
-    <p style="margin:6px 0;"><b>수정.</b> Delete가 connected VPC(들)에서 unbind + deactivate하고 리소스가 실제로 사라질 때까지 대기 → 자식→부모 destroy + 후속 VPC 삭제가 409 없이 완료.</p>
-    <p style="margin:6px 0;"><b>검증.</b> private_dns + hosted_zone/record apply → destroy → VPC 삭제까지 409 없이 성공.</p>
+    <p style="margin:10px 0 4px;color:#57606a;"><b>수정 전</b> — <code>service/dns/private_dns.go</code></p>
+    <pre style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre;">r.client.DeletePrivateDns(ctx, id)   // unbind/비활성/대기 없음 -> VPC에 잔존</pre>
+    <p style="margin:10px 0 4px;color:#57606a;"><b>수정 후</b></p>
+    <pre style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre;">r.client.DeactivatePrivateDns(ctx, id)          // connected VPC에서 unbind/비활성
+r.client.DeletePrivateDns(ctx, id)
+waitForPrivateDnsGone(ctx, r.client, id)        // 실제로 사라질 때까지 대기</pre>
   </div>
 
-  <div style="border:1px solid #d0d7de;border-left:4px solid #bf3989;border-radius:6px;padding:12px 16px;margin:0 0 14px;">
-    <h3 style="margin:0 0 8px;font-size:15px;">#88 — filestorage_replication: destroy 직삭제 실패 → 풀 볼륨 점유 누수</h3>
+  <div style="border:1px solid #d0d7de;border-radius:6px;padding:12px 16px;margin:0 0 14px;">
+    <h3 style="margin:0 0 8px;font-size:15px;">filestorage_replication — destroy 직삭제 실패 → 풀 볼륨 점유 누수</h3>
     <p style="margin:6px 0;"><b>문제.</b> replication 정책이 활성인 채 삭제 API 직접 호출 → <code>400 Cannot delete volume because replication is in use ... paused &gt; delete</code> → orphan replication이 소스 풀 볼륨 점유(누수).</p>
-    <p style="margin:6px 0;"><b>현재 v4 소스.</b> <code>samsungcloudplatform/service/filestorage/replication.go:342</code> — Delete가 pause/poll/wait 없이 DeleteVolumeReplication 직접 호출. PauseVolumeReplication / waitForReplicationGone 부재.</p>
-    <p style="margin:6px 0;"><b>수정.</b> 정책 일시정지 → paused까지 poll → 삭제 → 사라질 때까지 대기. (+400 바디 tolerant decode로 실제 메시지 노출.)</p>
-    <p style="margin:6px 0;"><b>검증.</b> replication apply → destroy → orphan 없음, 풀 볼륨 해제.</p>
+    <p style="margin:10px 0 4px;color:#57606a;"><b>수정 전</b> — <code>service/filestorage/replication.go:342</code></p>
+    <pre style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre;">r.client.DeleteVolumeReplication(ctx, id)   // pause 없이 직접 삭제 -> 400</pre>
+    <p style="margin:10px 0 4px;color:#57606a;"><b>수정 후</b></p>
+    <pre style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre;">r.client.PauseVolumeReplication(ctx, id)
+waitForReplicationStatus(ctx, r.client, id, "paused")
+r.client.DeleteVolumeReplication(ctx, id)
+waitForReplicationGone(ctx, r.client, id)
+// (+ 400 바디 tolerant decode로 실제 API 메시지 노출)</pre>
   </div>
 
-  <div style="border:1px solid #d0d7de;border-left:4px solid #bf3989;border-radius:6px;padding:12px 16px;margin:0 0 14px;">
-    <h3 style="margin:0 0 8px;font-size:15px;">#84.2 — vpc_subnet_vip_nat_ip: destroy 시 publicip read 실패 → 누수</h3>
-    <p style="margin:6px 0;"><b>문제.</b> apply는 성공하나 destroy가 publicip read에서 <code>SUBNET is not a valid PublicipAttachedResourceType</code>로 실패 → publicip 누수. (실증 run 27724880374에서 leaked vpc_publicip 재현.)</p>
-    <p style="margin:6px 0;"><b>현재 v4 소스.</b> <code>samsungcloudplatform/service/vpc/subnet_vip_nat_ip.go</code> — Delete는 NAT IP의 DELETED만 대기. 근본원인: publicip read가 v1.1(SUBNET enum 없음) 사용, v4에 GetPublicipWithStatus/v1.2 경로 없음.</p>
-    <p style="margin:6px 0;"><b>수정.</b> publicip read를 v1.2(SUBNET enum)로, NAT 삭제 후 publicip detach까지 대기. <span style="color:#57606a;">(#84는 vpc_vpc_peering[=#61], vpc_endpoint "subnet not found"도 포함.)</span></p>
-    <p style="margin:6px 0;"><b>검증.</b> subnet_vip_nat_ip apply → destroy → publicip까지 정리.</p>
+  <div style="border:1px solid #d0d7de;border-radius:6px;padding:12px 16px;margin:0 0 14px;">
+    <h3 style="margin:0 0 8px;font-size:15px;">vpc_subnet_vip_nat_ip — destroy 시 publicip read 실패 → 누수</h3>
+    <p style="margin:6px 0;"><b>문제.</b> apply는 성공하나 destroy가 publicip read에서 <code>SUBNET is not a valid PublicipAttachedResourceType</code>로 실패 → publicip 누수. 근본원인은 publicip read가 v1.1(SUBNET enum 없음)을 사용.</p>
+    <p style="margin:10px 0 4px;color:#57606a;"><b>수정 전</b> — <code>service/vpc/subnet_vip_nat_ip.go</code></p>
+    <pre style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre;">r.client.GetPublicip(ctx, ipId)      // v1.1 — SUBNET enum 없음 -> destroy 실패
+// NAT IP의 DELETED만 대기, publicip detach 대기 없음</pre>
+    <p style="margin:10px 0 4px;color:#57606a;"><b>수정 후</b></p>
+    <pre style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre;">r.client.GetPublicipWithStatus(ctx, ipId)   // v1.2 — SUBNET enum 포함
+waitForPublicipDetached(ctx, r.client, ipId)  // NAT 삭제 후 detach까지 대기</pre>
   </div>
 
   <!-- ============ C ============ -->
-  <h2 style="font-size:17px;background:#9a6700;color:#fff;padding:7px 12px;border-radius:6px;margin:26px 0 14px;">C. 자동화 멈춤 / 프로바이더 패닉</h2>
+  <h2 style="font-size:16px;background:#f6f8fa;border:1px solid #d0d7de;padding:8px 12px;border-radius:6px;margin:26px 0 14px;">C. 자동화 멈춤 / 프로바이더 패닉</h2>
 
-  <div style="border:1px solid #d0d7de;border-left:4px solid #9a6700;border-radius:6px;padding:12px 16px;margin:0 0 14px;">
-    <h3 style="margin:0 0 8px;font-size:15px;">#76 — VPC waiter: 빈 Pending + 120m → ERROR/parked 상태에서 2시간 행</h3>
-    <p style="margin:6px 0;"><b>문제.</b> VPC 계열 status waiter가 모두 Pending=[] 로 호출 + WaitForStatus 120분 → transit_gateway/private_nat 등이 ERROR/parked에 빠지면 ERROR 단락 없이 2시간 폴링 → apply/destroy 멈춤, 자동화에선 teardown까지 막혀 누수 위험.</p>
-    <p style="margin:6px 0;"><b>현재 v4 소스.</b> <code>samsungcloudplatform/client/common.go</code> (WaitForStatus, 120m) — 호출부가 []string{} Pending 전달:</p>
-    <pre style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre;">transit_gateway.go:196,319 · transitgateway_vpcconnection.go:178,263
-vpc_transit_gateway_rule.go:238,316 · transit_gateway_firewall_connection.go:206,304
-private_nat.go:226,378</pre>
-    <p style="margin:6px 0;"><b>수정.</b> (1) Pending에 실제 전이상태(CREATING/EDITING→ACTIVE, DELETING→DELETED)를 채워 예기치 않은 상태 즉시 실패. (2) refresh에서 ERROR 즉시 단락. (3) 네트워크 리소스는 120m 대신 15~20m.</p>
-    <p style="margin:6px 0;"><b>검증.</b> ERROR로 빠지는 TGW apply → 수 분 내 실패. DELETING 지연 destroy도 즉시 에러.</p>
+  <div style="border:1px solid #d0d7de;border-radius:6px;padding:12px 16px;margin:0 0 14px;">
+    <h3 style="margin:0 0 8px;font-size:15px;">VPC waiter — 빈 Pending + 120m → ERROR/parked 상태에서 2시간 행</h3>
+    <p style="margin:6px 0;"><b>문제.</b> VPC 계열 status waiter가 모두 Pending=[] 로 호출 + WaitForStatus 120분 → transit_gateway/private_nat 등이 ERROR/parked에 빠지면 ERROR 단락 없이 2시간 폴링 → apply/destroy 멈춤, 자동화에선 teardown까지 막혀 누수 위험. (transit_gateway / transitgateway_vpcconnection / vpc_transit_gateway_rule / transit_gateway_firewall_connection / private_nat 전체 동일.)</p>
+    <p style="margin:10px 0 4px;color:#57606a;"><b>수정 전</b> — <code>client/common.go</code> + 각 waiter 호출부</p>
+    <pre style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre;">waitForTgwtStatus(ctx, client, id, []string{} /* pending 비어있음 */, []string{"ACTIVE"})
+// refresh 에 ERROR 단락 없음, Timeout = 120m -> 어떤 상태든 2시간 폴링</pre>
+    <p style="margin:10px 0 4px;color:#57606a;"><b>수정 후</b></p>
+    <pre style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre;">waitForTgwtStatus(ctx, client, id, []string{"CREATING","EDITING"}, []string{"ACTIVE"})
+// refresh: if state == "ERROR" { return fatal }      // 즉시 단락
+// 네트워크 리소스 Timeout 120m -> 15~20m</pre>
   </div>
 
-  <div style="border:1px solid #d0d7de;border-left:4px solid #9a6700;border-radius:6px;padding:12px 16px;margin:0 0 14px;">
-    <h3 style="margin:0 0 8px;font-size:15px;">#80 / #26 — 500/특정 에러 응답에서 프로바이더 패닉 (unchecked type assertion)</h3>
-    <p style="margin:6px 0;"><b>문제.</b> 에러 디테일 파싱의 검사 없는 타입 단언 → 500 응답의 detail 원소가 string이 아니면 프로바이더 패닉(프로세스 크래시). v4 전체 스윕에서 fast-1/2/3 샤드가 이 패닉으로 산출물 없이 크래시함.</p>
-    <p style="margin:6px 0;"><b>현재 v4 소스.</b> <code>samsungcloudplatform/client/common.go:142</code> (GetDetailFromError)</p>
+  <div style="border:1px solid #d0d7de;border-radius:6px;padding:12px 16px;margin:0 0 14px;">
+    <h3 style="margin:0 0 8px;font-size:15px;">에러 응답 파싱 — 500/특정 응답에서 프로바이더 패닉 (unchecked type assertion)</h3>
+    <p style="margin:6px 0;"><b>문제.</b> 에러 디테일 파싱의 검사 없는 타입 단언 → 500 응답의 detail 원소가 string이 아니면 프로바이더 패닉(프로세스 크래시). v4 전체 스윕에서 일부 샤드가 이 패닉으로 산출물 없이 크래시함.</p>
+    <p style="margin:10px 0 4px;color:#57606a;"><b>수정 전</b> — <code>client/common.go:142</code> (GetDetailFromError)</p>
     <pre style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre;">for _, d := range detail.([]interface{}) {
     details = append(details, d.(string))   // 비-string 원소면 panic
+}</pre>
+    <p style="margin:10px 0 4px;color:#57606a;"><b>수정 후</b></p>
+    <pre style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre;">for _, d := range detail.([]interface{}) {
+    if s, ok := d.(string); ok { details = append(details, s) }   // comma-ok, 비-string 스킵
 }
-// 수정:
-for _, d := range detail.([]interface{}) {
-    if s, ok := d.(string); ok { details = append(details, s) }
-}
-// #26: if genericErr, ok := err.(*scpsdk.GenericOpenAPIError); ok { ... }</pre>
-    <p style="margin:6px 0;"><b>수정.</b> comma-ok로 안전하게, 비-string은 스킵(모든 호출자 이득). #26은 common/virtualserver/virtualserver.go 동류.</p>
-    <p style="margin:6px 0;"><b>검증.</b> 500/비정형 에러 바디에서 패닉 없이 클린 진단 반환.</p>
+// 동류: common/virtualserver/virtualserver.go 의 err.(*scpsdk.GenericOpenAPIError) 도 comma-ok로</pre>
   </div>
 
   <!-- ============ D ============ -->
-  <h2 style="font-size:17px;background:#0969da;color:#fff;padding:7px 12px;border-radius:6px;margin:26px 0 14px;">D. 관용적 사용 차단</h2>
+  <h2 style="font-size:16px;background:#f6f8fa;border:1px solid #d0d7de;padding:8px 12px;border-radius:6px;margin:26px 0 14px;">D. 관용적 사용 차단</h2>
 
-  <div style="border:1px solid #d0d7de;border-left:4px solid #0969da;border-radius:6px;padding:12px 16px;margin:0 0 14px;">
-    <h3 style="margin:0 0 8px;font-size:15px;">#85 — loadbalancer_lb_member: unknown object_id 거부 → 같은 apply의 서버 연결 불가</h3>
+  <div style="border:1px solid #d0d7de;border-radius:6px;padding:12px 16px;margin:0 0 14px;">
+    <h3 style="margin:0 0 8px;font-size:15px;">loadbalancer_lb_member — unknown object_id 거부 → 같은 apply의 서버 연결 불가</h3>
     <p style="margin:6px 0;"><b>문제.</b> object_type="VM"일 때 object_id 필수 검사가 unknown(계산값)을 "누락"으로 취급해 plan 실패 → 같은 apply에서 만든 server의 id(known after apply)를 member에 연결하는 표준 구성 불가.</p>
-    <p style="margin:6px 0;"><b>현재 v4 소스.</b> <code>samsungcloudplatform/service/loadbalancer/lbmember.go:261,280</code> — 필수 검사가 IsNull()/빈문자열만 보고 IsUnknown() 미고려.</p>
-    <p style="margin:6px 0;"><b>수정.</b> plan 검증에서 값이 IsUnknown()이면 검사 스킵(known일 때만 enforce). LB 계열의 다른 "required-when-X" 검증도 동일.</p>
-    <p style="margin:6px 0;"><b>검증.</b> server + server_group + member를 한 apply로 생성 성공.</p>
+    <p style="margin:10px 0 4px;color:#57606a;"><b>수정 전</b> — <code>service/loadbalancer/lbmember.go:261</code></p>
+    <pre style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre;">if objId.IsNull() || objId.ValueString() == "" {   // unknown을 누락으로 오인
+    resp.Diagnostics.AddError("Missing object_id", "...")
+}</pre>
+    <p style="margin:10px 0 4px;color:#57606a;"><b>수정 후</b></p>
+    <pre style="background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre;">if !objId.IsUnknown() &amp;&amp; (objId.IsNull() || objId.ValueString() == "") {  // known일 때만 검사
+    resp.Diagnostics.AddError("Missing object_id", "...")
+}</pre>
   </div>
 
   <!-- ============ summary ============ -->
-  <h2 style="font-size:17px;border-bottom:2px solid #d0d7de;padding-bottom:6px;margin:26px 0 12px;">우선순위 요약</h2>
+  <h2 style="font-size:16px;border-bottom:1px solid #d0d7de;padding-bottom:6px;margin:26px 0 12px;">우선순위 요약</h2>
   <table style="border-collapse:collapse;width:100%;font-size:13.5px;">
     <thead><tr style="background:#f6f8fa;">
       <th style="border:1px solid #d0d7de;padding:6px 10px;text-align:left;">분류</th>
-      <th style="border:1px solid #d0d7de;padding:6px 10px;text-align:left;">이슈</th>
-      <th style="border:1px solid #d0d7de;padding:6px 10px;text-align:left;">요약</th>
+      <th style="border:1px solid #d0d7de;padding:6px 10px;text-align:left;">리소스</th>
     </tr></thead>
     <tbody>
-      <tr><td style="border:1px solid #d0d7de;padding:6px 10px;"><b>생성불가</b></td><td style="border:1px solid #d0d7de;padding:6px 10px;">#67, #75, #60, #61</td><td style="border:1px solid #d0d7de;padding:6px 10px;">server / iam_role / vpc_cidr / vpc_peering 생성 불가</td></tr>
-      <tr><td style="border:1px solid #d0d7de;padding:6px 10px;"><b>누수</b></td><td style="border:1px solid #d0d7de;padding:6px 10px;">#77, #58, #79, #88, #84</td><td style="border:1px solid #d0d7de;padding:6px 10px;">LB / access-key / dns / replication / nat-ip destroy 누수</td></tr>
-      <tr><td style="border:1px solid #d0d7de;padding:6px 10px;"><b>멈춤·패닉</b></td><td style="border:1px solid #d0d7de;padding:6px 10px;">#76, #80 (#26)</td><td style="border:1px solid #d0d7de;padding:6px 10px;">2시간 행 / 프로바이더 패닉</td></tr>
-      <tr><td style="border:1px solid #d0d7de;padding:6px 10px;"><b>차단</b></td><td style="border:1px solid #d0d7de;padding:6px 10px;">#85</td><td style="border:1px solid #d0d7de;padding:6px 10px;">같은-apply LB member 구성 차단</td></tr>
+      <tr><td style="border:1px solid #d0d7de;padding:6px 10px;"><b>생성불가</b></td><td style="border:1px solid #d0d7de;padding:6px 10px;">virtualserver_server · iam_role · vpc_cidr · vpc_vpc_peering</td></tr>
+      <tr><td style="border:1px solid #d0d7de;padding:6px 10px;"><b>누수</b></td><td style="border:1px solid #d0d7de;padding:6px 10px;">loadbalancer · iam_access_key · dns_private_dns · filestorage_replication · vpc_subnet_vip_nat_ip</td></tr>
+      <tr><td style="border:1px solid #d0d7de;padding:6px 10px;"><b>멈춤·패닉</b></td><td style="border:1px solid #d0d7de;padding:6px 10px;">VPC waiter (TGW/private_nat) · 에러 응답 파싱</td></tr>
+      <tr><td style="border:1px solid #d0d7de;padding:6px 10px;"><b>차단</b></td><td style="border:1px solid #d0d7de;padding:6px 10px;">loadbalancer_lb_member</td></tr>
     </tbody>
   </table>
-  <p style="margin:12px 0;color:#57606a;">각 이슈 본문에 재현 .tf와 실행 로그가 있습니다. 우리 fork(<code>claude/epic-ride-9zotgp</code>)에 #58/#67/#75/#76/#77/#85/#88 은 검증된 패치(<code>fix-verified-green</code>)가 있어 그대로 참고 가능합니다.</p>
 
 </div>
 </body>
