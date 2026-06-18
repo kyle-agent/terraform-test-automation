@@ -17,10 +17,15 @@ sweep against the released v4.0.0 binary (see "Empirical results" below).
 
 ## How to hand this off (issue labels on the fork)
 
+- **`is:issue state:open label:v4-must-fix`** → **12 issues** (#58/#60/#61/#67/#75/#76/#77/
+  #79/#80/#84/#85/#88) = the P0 essentials: without these a resource **can't be created**
+  (#67 server, #75 iam_role, #60 vpc_cidr, #61 vpc_peering), **leaks on destroy** (#77 LB,
+  #58 access-key, #79 dns, #88 filestorage, #84 nat-ip), **hangs 2h** (#76 TGW), or
+  **panics the provider** (#80). Fix these first to make the surface functional + leak-free.
 - **`is:issue state:open label:v4-still-lacks`** → **45 issues** = the complete set of
-  provider-fixable defects v4.0.0 still has not addressed (this is the "forward to the dev
-  team" list). Excludes platform-only 500s (#82), pure docs/feature requests, and the 4
-  already-closed-as-fixed-in-v4 (#59/#25/#71/#89).
+  provider-fixable defects v4.0.0 still has not addressed (the full "forward to the dev
+  team" list; superset of v4-must-fix). Excludes platform-only 500s (#82), pure docs/feature
+  requests, and the 4 already-closed-as-fixed-in-v4 (#59/#25/#71/#89).
 - **`is:issue state:open label:fix-verified-green`** → **7 issues** (#58/#67/#75/#76/#77/#85/#88)
   = the subset where we already have a *verified* working patch ready to upstream.
 
