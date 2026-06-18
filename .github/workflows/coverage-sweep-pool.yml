@@ -64,9 +64,9 @@ env:
   # Build the PATCHED provider from the fork (vendored SDK) instead of downloading the
   # released binary, so provider fixes (e.g. #77 loadbalancer wait-for-ACTIVE) are tested
   # end-to-end. setup_provider_mirror.sh clones + `go build`s into the mirror.
+  # (The v4.0.0-baseline comparison run used SOURCE_BUILD=0 / VERSION=4.0.0 on this branch;
+  # reverted here — see docs/V4_RECONCILIATION.md. Set those again to re-test v4.)
   SCP_PROVIDER_SOURCE_BUILD: '1'
-  # fork main now carries this session's fixes (#54/#56/#78/#80) + #61/#88/#89
-  # (merged via PR #91), so build from main again.
   SCP_PROVIDER_BUILD_REF: main
 
 jobs:

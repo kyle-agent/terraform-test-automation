@@ -68,3 +68,8 @@ A lesson without a concrete trigger + action is not a lesson — delete it.
 - trigger: a scenario whose fixture references var.vpc_id (directly or via a prereq like dns_private_dns.parent connected_vpc_ids) is classified vpc:none in registry.yaml.
 - do: set vpc:pool so the pool lane bootstraps a VPC and injects TF_VAR_vpc_id. vpc:none runs the novpc lane with NO bootstrap, so var.vpc_id defaults to the zero-UUID (00000000-...) and the create 404s. dns_hosted_zone/dns_record were mis-set to vpc:none despite needs:[vpc_id] and failed reproducibly until moved to pool (dns_private_dns, the same prereq, was correctly vpc:pool).
 - conf: high · seen: 2026-06-17 · obs: 1
+
+### The capability-matrix note can hide the real destroy error
+- trigger: a scenario shows destroy=fail but you need the exact provider delete error to file an issue.
+- do: don't burn a re-run hoping to capture it — the matrix runner mis-prioritizes the note (it showed an "import unsupported" line for a destroy-failed row) and does NOT put the terraform destroy stderr in the note or job stdout. The raw delete error is unrecoverable from artifacts/logs. Diagnose from the downstream symptom instead (e.g. the bootstrap VPC 409 'Cannot terminate due to associated resources' that a leaked child causes) and file on that evidence. dns_private_dns destroy-leak -> fork #93. (A runner fix to surface destroy stderr would remove this blind spot.)
+- conf: high · seen: 2026-06-17 · obs: 1
