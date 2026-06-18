@@ -1643,13 +1643,12 @@ vpc_vpc_peering:
   family: vpc
   import: false
   issues:
-  - '#61: STILL "no value given for required property approver_vpc_name / Invalid error data" with the
-    null-description provider fix live AND no synthetic name (run 27406093988) - suspect the provider-side
-    derive/fail-fast guard or another null field; NEXT: read provider vpcpeering.go Create derive path
-    and add a request-body debug log. Partial create leaked VPCs (reaped).'
+  - "RETEST 2026-06-18: fork main now auto-resolves approver_vpc_name from approver_vpc_id (vpcpeering.go:207-220)\
+    \ \u2014 postdates last peering test (run 27406093988). Re-verify create->destroy on current patched\
+    \ build."
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: self
@@ -1674,11 +1673,12 @@ vpc_vpc_peering_rule:
   family: vpc
   import: false
   issues:
-  - 'blocked: VPC quota exhausted by leaked pool VPCs + peering leak during run 27406093988; never reached
-    the rule. Retest after peering create is fixed.'
+  - "RETEST 2026-06-18: fork main now auto-resolves approver_vpc_name from approver_vpc_id (vpcpeering.go:207-220)\
+    \ \u2014 postdates last peering test (run 27406093988). Re-verify create->destroy on current patched\
+    \ build."
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: self
