@@ -15,6 +15,15 @@ v4's version of the same file/function (build-independent, conclusive: if v4's s
 contains the defective path, v4 lacks the fix); (2) **empirical** — run the full capability
 sweep against the released v4.0.0 binary (see "Empirical results" below).
 
+## How to hand this off (issue labels on the fork)
+
+- **`is:issue state:open label:v4-still-lacks`** → **45 issues** = the complete set of
+  provider-fixable defects v4.0.0 still has not addressed (this is the "forward to the dev
+  team" list). Excludes platform-only 500s (#82), pure docs/feature requests, and the 4
+  already-closed-as-fixed-in-v4 (#59/#25/#71/#89).
+- **`is:issue state:open label:fix-verified-green`** → **7 issues** (#58/#67/#75/#76/#77/#85/#88)
+  = the subset where we already have a *verified* working patch ready to upstream.
+
 ## Headline
 
 **v4.0.0 adopted almost none of the reported fixes.** Of ~60 open issues, only **4** are
