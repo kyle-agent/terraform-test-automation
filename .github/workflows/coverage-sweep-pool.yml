@@ -61,13 +61,12 @@ env:
   SCP_DEFAULT_REGION: ${{ vars.SCP_DEFAULT_REGION }}
   SCP_TF_DEFAULT_REGION: ${{ vars.SCP_DEFAULT_REGION }}
   SCP_ACCOUNT_ID: ${{ vars.SCP_ACCOUNT_ID }}
-  # === v4.0.0 BASELINE COMPARISON (branch-only; DO NOT MERGE TO main) ===
-  # Test the RELEASED upstream v4.0.0 binary (no source build) to compare a fresh
-  # v4 against our patched best, and see which of our fixes v4 still lacks.
-  # The v4 SDK is private so we can't build v4 from source — download the release.
-  # Revert these two to SOURCE_BUILD=1 / BUILD_REF=main to resume patched-provider runs.
-  SCP_PROVIDER_SOURCE_BUILD: '0'
-  SCP_PROVIDER_VERSION: '4.0.0'
+  # Build the PATCHED provider from the fork (vendored SDK) instead of downloading the
+  # released binary, so provider fixes (e.g. #77 loadbalancer wait-for-ACTIVE) are tested
+  # end-to-end. setup_provider_mirror.sh clones + `go build`s into the mirror.
+  # (The v4.0.0-baseline comparison run used SOURCE_BUILD=0 / VERSION=4.0.0 on this branch;
+  # reverted here — see docs/V4_RECONCILIATION.md. Set those again to re-test v4.)
+  SCP_PROVIDER_SOURCE_BUILD: '1'
   SCP_PROVIDER_BUILD_REF: main
 
 jobs:
@@ -91,7 +90,7 @@ jobs:
         env:
           # push -> 'untested' (discover unknowns, cheap: no known-green clusters);
           # schedule -> 'green' (regression); dispatch -> input (default green,untested).
-          SELECT_STATUS: ${{ github.event.inputs.select_status || (github.event_name == 'schedule' && 'green' || github.event_name == 'push' && 'green,broken,untested' || 'green,untested') }}
+          SELECT_STATUS: ${{ github.event.inputs.select_status || (github.event_name == 'schedule' && 'green' || github.event_name == 'push' && 'untested' || 'green,untested') }}
           SELECT_VPC: ${{ github.event.inputs.select_vpc || 'none,pool,self' }}
           SELECT_FAMILY: ${{ github.event.inputs.select_family || '' }}
         run: |
