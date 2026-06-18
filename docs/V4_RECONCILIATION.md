@@ -24,6 +24,27 @@ each cites the exact unfixed v4 location plus our proven patch.
 
 ---
 
+## A0. v4 improvements BEYOND our tracked issues (found via the 6beee9b→v4.0.0 diff)
+
+v4.0.0 ships as a single squashed commit (no CHANGELOG / granular history), so these were
+found by diffing the source (849 files, +25k/-17k). The standout is import support:
+
+- **`ImportState` added to 37 resources across 17 families** (we had 1): backup, baremetal,
+  baremetalblockstorage, budget, certificatemanager, configinspection, directconnect, dns,
+  filestorage, firewall, iam, loggingaudit, multinodegpucluster, plannedcompute,
+  resourcemanager, ske, virtualserver. **This directly supersedes our #81 framing** ("no
+  ImportState on ANY resource") — though `vpc_vpc` (the resource named in #81) still lacks it.
+  Our dashboard marks `import` as `unsupported` almost everywhere; on v4 these 37 now import.
+- **~13 new plan-time validators** that prevent the opaque-400 class: dns record `type`
+  (`A/AAAA/CNAME/MX/TXT/SPF`), firewall `direction` (`ingress/egress`), LB method
+  (`ROUND_ROBIN/RATIO`), `ENABLE/DISABLE`, `PUBLIC/PRIVATE`, `ICMP/TCP/HTTP/HTTPS`, a
+  `^[a-zA-Z0-9-]*$` name regex, etc. (partial overlap with #55/#86).
+- Plus the 4 closed issues below (#59/#25/#71/#89).
+
+Everything else is largely **unchanged** — the systemic gaps (#52 Read-404, #33 whitelist
+Update, #62 raw types, #48 UseStateForUnknown, #49 immutable hard-error) persist in v4. Net:
+v4's real behavioural improvements = **import axis + a few validators + 4 fixes**.
+
 ## A. Fixed in v4.0.0 → issues CLOSED
 
 | issue | resource | what v4 fixed (evidence) |
@@ -31,7 +52,7 @@ each cites the exact unfixed v4 location plus our proven patch.
 | #59 | vpc_subnet | `client/vpcv1d2/subnet_model.go:47` `DnsNameservers types.Set`; `:93` null/unknown-safe convert; Read uses `types.SetValueFrom` — replan churn gone. |
 | #25 | eventstreams/mysql cluster mappers | chained `.Get()` nil-deref now guarded (`service/eventstreams/cluster.go:478`, `service/mysql/cluster.go:475,526`). |
 | #71 | ske_nodepool | Update branches version-upgrade (`UpgradeNodepool`) vs label/taint/scaling (`UpdateNodepoolLabels/Taints/LinkedResources/Nodepool`) — non-version changes no longer dropped. |
-| #89 | loggingaudit_trail | *(pending empirical confirm)* v4 SDK adds `IamRoleId/LogGroupName/ServiceWatchYn` (`client/loggingaudit/loggingaudit.go:89-91,121-122`) → the strict-decode orphan should be gone. Close once the v4 sweep shows `loggingaudit_trail` green. |
+| #89 | loggingaudit_trail | v4 SDK adds `IamRoleId/LogGroupName/ServiceWatchYn` (`client/loggingaudit/loggingaudit.go:89-91,121-122`); **empirically green** on v4 (run 27724880374, novpc: validate→destroy + import all ok). Strict-decode orphan resolved. |
 
 ---
 
