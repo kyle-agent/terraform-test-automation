@@ -9,10 +9,34 @@ multi-agent architecture + session bootstrap), then this file, then `tasks/lesso
 
 ---
 
-## 0. Session 2026-06-19b (LATEST) — TGW-rule + cachestore GREENED (registry 96 → 98)
+## 0. Session 2026-06-19c (LATEST) — provider fixes: vpc_cidr GREEN + TGW #96 myth overturned
+
+**Branch:** `claude/pensive-goldberg-e34mtm` (both repos). Continued from 0b below.
+**Provider fork PR #98 → fork main (MERGED, sha 8a1b4bb):** two fixes for the dev team.
+
+- ✅ **vpc_cidr → GREEN (registry 98 → 99; lifecycle green 63 → 64)** via PROVIDER fix #60.
+  `vpc_cidr.go` Delete now treats the unmapped-DELETE 403 ("Action definition is not found")
+  as a graceful state-only removal (Warning) — the secondary CIDR is reclaimed when the VPC is
+  deleted. Verified live: run **27812898493** (build-ref=fork branch) apply/replan/destroy ok.
+- 🔧 **TGW firewall family — `#96` "platform circular limit" OVERTURNED.** `transit_gateway_
+  firewall_connection.go` waiter was the real problem: it accepted only ATTACHING→ACTIVE on the
+  shared 120-min `WaitForStatus`, erroring instantly on INACTIVE. Patched to a **bounded 12-min**
+  `StateChangeConf` tolerating ATTACHING/INACTIVE. With a connection-first fixture, the create
+  got **past** the old INACTIVE error and 400d **"There must be at least one connected VPC to
+  proceed"** (run 27812898493) → the true chain is **TGW → vpc_connection → firewall_connection
+  → firewall**, NOT a firewall-circular dead-end. Fixture rechained (vpc:pool) accordingly.
+  **NEXT:** retest `vpc_transit_gateway_firewall_connection` (now broken, fixture ready,
+  build-ref back to `main` which has the waiter fix); if ACTIVE, cascade the same vpc_connection
+  prereq to `vpc_transit_gateway_firewall`, `_uplink_rule`, `vpc_private_nat[_ip]` (#96 family).
+- Build-ref reverted to `main` (fork main now carries both fixes). dbaas-probe default already
+  back to `cleanup`. api-reaper fired for the probe's stranded TGW (run after 19feca9).
+
+---
+
+## 0b. Session 2026-06-19b — TGW-rule + cachestore GREENED (registry 96 → 98)
 
 **Branch:** `claude/pensive-goldberg-e34mtm` (off main @ PR #30 merge). Resumed via `/session-start`.
-**PR to main:** opened this session (dashboard + 2 greens). Pages publishes from main on merge.
+**PR #31 → main (MERGED):** dashboard + 2 greens. Pages publishes from main on merge.
 
 **Done — TWO scenarios greened (registry green 96 → 98; coverage.json lifecycle green 61 → 63):**
 - ✅ **vpc_transit_gateway_rule → GREEN** (run **27801651607**): validate/plan/apply/replan/

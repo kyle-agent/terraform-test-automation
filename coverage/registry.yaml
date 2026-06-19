@@ -4,9 +4,9 @@ backup_backup:
   family: backup
   import: false
   issues:
-  - 'PLATFORM 500 on create (run 27657318484). Provider #80 VERIFIED: the response decode no longer panics
-    — it now surfaces a clean "500 Internal Server Error" diagnostic. The 500 itself is server-side (not
-    provider-fixable).'
+  - "PLATFORM 500 on create (run 27657318484). Provider #80 VERIFIED: the response decode no longer panics\
+    \ \u2014 it now surfaces a clean \"500 Internal Server Error\" diagnostic. The 500 itself is server-side\
+    \ (not provider-fixable)."
   needs: []
   parallel: normal
   status: broken
@@ -115,9 +115,9 @@ cloudmonitoring_event_policy:
   family: cloudmonitoring
   import: false
   issues:
-  - 'EXCLUDED: CloudMonitoring is slated for deprecation — not an active coverage target. A partial provider
-    #54 fix (notification_recipient -> types.List) is committed; the remaining raw-typed fields are not
-    worth completing on a retiring service. See coverage/excluded_resources.yaml (reason: deprecated).'
+  - "EXCLUDED: CloudMonitoring is slated for deprecation \u2014 not an active coverage target. A partial\
+    \ provider #54 fix (notification_recipient -> types.List) is committed; the remaining raw-typed fields\
+    \ are not worth completing on a retiring service. See coverage/excluded_resources.yaml (reason: deprecated)."
   needs: []
   parallel: normal
   status: excluded
@@ -222,8 +222,8 @@ ds_backup:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -236,8 +236,8 @@ ds_baremetal:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -250,8 +250,8 @@ ds_budget:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -264,8 +264,8 @@ ds_cachestore:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -278,8 +278,8 @@ ds_certificatemanager:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -292,8 +292,8 @@ ds_cloudmonitoring:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -306,8 +306,8 @@ ds_configinspection:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -320,8 +320,8 @@ ds_directconnect:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -334,8 +334,8 @@ ds_dns:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -348,8 +348,8 @@ ds_epas:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -362,8 +362,8 @@ ds_eventstreams:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -376,8 +376,8 @@ ds_filestorage:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -390,8 +390,8 @@ ds_firewall:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -404,8 +404,8 @@ ds_gslb:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -418,8 +418,8 @@ ds_iam:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -432,8 +432,8 @@ ds_loadbalancer:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -446,8 +446,8 @@ ds_loggingaudit:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -460,8 +460,8 @@ ds_mariadb:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -474,8 +474,8 @@ ds_multinodegpucluster:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -488,8 +488,8 @@ ds_mysql:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -502,8 +502,8 @@ ds_network_logging:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -516,8 +516,8 @@ ds_plannedcompute:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -530,8 +530,8 @@ ds_postgresql:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -544,8 +544,8 @@ ds_quota:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -558,8 +558,8 @@ ds_resourcemanager:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -572,8 +572,8 @@ ds_searchengine:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -586,8 +586,8 @@ ds_securitygroup:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -600,8 +600,8 @@ ds_servicewatch:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -614,8 +614,8 @@ ds_ske:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -628,8 +628,8 @@ ds_sqlserver:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -642,8 +642,8 @@ ds_vertica:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -656,8 +656,8 @@ ds_virtualserver:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -670,8 +670,8 @@ ds_vpc:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -684,8 +684,8 @@ ds_vpn:
   import: false
   issues: []
   needs: []
-  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
-    — non-readable ones excluded
+  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
+    \ \u2014 non-readable ones excluded"
   parallel: normal
   status: green
   timeout_class: fast
@@ -916,8 +916,8 @@ loadbalancer_basic:
   family: loadbalancer
   import: false
   issues:
-  - 'update axis FAIL (run 27682344740): provider ''Value Conversion Error'' on Update — same bug as fork
-    #92 (loadbalancer_loadbalancer). Lifecycle green.'
+  - "update axis FAIL (run 27682344740): provider 'Value Conversion Error' on Update \u2014 same bug as\
+    \ fork #92 (loadbalancer_loadbalancer). Lifecycle green."
   needs: []
   parallel: normal
   status: green
@@ -930,8 +930,9 @@ loadbalancer_lb_health_check:
   family: loadbalancer
   import: false
   issues:
-  - 'RETEST flake (run 27682344740): create 400 ''chosen subnet does not contain a Load Balancer'' — prereq/timing
-    (LB not ready in subnet). Not the update change (description default unchanged). Prior green preserved.'
+  - "RETEST flake (run 27682344740): create 400 'chosen subnet does not contain a Load Balancer' \u2014\
+    \ prereq/timing (LB not ready in subnet). Not the update change (description default unchanged). Prior\
+    \ green preserved."
   needs:
   - subnet_id
   - vpc_id
@@ -1209,8 +1210,8 @@ ske_cluster:
   family: ske
   import: false
   issues:
-  - 'update axis FAIL (run 27682344740): provider ''Value Conversion Error'' on Update — same bug as fork
-    #92 (ske_cluster). Lifecycle green.'
+  - "update axis FAIL (run 27682344740): provider 'Value Conversion Error' on Update \u2014 same bug as\
+    \ fork #92 (ske_cluster). Lifecycle green."
   needs:
   - kubernetes_version
   - security_group_id_list
@@ -1308,8 +1309,8 @@ virtualserver_server:
   family: virtualserver
   import: false
   issues:
-  - 'update axis FAIL (run 27666766466): same provider ''Value Conversion Error (unknown value)'' on update
-    apply — Update-path raw-type bug, fork issue #92. Lifecycle green; update not in-place-safe.'
+  - "update axis FAIL (run 27666766466): same provider 'Value Conversion Error (unknown value)' on update\
+    \ apply \u2014 Update-path raw-type bug, fork issue #92. Lifecycle green; update not in-place-safe."
   needs:
   - image_id
   - keypair_name
@@ -1389,9 +1390,9 @@ vpc_port:
   family: vpc
   import: false
   issues:
-  - 'update axis FAIL (run 27666766466): provider ''Value Conversion Error: Received unknown value, target
-    type cannot handle unknown values'' during update apply — provider bug, fork issue #92. Lifecycle
-    green; update not in-place-safe.'
+  - "update axis FAIL (run 27666766466): provider 'Value Conversion Error: Received unknown value, target\
+    \ type cannot handle unknown values' during update apply \u2014 provider bug, fork issue #92. Lifecycle\
+    \ green; update not in-place-safe."
   needs:
   - subnet_id
   parallel: low
@@ -1448,8 +1449,8 @@ vpc_subnet:
   family: vpc
   import: false
   issues:
-  - 'update axis FAIL (run 27666766466): 400 ''IP address is not valid ()'' when updating description
-    — provider re-sends subnet body with an empty IP on update. Lifecycle green; update not in-place-safe.'
+  - "update axis FAIL (run 27666766466): 400 'IP address is not valid ()' when updating description \u2014\
+    \ provider re-sends subnet body with an empty IP on update. Lifecycle green; update not in-place-safe."
   needs:
   - vpc_id
   parallel: low
@@ -1519,10 +1520,10 @@ vpc_transit_gateway_firewall:
   family: vpc
   import: false
   issues:
-  - 400 "Transit Gateway Firewall connection state is not Active (INACTIVE)" on firewall create (run 27799716751,
-    patched provider + firewall_connection prereq chain). The firewall_connection does not reach ACTIVE
-    before the dependent firewall create — platform state-machine constraint confirmed across sessions
-    (#96). apply-fail; not provider/fixture-fixable in a single apply.
+  - "400 \"Transit Gateway Firewall connection state is not Active (INACTIVE)\" on firewall create (run\
+    \ 27799716751, patched provider + firewall_connection prereq chain). The firewall_connection does\
+    \ not reach ACTIVE before the dependent firewall create \u2014 platform state-machine constraint confirmed\
+    \ across sessions (#96). apply-fail; not provider/fixture-fixable in a single apply."
   needs: []
   parallel: normal
   status: broken
@@ -1536,15 +1537,15 @@ vpc_transit_gateway_firewall_connection:
   family: vpc
   import: false
   issues:
-  - '#96: NOT a platform circular limit (prior conclusion overturned). Run 27812898493 (patched provider +
-    connection-first fixture) got past the old INACTIVE error and 400d "There must be at least one connected
-    VPC to proceed" — the real prereq is a vpc_connection. Fixture now chains TGW -> vpc_connection ->
-    firewall_connection (vpc:pool); patched waiter (fork branch) carries ATTACHING/INACTIVE -> ACTIVE
-    (bounded 12 min). Retesting.'
+  - "#96: NOT a platform circular limit (prior conclusion overturned). Run 27812898493 (patched provider\
+    \ + connection-first fixture) got past the old INACTIVE error and 400d \"There must be at least one\
+    \ connected VPC to proceed\" \u2014 the real prereq is a vpc_connection. Fixture now chains TGW ->\
+    \ vpc_connection -> firewall_connection (vpc:pool); patched waiter (fork branch) carries ATTACHING/INACTIVE\
+    \ -> ACTIVE (bounded 12 min). Retesting."
   needs:
   - vpc_id
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool
@@ -1569,10 +1570,10 @@ vpc_transit_gateway_uplink_rule:
   family: vpc
   import: false
   issues:
-  - 400 "Transit Gateway Firewall connection state is not Active (INACTIVE)" on firewall create (run 27799716751,
-    patched provider + firewall_connection prereq chain). The firewall_connection does not reach ACTIVE
-    before the dependent firewall create — platform state-machine constraint confirmed across sessions
-    (#96). apply-fail; not provider/fixture-fixable in a single apply.
+  - "400 \"Transit Gateway Firewall connection state is not Active (INACTIVE)\" on firewall create (run\
+    \ 27799716751, patched provider + firewall_connection prereq chain). The firewall_connection does\
+    \ not reach ACTIVE before the dependent firewall create \u2014 platform state-machine constraint confirmed\
+    \ across sessions (#96). apply-fail; not provider/fixture-fixable in a single apply."
   needs: []
   parallel: normal
   status: broken

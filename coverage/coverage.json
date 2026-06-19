@@ -1365,13 +1365,13 @@
     }
   },
   "samsungcloudplatformv2_vpc_cidr": {
-    "highest_stage": "replan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27399112864",
-    "last_seen": "2026-06-12T13:05:23Z",
-    "note": "destroy failed: Error: Failed to remove VPC CIDR An error occurred while removing CIDR 192.168.16.0/24 from VPC d9472d18323545e5a072f5fe9434b553: failed to remove VPC CIDR (status 403): {\"errors\": [{\"code\": \"Forbidden\", \"detail\": \"You do not have permission to Action. Please contact the administrator.\", \"links\": [], \"global_request_id\": \"req-d3d5899e-3e46-4675-a8ef-244083f87dd2\", \"request_id\": \"req-25aec8cd-fb2e-4c43-90b4-794866328a29\", \"status\": 403, \"title\": \"Forbidden\", \"response\": {\"access_level\": null, \"action_name\": null, \"caused_auths\": null, \"message\": \"Action definition is not found\", \"principal\": \"s\u2026",
+    "highest_stage": "destroy",
+    "last_run_url": "",
+    "last_seen": "2026-06-19T08:18:44Z",
+    "note": "import: could not resolve primary resource addr/id:",
     "stages": {
       "apply": "ok",
-      "destroy": "fail",
+      "destroy": "ok",
       "import": "skip",
       "plan": "ok",
       "replan": "ok",
