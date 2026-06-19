@@ -9,7 +9,50 @@ multi-agent architecture + session bootstrap), then this file, then `tasks/lesso
 
 ---
 
-## 0. Session 2026-06-18 (LATEST) — v4.0.0 reconciliation + coverage reality check
+## 0. Session 2026-06-19 (LATEST) — per-resource agent fleet → engineering wave + serial sweep pipeline
+
+**Method:** orchestrator + 7 parallel role agents (one per greenable FAMILY, not per
+resource — families share a root cause). Agents did engineering only (patch + fixture +
+local build/validate + fork issue); they did NOT commit/push or trigger CI. Orchestrator
+consolidates + serializes the account-touching sweeps under the 5-VPC quota.
+
+**Provider patches (fork `claude/epic-ride-9zotgp`, commit 93a2ae5, combined `go build` PASS):**
+- **dns** `service/dns/{private_dns,hosted_zone,record}.go` — wait-for-gone on Delete (async
+  202 must finish before return; VPC binding releases only when private_dns is gone). **#93**.
+- **vpc/vpcpeering.go** — stop deriving/sending `approver_vpc_name` (response-only field; API
+  create never accepts it); schema Computed-only. **#61** (prior fix was directionally WRONG).
+- **vpc/vpc_transit_gateway_rule.go** — tolerate create-202 omitting server-set `created_at`
+  (SDK model wrongly required); recover id by list+match. **#95**.
+- **iam/user.go** — `account_id` Required + validator + default to caller acct, replacing the
+  opaque 401 "[HMAC] HMAC valid fail". **#74** (IAM trio reclassified: provider-fixable, NOT
+  an account boundary or HMAC race — both disproven).
+
+**Test-repo (commit ea95260):** TGW family (6) fixtures gained firewall+firewall_connection
+prereq chains; IAM 3 fixtures pass account_id (`TF_VAR_account_id` already injected all lanes);
+`vpc_vpc_peering_approval`→**excluded** (cross-account); `cmd/dbaas_probe/probe.py` +leak-0
+`catalog`/`cachestore-servertypes` modes; `docs/domain/*` (dns, vpc-peering, tgw-private-nat,
+dbaas) + `domain.yaml` curated; **build-ref main→claude/epic-ride-9zotgp** (source-builds the patch).
+
+**Issues:** #61/#74/#93/#95/#96 + NEW #94 (vpc_vpc_endpoint connectable-resources/Read bug) +
+comments on #60 (vpc_cidr graceful-Delete) / #82 (platform-500 cluster). Triage confirmed the
+hard-blocked set stays broken/excluded (backup#80, budget/cert/dns_public_domain/lb_listener#82).
+
+**SERIAL SWEEP PIPELINE (orchestrator drives; only the family-of-interest is `untested` at push):**
+1. **IAM ×3** (vpc:none, leak-0) — IN FLIGHT run **27798318949** (push ea95260). Expect green.
+2. **DNS** (dns_hosted_zone, dns_record; vpc:pool, LEAK-RISK) — flip 2→untested, reap before/after.
+3. **Peering** (vpc_vpc_peering[_rule]; vpc:self, multi-VPC leak-prone) — isolated, reap before/after.
+4. **TGW Batch A** (firewall, firewall_connection, uplink_rule — vpc:none, ≤3 TGW) then **Batch B**
+   (transit_gateway_rule, private_nat, private_nat_ip — vpc:pool). A and B NOT concurrent (3-TGW cap); reap between.
+5. **DBaaS**: dispatch *DBaaS Probe* `engines=catalog` (read-only, leak-0) → harvest live
+   `server_type_name`; pin into cachestore fixture → flip cachestore_cluster→untested→sweep.
+   searchengine/sqlserver stay broken (platform provisions FAILED; api-test never reached RUNNING).
+**Per VPC-touching family: push api-reaper (SWEEP_ALL=1) before AND after; confirm quota clear
+before trusting reds (quota-cascade red = environmental).** Flip registry green ONLY on a real
+clean-lifecycle matrix. Heavy families may span multiple sessions — this list is the resume point.
+
+---
+
+## 0. Session 2026-06-18 — v4.0.0 reconciliation + coverage reality check
 
 **v4.0.0 reconciliation (upstream released v4.0.0; we test our patched v3.3.x+fixes):**
 - Tested the **released v4.0.0 binary** (`SCP_PROVIDER_SOURCE_BUILD=0`/`VERSION=4.0.0`,
