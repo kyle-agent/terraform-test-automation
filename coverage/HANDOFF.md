@@ -9,7 +9,47 @@ multi-agent architecture + session bootstrap), then this file, then `tasks/lesso
 
 ---
 
-## 0. Session 2026-06-19 (LATEST) — per-resource agent fleet → engineering wave + serial sweep pipeline
+## 0. Session 2026-06-19b (LATEST) — TGW-rule + cachestore GREENED (registry 96 → 98)
+
+**Branch:** `claude/pensive-goldberg-e34mtm` (off main @ PR #30 merge). Resumed via `/session-start`.
+**PR to main:** opened this session (dashboard + 2 greens). Pages publishes from main on merge.
+
+**Done — TWO scenarios greened (registry green 96 → 98; coverage.json lifecycle green 61 → 63):**
+- ✅ **vpc_transit_gateway_rule → GREEN** (run **27801651607**): validate/plan/apply/replan/
+  destroy/destroy_verify all `ok`; pool teardown clean (7 destroyed, no 409, zero TGW leak).
+  Confirms fork **#95** (create-202 tolerates omitted `created_at`, recovers id via list+match).
+  Gates pre-flip: build-ref=fork `main` has #95; api-reaper **27801131713** = 0 TGWs (cap free).
+- ✅ **cachestore_cluster → GREEN** (run **27804355967**): full lifecycle `ok`, destroy_verify=ok
+  (leak-0). Two stacked blockers, both fixed:
+  1. **Engine/server-type IMAGE MISMATCH (#83).** DBaaS-Probe `catalog` run **27802022018**
+     (read-only) showed redis1v2m4 IS in the 70-type catalog — not a missing name. cachestore has
+     2 engine versions, "Valkey Sentinel 8.1.4" (first non-EOS) + "Redis OSS Sentinel 7.2.11";
+     server-types carry product_image_type (Valkey→css*, RedisOSS→redis*). Fixture auto-picked
+     Valkey but hardcoded redis1v2m4 → reject. Fix (commit 5e22958): derive server_type_name from
+     the chosen engine version's product_image_type (no hardcoded id).
+  2. **sentinel_port 26379 → 26378.** After (1), apply reached cluster-create then failed
+     "Provider produced inconsistent result after apply: sentinel_port was 26379, now 26378". The
+     platform's expected sentinel port is 26378 (the provider schema's own documented example);
+     26379 (conventional Redis) was echoed back as 26378. Fix (commit 6a9685a): set 26378. The
+     first failed retest (run 27802519587) leaked a partial cachestore cluster → api-reaper
+     **27803881583** cleared it before the green retest.
+
+**Done — housekeeping:**
+- Dashboard built: `build_coverage.py` merged both matrices → coverage.json + COVERAGE.md
+  (lifecycle green 63). dbaas-probe.yml push default reverted `catalog` → `cleanup`.
+
+**Account state:** 1 long-standing stuck VPC `rpv273154960170` (subnet a7793ccc…, a 2026-06-11
+dbaas dependent-probe leak; reaper 409s, can't clear with current key) → 4 of 5 VPC quota free.
+
+**Provider observation (not yet filed):** cachestore `sentinel_port` is Required but the platform
+fixes it to 26378 — provider could mark it Optional+Computed so users don't have to guess. Minor UX.
+
+**Lessons added (tasks/lessons.md):** scenarios/** push triggers a sweep (bundle fixture+flip);
+cachestore server_type must match engine-version product_image_type.
+
+---
+
+## 0. Session 2026-06-19 — per-resource agent fleet → engineering wave + serial sweep pipeline
 
 **Method:** orchestrator + 7 parallel role agents (one per greenable FAMILY, not per
 resource — families share a root cause). Agents did engineering only (patch + fixture +

@@ -74,17 +74,11 @@ cachestore_cluster:
   depends_on: []
   family: cachestore
   import: false
-  issues:
-  - '#83: 400 "invalid data (Server type)" with redis1v1m2 AND redis1v2m4 (runs 27661036920, 27666147128).
-    Neither is a live catalog server_type_name; api_docs server-type response is empty and there is no
-    provider data source for cachestore server-types. NEEDS CATALOG HARVEST: run dbaas_probe mode `catalog`
-    (read-only dump of cachestore /v1/server-types) or `cachestore-servertypes` (creates+deletes per live
-    server-type until 202, leak-0), then pin the winning name via TF_VAR_server_type_name. Fixture topology
-    is otherwise schema-correct.'
+  issues: []
   needs:
   - subnet_id
   parallel: normal
-  status: broken
+  status: green
   timeout_class: slow
   update: false
   vpc: pool
@@ -1563,15 +1557,11 @@ vpc_transit_gateway_rule:
   exclude_reason: ''
   family: vpc
   import: false
-  issues:
-  - 'Provider fix (fork #95): TGW-rule create-202 response omits server-set created_at but the SDK response
-    model lists it as required, so decode 400d "no value given for required property created_at". vpc_transit_gateway_rule.go
-    Create now tolerates that decode error and recovers the rule id via list-and-match, then waits ACTIVE.
-    Fixture already correct (TGW -> vpc_connection -> rule, depends_on). Retest with patched provider.'
+  issues: []
   needs:
   - vpc_id
   parallel: normal
-  status: broken
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
