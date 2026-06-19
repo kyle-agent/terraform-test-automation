@@ -55,4 +55,4 @@ jobs:
       # self-deletes; cleanup also catches their prbsqlv*/prbselic* names by
       # prefix). Flip back to 'cleanup' after this run.
       - name: Probe / cleanup DBaaS
-        run: PYTHONPATH=/tmp/apitest python cmd/dbaas_probe/probe.py ${{ github.event.inputs.engines || 'cleanup' }}
+        run: PYTHONPATH=/tmp/apitest python cmd/dbaas_probe/probe.py ${{ github.event.inputs.engines || 'catalog' }}
