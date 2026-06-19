@@ -85,7 +85,14 @@ resource "samsungcloudplatformv2_cachestore_cluster" "regr" {
   init_config_option = {
     database_user_password = "Regr1234!@"
     database_port          = 6379
-    sentinel_port          = 26379
+    # 26378 (NOT the conventional Redis 26379): the platform's expected sentinel
+    # port — matches the provider schema's documented example. Sending 26379 made
+    # the API echo 26378 on read, tripping terraform "Provider produced
+    # inconsistent result after apply: sentinel_port was 26379, now 26378" and
+    # failing the apply (run 27802519587). sentinel_port is Required in the schema
+    # so the value must match what the platform stores. (Provider UX nit: it could
+    # mark this Optional+Computed; noted as an observation, not blocking.)
+    sentinel_port = 26378
     backup_option = {
       retention_period_day = "7"
       starting_time_hour   = "11"
