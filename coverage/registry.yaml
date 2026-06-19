@@ -4,9 +4,9 @@ backup_backup:
   family: backup
   import: false
   issues:
-  - "PLATFORM 500 on create (run 27657318484). Provider #80 VERIFIED: the response decode no longer panics\
-    \ \u2014 it now surfaces a clean \"500 Internal Server Error\" diagnostic. The 500 itself is server-side\
-    \ (not provider-fixable)."
+  - 'PLATFORM 500 on create (run 27657318484). Provider #80 VERIFIED: the response decode no longer panics
+    — it now surfaces a clean "500 Internal Server Error" diagnostic. The 500 itself is server-side (not
+    provider-fixable).'
   needs: []
   parallel: normal
   status: broken
@@ -75,9 +75,12 @@ cachestore_cluster:
   family: cachestore
   import: false
   issues:
-  - 400 "invalid data (Server type)" persists with both redis1v1m2 and redis1v2m4 (runs 27661036920, 27666147128).
-    Valid server_type_name must come from the live cachestore server-type/product catalog (no provider
-    data source; needs an scp-api lookup with creds). Pending fixture fix.
+  - '#83: 400 "invalid data (Server type)" with redis1v1m2 AND redis1v2m4 (runs 27661036920, 27666147128).
+    Neither is a live catalog server_type_name; api_docs server-type response is empty and there is no
+    provider data source for cachestore server-types. NEEDS CATALOG HARVEST: run dbaas_probe mode `catalog`
+    (read-only dump of cachestore /v1/server-types) or `cachestore-servertypes` (creates+deletes per live
+    server-type until 202, leak-0), then pin the winning name via TF_VAR_server_type_name. Fixture topology
+    is otherwise schema-correct.'
   needs:
   - subnet_id
   parallel: normal
@@ -118,9 +121,9 @@ cloudmonitoring_event_policy:
   family: cloudmonitoring
   import: false
   issues:
-  - "EXCLUDED: CloudMonitoring is slated for deprecation \u2014 not an active coverage target. A partial\
-    \ provider #54 fix (notification_recipient -> types.List) is committed; the remaining raw-typed fields\
-    \ are not worth completing on a retiring service. See coverage/excluded_resources.yaml (reason: deprecated)."
+  - 'EXCLUDED: CloudMonitoring is slated for deprecation — not an active coverage target. A partial provider
+    #54 fix (notification_recipient -> types.List) is committed; the remaining raw-typed fields are not
+    worth completing on a retiring service. See coverage/excluded_resources.yaml (reason: deprecated).'
   needs: []
   parallel: normal
   status: excluded
@@ -233,8 +236,8 @@ ds_backup:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -247,8 +250,8 @@ ds_baremetal:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -261,8 +264,8 @@ ds_budget:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -275,8 +278,8 @@ ds_cachestore:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -289,8 +292,8 @@ ds_certificatemanager:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -303,8 +306,8 @@ ds_cloudmonitoring:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -317,8 +320,8 @@ ds_configinspection:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -331,8 +334,8 @@ ds_directconnect:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -345,8 +348,8 @@ ds_dns:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -359,8 +362,8 @@ ds_epas:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -373,8 +376,8 @@ ds_eventstreams:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -387,8 +390,8 @@ ds_filestorage:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -401,8 +404,8 @@ ds_firewall:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -415,8 +418,8 @@ ds_gslb:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -429,8 +432,8 @@ ds_iam:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -443,8 +446,8 @@ ds_loadbalancer:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -457,8 +460,8 @@ ds_loggingaudit:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -471,8 +474,8 @@ ds_mariadb:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -485,8 +488,8 @@ ds_multinodegpucluster:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -499,8 +502,8 @@ ds_mysql:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -513,8 +516,8 @@ ds_network_logging:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -527,8 +530,8 @@ ds_plannedcompute:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -541,8 +544,8 @@ ds_postgresql:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -555,8 +558,8 @@ ds_quota:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -569,8 +572,8 @@ ds_resourcemanager:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -583,8 +586,8 @@ ds_searchengine:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -597,8 +600,8 @@ ds_securitygroup:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -611,8 +614,8 @@ ds_servicewatch:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -625,8 +628,8 @@ ds_ske:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -639,8 +642,8 @@ ds_sqlserver:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -653,8 +656,8 @@ ds_vertica:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -667,8 +670,8 @@ ds_virtualserver:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -681,8 +684,8 @@ ds_vpc:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -695,8 +698,8 @@ ds_vpn:
   import: false
   issues: []
   needs: []
-  note: "read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259\
-    \ \u2014 non-readable ones excluded"
+  note: read-only data-source smoke (gen_ds_smoke.py); all members read-verified green in sweep 27491825259
+    — non-readable ones excluded
   parallel: normal
   status: green
   timeout_class: fast
@@ -830,7 +833,7 @@ iam_group_member:
     HMAC signing race in provider for IAM writes persists.'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -893,11 +896,11 @@ iam_user:
   family: iam
   import: false
   issues:
-  - "401 Unauthorized [HMAC] HMAC valid fail on create user (run 27659871231) \u2014 account/credential\
-    \ boundary (the test key cannot create IAM users), not a provider/fixture defect."
+  - 401 Unauthorized [HMAC] HMAC valid fail on create user (run 27659871231) — account/credential boundary
+    (the test key cannot create IAM users), not a provider/fixture defect.
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -910,7 +913,7 @@ iam_user_policy_bindings:
   - blocked (account perm)
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -933,8 +936,8 @@ loadbalancer_basic:
   family: loadbalancer
   import: false
   issues:
-  - "update axis FAIL (run 27682344740): provider 'Value Conversion Error' on Update \u2014 same bug as\
-    \ fork #92 (loadbalancer_loadbalancer). Lifecycle green."
+  - 'update axis FAIL (run 27682344740): provider ''Value Conversion Error'' on Update — same bug as fork
+    #92 (loadbalancer_loadbalancer). Lifecycle green.'
   needs: []
   parallel: normal
   status: green
@@ -947,9 +950,8 @@ loadbalancer_lb_health_check:
   family: loadbalancer
   import: false
   issues:
-  - "RETEST flake (run 27682344740): create 400 'chosen subnet does not contain a Load Balancer' \u2014\
-    \ prereq/timing (LB not ready in subnet). Not the update change (description default unchanged). Prior\
-    \ green preserved."
+  - 'RETEST flake (run 27682344740): create 400 ''chosen subnet does not contain a Load Balancer'' — prereq/timing
+    (LB not ready in subnet). Not the update change (description default unchanged). Prior green preserved.'
   needs:
   - subnet_id
   - vpc_id
@@ -1121,8 +1123,13 @@ searchengine_cluster:
   family: searchengine
   import: false
   issues:
-  - '#83 PROGRESS: create ACCEPTED (OpenSearch image + license omitted, probe 202) but cluster provisions
-    to state:FAILED (run 27406093988) - platform-side; pool subnet/VPC pinned by FAILED cluster (reaped).'
+  - '#83: create ACCEPTED (202, OpenSearch image + license omitted, fixture-mirror probe) but cluster
+    provisions to state:FAILED (run 27406093988). Fixture topology (MASTER_DATA + KIBANA, is_combined)
+    matches the provider schema (cluster.go:184-208). api-test-automation also only reached 202 (conformance.json:
+    400 names neither field nor rule; never proved RUNNING). FAILED is platform/catalog-side - most likely
+    server_type tier or engine-version vs server-type binding. Harvest the live searchengine /v1/server-types
+    + engine-version properties via dbaas_probe `catalog` mode, pin a valid server_type_name, re-test.
+    Leak hazard: a FAILED cluster pins the pool subnet/VPC - reap after.'
   needs:
   - subnet_id
   parallel: normal
@@ -1222,8 +1229,8 @@ ske_cluster:
   family: ske
   import: false
   issues:
-  - "update axis FAIL (run 27682344740): provider 'Value Conversion Error' on Update \u2014 same bug as\
-    \ fork #92 (ske_cluster). Lifecycle green."
+  - 'update axis FAIL (run 27682344740): provider ''Value Conversion Error'' on Update — same bug as fork
+    #92 (ske_cluster). Lifecycle green.'
   needs:
   - kubernetes_version
   - security_group_id_list
@@ -1260,9 +1267,13 @@ sqlserver_cluster:
   family: sqlserver
   import: false
   issues:
-  - '#83 PROGRESS: create now ACCEPTED (base non-KB engine version, probe 27403108280 got 202) but the
-    cluster provisions to state:FAILED on the pool subnet (run 27406093988) - platform-side provisioning
-    failure; teardown left pool subnet/VPC pinned by the FAILED cluster (reaped).'
+  - '#83: create ACCEPTED (202, base non-KB engine version) but cluster provisions to state:FAILED (run
+    27406093988). Fixture is schema-correct (license="", databases[].drive_letter E, archive_frequency_minute
+    30, server_type db1v2m8). api-test-automation also only reached 202 (conformance.json: 400 names neither
+    field nor rule; never proved RUNNING). FAILED is platform/catalog-side - likely server_type tier or
+    block-storage layout (canonical body uses OS-only; fixture adds DATA 200GB). Harvest live sqlserver
+    /v1/server-types + engine-version properties via dbaas_probe `catalog` mode, pin a valid server_type_name,
+    re-test. Leak hazard: FAILED cluster pins pool subnet/VPC - reap after.'
   needs:
   - subnet_id
   parallel: normal
@@ -1317,8 +1328,8 @@ virtualserver_server:
   family: virtualserver
   import: false
   issues:
-  - "update axis FAIL (run 27666766466): same provider 'Value Conversion Error (unknown value)' on update\
-    \ apply \u2014 Update-path raw-type bug, fork issue #92. Lifecycle green; update not in-place-safe."
+  - 'update axis FAIL (run 27666766466): same provider ''Value Conversion Error (unknown value)'' on update
+    apply — Update-path raw-type bug, fork issue #92. Lifecycle green; update not in-place-safe.'
   needs:
   - image_id
   - keypair_name
@@ -1403,9 +1414,9 @@ vpc_port:
   family: vpc
   import: false
   issues:
-  - "update axis FAIL (run 27666766466): provider 'Value Conversion Error: Received unknown value, target\
-    \ type cannot handle unknown values' during update apply \u2014 provider bug, fork issue #92. Lifecycle\
-    \ green; update not in-place-safe."
+  - 'update axis FAIL (run 27666766466): provider ''Value Conversion Error: Received unknown value, target
+    type cannot handle unknown values'' during update apply — provider bug, fork issue #92. Lifecycle
+    green; update not in-place-safe.'
   needs:
   - subnet_id
   parallel: low
@@ -1419,10 +1430,11 @@ vpc_private_nat:
   family: vpc
   import: false
   issues:
-  - apply 400 "Cannot find the Transit Gateway in Connectable state" even with an in-line vpc_connection
-    + depends_on (run 27244474565) - "Connectable" needs more than a created connection (likely the connection
-    ACTIVE/propagated or another precondition).
-  needs: []
+  - 'Fixture fix: TGW "Connectable" needs an ACTIVE firewall connection, not just a vpc_connection (fork
+    #96, HANDOFF 0Y). Added firewall + firewall_connection (depends_on); private_nat depends_on both connections.
+    Retest with patched provider.'
+  needs:
+  - vpc_id
   parallel: normal
   status: broken
   timeout_class: fast
@@ -1434,9 +1446,8 @@ vpc_private_nat_ip:
   family: vpc
   import: false
   issues:
-  - apply 400 "Cannot found the Transit Gateway in Connectable state" (run 27399112864, serialized - NOT
-    quota this time; same as vpc_private_nat). Connectable requires an ACTIVE TGW firewall connection
-    (api-test-automation domain knowledge) - platform state-machine constraint.
+  - 'Fixture fix: same as vpc_private_nat - TGW Connectable needs an ACTIVE firewall connection (fork
+    #96). Added firewall + firewall_connection (depends_on). Retest with patched provider.'
   needs:
   - ip_address
   parallel: normal
@@ -1462,8 +1473,8 @@ vpc_subnet:
   family: vpc
   import: false
   issues:
-  - "update axis FAIL (run 27666766466): 400 'IP address is not valid ()' when updating description \u2014\
-    \ provider re-sends subnet body with an empty IP on update. Lifecycle green; update not in-place-safe."
+  - 'update axis FAIL (run 27666766466): 400 ''IP address is not valid ()'' when updating description
+    — provider re-sends subnet body with an empty IP on update. Lifecycle green; update not in-place-safe.'
   needs:
   - vpc_id
   parallel: low
@@ -1533,9 +1544,9 @@ vpc_transit_gateway_firewall:
   family: vpc
   import: false
   issues:
-  - Transit Gateway Firewall connection state is not Active (INACTIVE) on firewall create (run 27243446403)
-    - creating a TGW firewall requires the TGW firewall CONNECTION to be ACTIVE first; deeper dependency
-    than in-line TGW.
+  - Per api docs the firewall create returns 201 with firewall_connection_state=INACTIVE (that is expected,
+    not an error). Prior "INACTIVE on firewall create" red likely a shared-run copy-paste. Fixture is
+    TGW + firewall (valid). Retest with patched provider.
   needs: []
   parallel: normal
   status: broken
@@ -1549,9 +1560,8 @@ vpc_transit_gateway_firewall_connection:
   family: vpc
   import: false
   issues:
-  - Transit Gateway Firewall connection state is not Active (INACTIVE) on firewall create (run 27243446403)
-    - creating a TGW firewall requires the TGW firewall CONNECTION to be ACTIVE first; deeper dependency
-    than in-line TGW.
+  - 'Provider firewall-connection Create waits ATTACHING->ACTIVE (fork #76/#96). Fixture builds TGW ->
+    firewall -> firewall_connection (depends_on). Retest with patched provider.'
   needs: []
   parallel: normal
   status: broken
@@ -1565,9 +1575,10 @@ vpc_transit_gateway_rule:
   family: vpc
   import: false
   issues:
-  - 'apply 400 "no value given for required property created_at / Invalid error data" (run 27241816399)
-    - rule create omits created_at (server-set field treated as required; same API-side pattern as #61).
-    Also destroy-ordering: tgw vpc-connection delete 400 "state not Active (EDITING)".'
+  - 'Provider fix (fork #95): TGW-rule create-202 response omits server-set created_at but the SDK response
+    model lists it as required, so decode 400d "no value given for required property created_at". vpc_transit_gateway_rule.go
+    Create now tolerates that decode error and recovers the rule id via list-and-match, then waits ACTIVE.
+    Fixture already correct (TGW -> vpc_connection -> rule, depends_on). Retest with patched provider.'
   needs:
   - vpc_id
   parallel: normal
@@ -1582,9 +1593,9 @@ vpc_transit_gateway_uplink_rule:
   family: vpc
   import: false
   issues:
-  - apply 400 "Transit Gateway Firewall connection state is not Active (INACTIVE)" (run 27244474565) -
-    uplink rule (like the firewall scenarios) needs an ACTIVE TGW firewall connection first; deep multi-step
-    dependency, not just an in-line TGW.
+  - 'Fixture fix: uplink rule needs an ACTIVE TGW firewall connection first (fork #96). Added firewall
+    + firewall_connection (depends_on chain); the provider firewall-connection Create already waits ATTACHING->ACTIVE.
+    Retest with patched provider.'
   needs: []
   parallel: normal
   status: broken
@@ -1643,10 +1654,14 @@ vpc_vpc_peering:
   family: vpc
   import: false
   issues:
-  - "#61 fix INEFFECTIVE: patched build confirmed ('built patched provider', run 27736779212) yet create\
-    \ STILL 400s 'no value given for required property approver_vpc_name' \u2014 the auto-resolve-from-approver_vpc_id\
-    \ (vpcpeering.go:207-220) does not populate the API request. Provider fix needs rework. Leak-prone\
-    \ (partial-create left 2 VPCs, 409 cleanup)."
+  - '#61 REWORKED (api_docs evidence): the documented VpcPeeringCreateRequest schema (api_docs.json /v1/vpc-peerings,
+    version vpc 1.2) has exactly 6 fields and approver_vpc_name is NOT one of them; required = approver_vpc_account_id,
+    approver_vpc_id, name, requester_vpc_id (description+tags optional). approver_vpc_name is RESPONSE-only
+    and the api-test suite gets 202 omitting it. The old auto-resolve (vpcpeering.go:207-234) FORCED a
+    derived approver_vpc_name into the body, producing the misleading 400. Fix: vpcpeering.go Create now
+    clears approver_vpc_name (StringNull) before create so the client omits it, and the schema makes it
+    Computed-only. go build ./... clean. Pending isolated lifecycle sweep (leak-prone: partial-create
+    leaves 2 VPCs, 409 cleanup; reap before+after).'
   needs: []
   parallel: normal
   status: broken
@@ -1656,15 +1671,19 @@ vpc_vpc_peering:
 vpc_vpc_peering_approval:
   cost: cheap
   depends_on: []
+  exclude_reason: cross-account (single-account untestable)
   family: vpc
   import: false
   issues:
-  - '#61 ROOT CAUSE FOUND (peering probe 27401023616): the create 400 was the provider sending "description":
-    null (SDK NullableString) - fixed in provider client vpcv1/vpc.go. Approval itself is UNTESTABLE single-account:
-    platform 400 "Approval is not required for Same Account VPC peering" - needs a second account to exercise.'
+  - 'EXCLUDED (cross-account): the approval action is structurally untestable single-account. Same-account
+    peering auto-activates and the platform rejects the approval call with 400 "Approval is not required
+    for Same Account VPC peering" (peering probe 27401023616); CREATE_APPROVE etc. require the approver
+    VPC in a DIFFERENT account, which the regression key cannot provide. Provider resource + fixture are
+    correct (approver_vpc_name removed; terraform validate passes). NOT a provider/fixture defect. See
+    coverage/excluded_resources.yaml.'
   needs: []
   parallel: normal
-  status: broken
+  status: excluded
   timeout_class: fast
   update: false
   vpc: self
@@ -1674,8 +1693,10 @@ vpc_vpc_peering_rule:
   family: vpc
   import: false
   issues:
-  - 'blocked by vpc_vpc_peering (#61 ineffective) + 5-VPC quota exhaustion (run 27736779212: approver
-    VPC create 400 ''number(5) exceeded'').'
+  - 'Was blocked by vpc_vpc_peering (#61). With the reworked #61 fix (vpcpeering.go no longer sends approver_vpc_name)
+    the in-line same-account peering should reach ACTIVE and the rule can be created. Fixture is self-contained
+    (own 2 VPCs, no approval needed for same-account). Pending isolated lifecycle sweep; leak-prone +
+    5-VPC quota-heavy (run 27736779212 hit ''number(5) exceeded'') so reap before+after.'
   needs: []
   parallel: normal
   status: broken

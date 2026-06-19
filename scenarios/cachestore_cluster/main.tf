@@ -29,10 +29,14 @@ variable "dbaas_engine_version_id" {
 }
 variable "server_type_name" {
   type = string
-  # redis1v1m2 (1 vCore / 2 GB) was rejected with 400 "(Server type)" (run
-  # 27661036920) — below the offered tier. redis1v2m4 (2 vCore / 4 GB) is the
-  # api-test catalog's documented Standard redis1 example. Exact ids are
-  # account/region-specific; refresh from the server-type list API if this 400s.
+  # redis1v1m2 and redis1v2m4 BOTH 400 "invalid data (Server type)" (runs
+  # 27661036920, 27666147128) — neither is a live catalog name (the api_docs
+  # server-type response is empty; names are account/region-specific and there
+  # is NO provider data source for cachestore server-types). The valid name must
+  # be HARVESTED from the live catalog: run the dbaas_probe `catalog` mode (dumps
+  # GET cachestore /v1/server-types) or `cachestore-servertypes` mode (iterates
+  # the live catalog, creates+deletes per type until 202), then pin the winner
+  # here via TF_VAR_server_type_name. redis1v2m4 left as the documented default.
   default = "redis1v2m4"
 }
 

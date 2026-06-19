@@ -67,7 +67,7 @@ env:
   # (The v4.0.0-baseline comparison run used SOURCE_BUILD=0 / VERSION=4.0.0 on this branch;
   # reverted here — see docs/V4_RECONCILIATION.md. Set those again to re-test v4.)
   SCP_PROVIDER_SOURCE_BUILD: '1'
-  SCP_PROVIDER_BUILD_REF: main
+  SCP_PROVIDER_BUILD_REF: claude/epic-ride-9zotgp
 
 jobs:
   # ---- Derive the execution plan from registry.yaml ----

@@ -25,10 +25,17 @@ variable "approval_type" {
 
 # VPC peering approval fixture guarding networking coverage.
 #
-# SELF-CONTAINED: relying on an external vpc_peering_id resulted in a 404 (the
-# peering never existed). This fixture creates the requester + approver VPCs and
-# the peering request in-line (same account), then approves it, so it can
-# create -> destroy cleanly.
+# EXCLUDED (cross-account): the approval API is structurally untestable from a
+# single account. Same-account VPC peering auto-activates and the platform
+# rejects the approval call outright with 400 "Approval is not required for Same
+# Account VPC peering" (peering probe run 27401023616). Exercising the approval
+# action (CREATE_APPROVE etc.) requires the approver VPC to live in a DIFFERENT
+# account, which the regression key cannot provide. Kept as a buildable fixture
+# (terraform validate passes) but excluded from the testable funnel.
+#
+# SELF-CONTAINED: it creates the requester + approver VPCs and the peering
+# request in-line (same account); approver_vpc_name is no longer set because it
+# is a Computed-only attribute (the create API derives it from approver_vpc_id).
 resource "samsungcloudplatformv2_vpc_vpc" "requester" {
   name        = "regrapvreq${var.name_suffix}"
   cidr        = "192.168.0.0/24"
@@ -44,7 +51,6 @@ resource "samsungcloudplatformv2_vpc_vpc" "approver" {
 resource "samsungcloudplatformv2_vpc_vpc_peering" "regr" {
   approver_vpc_account_id = samsungcloudplatformv2_vpc_vpc.approver.vpc.account_id
   approver_vpc_id         = samsungcloudplatformv2_vpc_vpc.approver.id
-  approver_vpc_name       = "regrapvapp${var.name_suffix}"
   requester_vpc_id        = samsungcloudplatformv2_vpc_vpc.requester.id
   name                    = "regrapv${var.name_suffix}"
   description             = "regr-test"

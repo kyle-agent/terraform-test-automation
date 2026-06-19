@@ -14,6 +14,9 @@
 #   cost         -> creating it is a real financial commitment (e.g. a multi-year
 #                   reservation), not a cheap ephemeral resource.
 #   out-of-scope -> intentionally not a coverage target (per request).
+#   cross-account-> exercising it structurally requires a SECOND account the
+#                   single regression key cannot provide; same-account create
+#                   either auto-completes or the API rejects the action.
 # Evidence provenance: api-test-automation knowledge/formal/services/* (2026-06).
 
 billing_planned_compute:
@@ -64,3 +67,14 @@ vertica_cluster:
   detail: >-
     Vertica is license-gated (VerticaClusterCreateRequest carries a license field)
     and the account holds no license (api-test: reachability-only, license-gated).
+
+vpc_vpc_peering_approval:
+  reason: cross-account
+  detail: >-
+    The peering approval action is structurally untestable from a single account.
+    Same-account VPC peering auto-activates (CREATING -> ACTIVE), and the platform
+    rejects the approval call with 400 "Approval is not required for Same Account
+    VPC peering" (peering probe run 27401023616). Exercising CREATE_APPROVE/etc.
+    requires the approver VPC to live in a DIFFERENT account, which the single
+    regression key cannot provide. The provider resource + fixture are otherwise
+    correct (terraform validate passes). NOT a provider/fixture defect.
