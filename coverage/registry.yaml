@@ -1545,7 +1545,7 @@ vpc_transit_gateway_firewall_connection:
   needs:
   - vpc_id
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
