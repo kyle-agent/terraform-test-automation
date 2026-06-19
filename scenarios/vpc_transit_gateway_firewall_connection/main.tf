@@ -22,28 +22,23 @@ variable "product_type" {
   default     = "TGW_BM"
 }
 
-# A firewall connection attaches the TGW's firewall to the TGW, so both a transit
-# gateway and a firewall on it must exist first. The bootstrap exports neither, so
-# the full chain (TGW -> firewall -> firewall connection) is built in-line here. A
-# transit gateway consumes no account VPC quota, so this stays within quota.
+# A firewall connection attaches a firewall capability to the TGW. The bootstrap
+# exports no TGW, so it is created in-line (a TGW consumes no VPC quota).
+#
+# CONNECTION-FIRST experiment (#96): earlier fixtures created a firewall first,
+# but firewall.Create itself 400s "connection state is not Active (INACTIVE)"
+# unless the connection is already ACTIVE — a circular trap. This fixture instead
+# creates ONLY the connection on the TGW and relies on the patched provider waiter
+# (transit_gateway_firewall_connection.go: tolerates ATTACHING/INACTIVE, bounded
+# 12-min wait for ACTIVE) to determine whether POST /firewall-connections
+# self-activates without a firewall present. If it does, the TGW firewall family
+# is fixture-orderable; if it times out at INACTIVE, the circular dependency is a
+# platform limitation (and the bounded waiter at least fails fast, not in 2h).
 resource "samsungcloudplatformv2_vpc_transit_gateway" "regr" {
   name        = "regr-tgwfwc${var.name_suffix}"
   description = "regr-test"
 }
 
-# Firewall registered on the TGW; the connection below attaches it (ATTACHING ->
-# ACTIVE). Without a firewall present the connection can never reach ACTIVE.
-resource "samsungcloudplatformv2_vpc_transit_gateway_firewall" "regr" {
-  product_type       = var.product_type
-  transit_gateway_id = samsungcloudplatformv2_vpc_transit_gateway.regr.id
-}
-
-# Transit gateway firewall connection fixture guarding networking coverage:
-# attaching a firewall to a TGW must re-plan cleanly with no spurious change.
-# Required arg: transit_gateway_id. depends_on the firewall so it is registered
-# before the connection waits for ATTACHING -> ACTIVE.
 resource "samsungcloudplatformv2_vpc_transit_gateway_firewall_connection" "regr" {
   transit_gateway_id = samsungcloudplatformv2_vpc_transit_gateway.regr.id
-
-  depends_on = [samsungcloudplatformv2_vpc_transit_gateway_firewall.regr]
 }

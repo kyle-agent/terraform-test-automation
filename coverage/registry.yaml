@@ -1350,15 +1350,14 @@ vpc_cidr:
   family: vpc
   import: false
   issues:
-  - '#60 RE-CLASSIFIED (api_docs.json audit): the API documents ONLY POST /v1/vpcs/{id}/cidrs (add) -
-    NO cidr delete endpoint exists; the provider DELETE path is custom-built/guessed and the 403 "no permission
-    to Action" is the gateway rejecting an unmapped action, NOT an IAM gap. Secondary-CIDR removal is
-    unsupported by the platform (removed with the VPC). Provider could degrade Delete to warn+state-remove;
-    until then destroy stays red.'
+  - '#60: API exposes no secondary-CIDR DELETE (only POST add); the unmapped DELETE 403s. PROVIDER FIX
+    (fork claude/pensive-goldberg-e34mtm): vpc_cidr.go Delete now treats that 403 as a graceful state-only
+    removal (warn, not error) — the CIDR is reclaimed when the VPC is destroyed. Retesting with the patched
+    build-ref.'
   needs:
   - vpc_id
   parallel: low
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
@@ -1541,13 +1540,14 @@ vpc_transit_gateway_firewall_connection:
   family: vpc
   import: false
   issues:
-  - 400 "Transit Gateway Firewall connection state is not Active (INACTIVE)" on firewall create (run 27799716751,
-    patched provider + firewall_connection prereq chain). The firewall_connection does not reach ACTIVE
-    before the dependent firewall create — platform state-machine constraint confirmed across sessions
-    (#96). apply-fail; not provider/fixture-fixable in a single apply.
+  - '#96 CONNECTION-FIRST experiment: prior fixtures created a firewall first, but firewall.Create 400s
+    "connection state INACTIVE" unless the connection is already ACTIVE (circular). Fixture now creates the
+    connection alone (no firewall); provider waiter (fork claude/pensive-goldberg-e34mtm) tolerates
+    ATTACHING/INACTIVE with a bounded 12-min wait for ACTIVE. Tests whether POST /firewall-connections
+    self-activates without a firewall. If it times out at INACTIVE, the circular dep is a platform limit.'
   needs: []
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
