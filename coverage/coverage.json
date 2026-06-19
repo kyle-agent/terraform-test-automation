@@ -555,16 +555,16 @@
     }
   },
   "samsungcloudplatformv2_cachestore_cluster": {
-    "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27661036920",
-    "last_seen": "2026-06-17T03:10:48Z",
-    "note": "Error: Error creating cluster with samsungcloudplatformv2_cachestore_cluster.regr, on main.tf line 51, in resource \"samsungcloudplatformv2_cachestore_cluster\" \"regr\": 51: resource \"samsungcloudplatformv2_cachestore_cluster\" \"regr\" { Could not create cluster, unexpected error: 400 Bad Request Reason: The request contains invalid data. (Server type)",
+    "highest_stage": "destroy",
+    "last_run_url": "",
+    "last_seen": "2026-06-19T04:27:17Z",
+    "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_cachestore_cluster.regr",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
-      "import": "skip",
+      "apply": "ok",
+      "destroy": "ok",
+      "import": "unsupported",
       "plan": "ok",
-      "replan": "skip",
+      "replan": "ok",
       "update": "skip",
       "validate": "ok"
     }
@@ -1575,16 +1575,16 @@
     }
   },
   "samsungcloudplatformv2_vpc_transit_gateway_rule": {
-    "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27241816399",
-    "last_seen": "2026-06-09T23:33:14Z",
-    "note": "Error: Error creating transit gateway routing rule with samsungcloudplatformv2_vpc_transit_gateway_rule.regr, on main.tf line 54, in resource \"samsungcloudplatformv2_vpc_transit_gateway_rule\" \"regr\": 54: resource \"samsungcloudplatformv2_vpc_transit_gateway_rule\" \"regr\" { Could not create routing rule, unexpected error: no value given for required property created_at Reason: Invalid error data | LEAK: partial-create cleanup destroy failed: Error: Error Deleting tgw vpc connection Could not delete tgw vpc connection, unexpected error: 400 Bad Request Reason: Transit Gateway state is not Active.:(EDITING)",
+    "highest_stage": "destroy",
+    "last_run_url": "",
+    "last_seen": "2026-06-19T04:27:17Z",
+    "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_vpc_transit_gateway.regr",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
-      "import": "skip",
+      "apply": "ok",
+      "destroy": "ok",
+      "import": "unsupported",
       "plan": "ok",
-      "replan": "skip",
+      "replan": "ok",
       "update": "skip",
       "validate": "ok"
     }

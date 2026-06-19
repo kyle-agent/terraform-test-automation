@@ -74,17 +74,11 @@ cachestore_cluster:
   depends_on: []
   family: cachestore
   import: false
-  issues:
-  - '#83: 400 "invalid data (Server type)" was an engine/server-type IMAGE MISMATCH, not a missing name
-    (catalog harvest run 27802022018: redis1v2m4 IS in the live 70-type catalog). cachestore has 2 engine
-    versions, "Valkey Sentinel 8.1.4" (first non-EOS) and "Redis OSS Sentinel 7.2.11"; server-types carry a
-    product_image_type (Valkey Sentinel -> css*, Redis OSS Sentinel -> redis*). Fixture auto-resolved the
-    engine to Valkey but hardcoded redis1v2m4 -> reject. Fixed (commit 5e22958): server_type_name now derived
-    from the chosen engine version''s product_image_type. Retesting.'
+  issues: []
   needs:
   - subnet_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: slow
   update: false
   vpc: pool
