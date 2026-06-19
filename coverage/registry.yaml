@@ -182,7 +182,7 @@ dns_hosted_zone:
   needs:
   - vpc_id
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
@@ -225,7 +225,7 @@ dns_record:
   needs:
   - vpc_id
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
@@ -827,13 +827,10 @@ iam_group_member:
   depends_on: []
   family: iam
   import: false
-  issues:
-  - 'STILL BROKEN after depends_on serialization (run 27417604819): apply fails "Error creating user ...
-    Could not create user, unexpected error: 401 Unauthorized Reason: [HMAC] HMAC valid fail" - suspected
-    HMAC signing race in provider for IAM writes persists.'
+  issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -895,12 +892,10 @@ iam_user:
   depends_on: []
   family: iam
   import: false
-  issues:
-  - 401 Unauthorized [HMAC] HMAC valid fail on create user (run 27659871231) — account/credential boundary
-    (the test key cannot create IAM users), not a provider/fixture defect.
+  issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -909,11 +904,10 @@ iam_user_policy_bindings:
   depends_on: []
   family: iam
   import: false
-  issues:
-  - blocked (account perm)
+  issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
