@@ -132,9 +132,19 @@ def reap_tgw(c, tgwid, name):
     for fw in items(c.get(f"/v1/transit-gateways/{tgwid}/firewalls", service="vpc").body):
         if fw.get("id"):
             delete(c, "vpc", f"/v1/transit-gateways/{tgwid}/firewalls/{fw['id']}")
+    # A TGW firewall connection (singleton per TGW, no sub-id) must be disconnected
+    # before its vpc-connections can be deleted, else they 400 "Transit Gateway
+    # Firewall Connection must be disconnected before all VPC connections can be
+    # deleted". DELETE /firewall-connections, then retry the vpc-connection deletes
+    # (the disconnect is not instantaneous).
+    delete(c, "vpc", f"/v1/transit-gateways/{tgwid}/firewall-connections")
     for conn in items(c.get(f"/v1/transit-gateways/{tgwid}/vpc-connections", service="vpc").body):
         if conn.get("id"):
-            delete(c, "vpc", f"/v1/transit-gateways/{tgwid}/vpc-connections/{conn['id']}")
+            for _ in range(8):
+                st = delete(c, "vpc", f"/v1/transit-gateways/{tgwid}/vpc-connections/{conn['id']}")
+                if st in (200, 202, 204, 404):
+                    break
+                time.sleep(15)  # firewall connection still disconnecting -> 400; back off
             wait_gone(c, "vpc", f"/v1/transit-gateways/{tgwid}/vpc-connections/{conn['id']}", 240, 15)
     for _ in range(6):
         st = delete(c, "vpc", f"/v1/transit-gateways/{tgwid}")
