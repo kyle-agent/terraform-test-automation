@@ -9,7 +9,47 @@ multi-agent architecture + session bootstrap), then this file, then `tasks/lesso
 
 ---
 
-## 0. Session 2026-06-19 (LATEST) — per-resource agent fleet → engineering wave + serial sweep pipeline
+## 0. Session 2026-06-19b (LATEST) — TGW-rule greened (#95) + cachestore root-caused & fixed
+
+**Branch:** `claude/pensive-goldberg-e34mtm` (off main @ PR #30 merge). Resumed via `/session-start`.
+
+**Done:**
+- ✅ **vpc_transit_gateway_rule → GREEN** (registry green **96 → 97**). Isolated pool sweep
+  run **27801651607**: matrix validate/plan/apply/replan/destroy/destroy_verify all `ok`;
+  pool teardown clean (7 destroyed, no 409, zero TGW leak). Confirms fork **#95** (create-202
+  tolerates omitted `created_at`, recovers id via list+match). Gates pre-flip: build-ref=fork
+  `main` has #95; api-reaper **27801131713** showed 0 TGWs (full cap free); 1 stuck VPC leaves 4 free.
+- 🔬 **cachestore_cluster root-caused & fixed (#83).** Read-only DBaaS-Probe `catalog` run
+  **27802022018** harvested the live catalog: the 400 "invalid data (Server type)" was NOT a
+  missing name (redis1v2m4 IS in the 70-type catalog) — it's an ENGINE/SERVER-TYPE IMAGE
+  MISMATCH. cachestore has 2 engine versions, "Valkey Sentinel 8.1.4" (first non-EOS) +
+  "Redis OSS Sentinel 7.2.11"; server-types carry product_image_type (Valkey→css*, RedisOSS→
+  redis*). Fixture auto-picked Valkey but hardcoded redis1v2m4 → reject. **Fixed (commit
+  5e22958):** derive server_type_name from the chosen engine version's product_image_type
+  (data source exposes it on contents[*]); engine version stays runtime-resolved.
+
+**IN-FLIGHT / NEXT (queued coverage sweeps, serialized by concurrency group, no overlap):**
+1. run **27802268194** (sha 5e22958) — REDUNDANT re-test of tgw_rule (a scenarios/*.tf push
+   fires a sweep on whatever is `untested`; tgw_rule was still untested then). Harmless; let it finish.
+2. run **27802519587** (sha 24c8ad9) — the real **cachestore_cluster** retest. **HARVEST its
+   matrix** when done: if green → already flipped (registry says untested; flip to green +
+   clear issues); if still 400 → capture the new error (maybe block-storage sizing / replica).
+3. **Reap after** (push api-reaper SWEEP_ALL=1) — confirms no DBaaS/VPC leak.
+4. **Revert dbaas-probe.yml push default `catalog` → `cleanup`** (commit 8c54287 flipped it to
+   dispatch the read-only catalog harvest since workflow_dispatch is 403 for the token). Do this
+   in a standalone push AFTER the cachestore sweep (it re-triggers a dbaas-probe run = cleanup no-op).
+5. **Dashboard:** merge the new matrices (tgw_rule + cachestore) into coverage.json via
+   build_coverage.py, commit; pages publishes from **main only** (merge branch→main to go live).
+
+**Account state:** 1 long-standing stuck VPC `rpv273154960170` (subnet a7793ccc…, a 2026-06-11
+dbaas dependent-probe leak; reaper 409s, can't clear with current key) → 4 of 5 VPC quota free.
+
+**Lessons added (tasks/lessons.md):** scenarios/** push triggers a sweep (bundle fixture+flip);
+cachestore server_type must match engine-version product_image_type.
+
+---
+
+## 0. Session 2026-06-19 — per-resource agent fleet → engineering wave + serial sweep pipeline
 
 **Method:** orchestrator + 7 parallel role agents (one per greenable FAMILY, not per
 resource — families share a root cause). Agents did engineering only (patch + fixture +
