@@ -15,6 +15,9 @@ on:
   # scenario destroys may have leaked LBs/dns/etc.
   # Triggered 2026-06-18 (b): VPC quota EXHAUSTED (5/5) — reap leaked rpv* VPCs from the
   # v4 sweep + peering partial-creates so pool/self lanes can bootstrap again.
+  # Triggered 2026-06-19: reap TGW partial-creates from TGW Batch A apply-fail (run
+  # 27799716751: firewall create 400 INACTIVE left TGWs/firewall_connections stranded;
+  # TGW max=3 so clear them before any future TGW sweep). Peering ran clean (destroy_verify=ok).
   # Manual only. The nightly cron was removed (no periodic runs on the dedicated
   # account); trigger a sweep by dispatching this workflow or by pushing the reaper
   # scripts below. Push sweeps run immediately (SWEEP_MIN_AGE_HOURS=0, SWEEP_ALL=1).
