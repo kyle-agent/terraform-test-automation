@@ -74,9 +74,24 @@ A lesson without a concrete trigger + action is not a lesson — delete it.
 - do: don't burn a re-run hoping to capture it — the matrix runner mis-prioritizes the note (it showed an "import unsupported" line for a destroy-failed row) and does NOT put the terraform destroy stderr in the note or job stdout. The raw delete error is unrecoverable from artifacts/logs. Diagnose from the downstream symptom instead (e.g. the bootstrap VPC 409 'Cannot terminate due to associated resources' that a leaked child causes) and file on that evidence. dns_private_dns destroy-leak -> fork #93. (A runner fix to surface destroy stderr would remove this blind spot.)
 - conf: high · seen: 2026-06-17 · obs: 1
 
-### The fork #61 vpc_vpc_peering auto-resolve fix is INEFFECTIVE
-- trigger: tempted to re-test vpc_vpc_peering expecting the fork #61 fix to green it.
-- do: don't — run 27736779212 built the PATCHED provider (log: "built patched provider") yet create STILL 400s "no value given for required property approver_vpc_name". The auto-resolve-from-approver_vpc_id logic (vpcpeering.go:207-220) does not populate the API request. peering stays broken until the provider fix is reworked (or the fixture sets approver_vpc_name explicitly AND that path actually forwards it). Also leak-prone: a failed peering partial-create leaves 2 VPCs (409 cleanup).
+### vpc_vpc_peering greens by DROPPING approver_vpc_name from the create body (#61 RESOLVED)
+- trigger: working vpc_vpc_peering / vpc_vpc_peering_rule, or reading the old "auto-resolve is ineffective" note.
+- do: the fix is NOT to populate approver_vpc_name — it is to STOP sending it. api_docs `POST /v1/vpc-peerings` (VpcPeeringCreateRequest) has only {name, requester_vpc_id, approver_vpc_id, approver_vpc_account_id, description?, tags?}; approver_vpc_name is response-only. The reworked vpcpeering.go sets ApproverVpcName=types.StringNull() (schema Computed-only) → create body matches the API → run 27799716751 GREEN, destroy_verify=ok (leak-0). The earlier auto-resolve fix (vpcpeering.go:207-220) was directionally wrong. peering + peering_rule are now green (vpc:self, same-account auto-activates ~16min each).
+- conf: high · seen: 2026-06-19 · obs: 1
+
+### TGW firewall family stays broken — firewall_connection never reaches ACTIVE in one apply
+- trigger: tempted to sweep vpc_transit_gateway_firewall / _firewall_connection / _uplink_rule / vpc_private_nat[_ip] expecting a fixture depends_on chain or a provider waiter to green them.
+- do: don't burn the sweep. Even with the patched provider + an in-fixture firewall + firewall_connection prereq chain (depends_on), the firewall create 400s "Transit Gateway Firewall connection state is not Active (INACTIVE)" (run 27799716751). The connection does not transition ATTACHING→ACTIVE within the apply, so every firewall-dependent resource (firewall, uplink_rule, private_nat Connectable) fails. Platform state-machine limit (#96), confirmed across sessions — NOT provider/fixture-fixable in a single terraform apply. apply-fail leaves TGW partial-creates → reap after. The ONLY independently-greenable TGW scenario is vpc_transit_gateway_rule (#95 created_at decode, needs only TGW+vpc_connection).
+- conf: high · seen: 2026-06-19 · obs: 1
+
+### Two different VPC lanes can share ONE sweep cycle under the 5-VPC quota
+- trigger: serializing per-family validation sweeps and wanting to cut wall-clock cycles.
+- do: scenarios in DIFFERENT lanes run as separate concurrent jobs (novpc / pool / selfvpc) and only the pool+selfvpc lanes consume bootstrap/self VPCs. A vpc:none family (e.g. TGW Batch A, 0 VPCs) can be flipped untested in the SAME push as a vpc:self family (e.g. peering, 4 VPCs) — total ≤5, and the novpc job finishes fast (~7min) while selfvpc runs long (~33min for 2× peering ACTIVE waits). Just respect cross-cutting account caps (TGW max=3). Saved a full cycle on run 27799716751.
+- conf: med · seen: 2026-06-19 · obs: 1
+
+### The fork #61 vpc_vpc_peering auto-resolve fix is INEFFECTIVE (superseded — see RESOLVED above)
+- trigger: historical — kept for context.
+- do: superseded by the "greens by DROPPING approver_vpc_name" lesson (2026-06-19). The auto-resolve approach was abandoned.
 - conf: high · seen: 2026-06-18 · obs: 1
 
 ### Most of the broken set is hard-blocked — don't burn sweeps re-testing them

@@ -1530,12 +1530,13 @@ vpc_transit_gateway_firewall:
   family: vpc
   import: false
   issues:
-  - Per api docs the firewall create returns 201 with firewall_connection_state=INACTIVE (that is expected,
-    not an error). Prior "INACTIVE on firewall create" red likely a shared-run copy-paste. Fixture is
-    TGW + firewall (valid). Retest with patched provider.
+  - 400 "Transit Gateway Firewall connection state is not Active (INACTIVE)" on firewall create (run 27799716751,
+    patched provider + firewall_connection prereq chain). The firewall_connection does not reach ACTIVE
+    before the dependent firewall create — platform state-machine constraint confirmed across sessions
+    (#96). apply-fail; not provider/fixture-fixable in a single apply.
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: none
@@ -1546,11 +1547,13 @@ vpc_transit_gateway_firewall_connection:
   family: vpc
   import: false
   issues:
-  - 'Provider firewall-connection Create waits ATTACHING->ACTIVE (fork #76/#96). Fixture builds TGW ->
-    firewall -> firewall_connection (depends_on). Retest with patched provider.'
+  - 400 "Transit Gateway Firewall connection state is not Active (INACTIVE)" on firewall create (run 27799716751,
+    patched provider + firewall_connection prereq chain). The firewall_connection does not reach ACTIVE
+    before the dependent firewall create — platform state-machine constraint confirmed across sessions
+    (#96). apply-fail; not provider/fixture-fixable in a single apply.
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: none
@@ -1579,12 +1582,13 @@ vpc_transit_gateway_uplink_rule:
   family: vpc
   import: false
   issues:
-  - 'Fixture fix: uplink rule needs an ACTIVE TGW firewall connection first (fork #96). Added firewall
-    + firewall_connection (depends_on chain); the provider firewall-connection Create already waits ATTACHING->ACTIVE.
-    Retest with patched provider.'
+  - 400 "Transit Gateway Firewall connection state is not Active (INACTIVE)" on firewall create (run 27799716751,
+    patched provider + firewall_connection prereq chain). The firewall_connection does not reach ACTIVE
+    before the dependent firewall create — platform state-machine constraint confirmed across sessions
+    (#96). apply-fail; not provider/fixture-fixable in a single apply.
   needs: []
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: none
@@ -1639,18 +1643,10 @@ vpc_vpc_peering:
   depends_on: []
   family: vpc
   import: false
-  issues:
-  - '#61 REWORKED (api_docs evidence): the documented VpcPeeringCreateRequest schema (api_docs.json /v1/vpc-peerings,
-    version vpc 1.2) has exactly 6 fields and approver_vpc_name is NOT one of them; required = approver_vpc_account_id,
-    approver_vpc_id, name, requester_vpc_id (description+tags optional). approver_vpc_name is RESPONSE-only
-    and the api-test suite gets 202 omitting it. The old auto-resolve (vpcpeering.go:207-234) FORCED a
-    derived approver_vpc_name into the body, producing the misleading 400. Fix: vpcpeering.go Create now
-    clears approver_vpc_name (StringNull) before create so the client omits it, and the schema makes it
-    Computed-only. go build ./... clean. Pending isolated lifecycle sweep (leak-prone: partial-create
-    leaves 2 VPCs, 409 cleanup; reap before+after).'
+  issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: self
@@ -1678,14 +1674,10 @@ vpc_vpc_peering_rule:
   depends_on: []
   family: vpc
   import: false
-  issues:
-  - 'Was blocked by vpc_vpc_peering (#61). With the reworked #61 fix (vpcpeering.go no longer sends approver_vpc_name)
-    the in-line same-account peering should reach ACTIVE and the rule can be created. Fixture is self-contained
-    (own 2 VPCs, no approval needed for same-account). Pending isolated lifecycle sweep; leak-prone +
-    5-VPC quota-heavy (run 27736779212 hit ''number(5) exceeded'') so reap before+after.'
+  issues: []
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: self

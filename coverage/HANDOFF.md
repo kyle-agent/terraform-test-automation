@@ -50,6 +50,27 @@ hard-blocked set stays broken/excluded (backup#80, budget/cert/dns_public_domain
 before trusting reds (quota-cascade red = environmental).** Flip registry green ONLY on a real
 clean-lifecycle matrix. Heavy families may span multiple sessions — this list is the resume point.
 
+**RESULTS (this session, registry green 89 → 96, +7):**
+- ✅ **IAM ×3 GREEN** (run 27798318949, novpc leak-0): iam_user, iam_user_policy_bindings,
+  iam_group_member — #74 fix (account_id Required+default) + account_id fixtures.
+- ✅ **DNS ×2 GREEN** (run 27798451467, pool, teardown clean = #93 fixed): dns_hosted_zone,
+  dns_record — validate/plan/apply/replan/**update**/destroy all ok, no VPC leak.
+- ✅ **Peering ×2 GREEN** (run 27799716751 selfvpc, destroy_verify=ok = leak-0): vpc_vpc_peering,
+  vpc_vpc_peering_rule — #61 rework (drop response-only approver_vpc_name from create body) works.
+- ❌ **TGW Batch A ×3 still broken** (run 27799716751 novpc): firewall, firewall_connection,
+  uplink_rule all `400 "firewall connection state INACTIVE"` — the firewall_connection never
+  reaches ACTIVE before the dependent firewall create. PLATFORM state-machine (#96), not
+  provider/fixture-fixable in one apply. apply-fail left TGW partial-creates → api-reaper fired after.
+
+**STILL TODO (lower-confidence / lower-value, not yet swept):**
+- `vpc_transit_gateway_rule` — blocker (#95 created_at decode) is INDEPENDENT of the firewall
+  ACTIVE issue; provider fix is in. Worth ONE isolated pool sweep (needs TGW + vpc_connection only).
+- `vpc_private_nat`, `vpc_private_nat_ip` — same ACTIVE-firewall-connection blocker as Batch A;
+  do NOT expect green until the platform ACTIVE precondition is solvable. Keep broken.
+- `cachestore_cluster` — dispatch *DBaaS Probe* `engines=catalog` (read-only, leak-0) to harvest a
+  live `server_type_name`, pin into the fixture, then one pool sweep. searchengine/sqlserver stay
+  broken (platform provisions FAILED).
+
 ---
 
 ## 0. Session 2026-06-18 — v4.0.0 reconciliation + coverage reality check
