@@ -48,3 +48,5 @@ resource "samsungcloudplatformv2_vpc_transit_gateway_firewall_connection" "regr"
 
   depends_on = [samsungcloudplatformv2_vpc_transit_gateway_vpc_connection.regr]
 }
+
+# Retest 20260619T1015: provider firewall_id schema fix (e8670fc) — resolves the Value Conversion Error.
