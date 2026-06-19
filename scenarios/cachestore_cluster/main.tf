@@ -29,15 +29,17 @@ variable "dbaas_engine_version_id" {
 }
 variable "server_type_name" {
   type = string
-  # redis1v1m2 and redis1v2m4 BOTH 400 "invalid data (Server type)" (runs
-  # 27661036920, 27666147128) — neither is a live catalog name (the api_docs
-  # server-type response is empty; names are account/region-specific and there
-  # is NO provider data source for cachestore server-types). The valid name must
-  # be HARVESTED from the live catalog: run the dbaas_probe `catalog` mode (dumps
-  # GET cachestore /v1/server-types) or `cachestore-servertypes` mode (iterates
-  # the live catalog, creates+deletes per type until 202), then pin the winner
-  # here via TF_VAR_server_type_name. redis1v2m4 left as the documented default.
-  default = "redis1v2m4"
+  # ROOT CAUSE (dbaas_probe catalog harvest, run 27802022018, 2026-06-19): the
+  # earlier 400 "invalid data (Server type)" with redis1v2m4/redis1v1m2 was NOT a
+  # missing name — both ARE in the live /v1/server-types catalog (70 types). The
+  # defect is an ENGINE/SERVER-TYPE IMAGE MISMATCH: the catalog has 2 engine
+  # versions, "Valkey Sentinel 8.1.4" (first non-EOS) and "Redis OSS Sentinel
+  # 7.2.11"; every server-type carries a product_image_type ("Valkey Sentinel" ->
+  # css*, "Redis OSS Sentinel" -> redis*). The fixture auto-resolved the engine
+  # version to the FIRST non-EOS (Valkey) but sent a redis* server-type -> reject.
+  # Empty default => the locals below derive a server-type whose image matches the
+  # chosen engine version. Set TF_VAR_server_type_name only to pin a tier.
+  default = ""
 }
 
 # Engine versions are account/region-specific, so resolve a valid id at runtime
@@ -49,10 +51,22 @@ locals {
     for v in data.samsungcloudplatformv2_cachestore_engine_version.regr.contents :
     v if !v.end_of_service
   ]
-  cachestore_engine_version_id = var.dbaas_engine_version_id != "" ? var.dbaas_engine_version_id : (
-    length(local.cachestore_engine_versions_available) > 0 ?
-    local.cachestore_engine_versions_available[0].id :
-    data.samsungcloudplatformv2_cachestore_engine_version.regr.contents[0].id
+  # The single engine version the cluster will use (first non-EOS, else first).
+  cachestore_chosen_engine_version = length(local.cachestore_engine_versions_available) > 0 ? (
+    local.cachestore_engine_versions_available[0]
+  ) : data.samsungcloudplatformv2_cachestore_engine_version.regr.contents[0]
+  cachestore_engine_version_id = var.dbaas_engine_version_id != "" ? var.dbaas_engine_version_id : local.cachestore_chosen_engine_version.id
+
+  # server_type_name MUST share the chosen engine version's product_image_type
+  # (live catalog: "Valkey Sentinel" -> css*, "Redis OSS Sentinel" -> redis*),
+  # else create 400s "invalid data (Server type)". Pick the smallest general tier
+  # of the matching family; default to Valkey since it is the first listed.
+  cachestore_server_type_by_image = {
+    "Valkey Sentinel"    = "css1v2m4"
+    "Redis OSS Sentinel" = "redis1v2m4"
+  }
+  cachestore_server_type_name = var.server_type_name != "" ? var.server_type_name : lookup(
+    local.cachestore_server_type_by_image, local.cachestore_chosen_engine_version.product_image_type, "css1v2m4"
   )
 }
 
@@ -85,7 +99,7 @@ resource "samsungcloudplatformv2_cachestore_cluster" "regr" {
   instance_groups = [
     {
       role_type        = "MASTER"
-      server_type_name = var.server_type_name
+      server_type_name = local.cachestore_server_type_name
       block_storage_groups = [
         { role_type = "OS", size_gb = 104, volume_type = "SSD" },
         { role_type = "DATA", size_gb = 200, volume_type = "SSD" },
