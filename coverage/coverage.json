@@ -645,13 +645,13 @@
     }
   },
   "samsungcloudplatformv2_dns_hosted_zone": {
-    "highest_stage": "replan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27678313663",
-    "last_seen": "2026-06-17T09:44:47Z",
+    "highest_stage": "destroy",
+    "last_run_url": "",
+    "last_seen": "2026-06-19T02:20:41Z",
     "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_dns_hosted_zone.regr",
     "stages": {
       "apply": "ok",
-      "destroy": "fail",
+      "destroy": "ok",
       "import": "unsupported",
       "plan": "ok",
       "replan": "ok",
@@ -690,13 +690,13 @@
     }
   },
   "samsungcloudplatformv2_dns_record": {
-    "highest_stage": "replan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27678313663",
-    "last_seen": "2026-06-17T09:44:47Z",
+    "highest_stage": "destroy",
+    "last_run_url": "",
+    "last_seen": "2026-06-19T02:20:41Z",
     "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_dns_hosted_zone.parent",
     "stages": {
       "apply": "ok",
-      "destroy": "fail",
+      "destroy": "ok",
       "import": "unsupported",
       "plan": "ok",
       "replan": "ok",
@@ -839,6 +839,21 @@
       "validate": "ok"
     }
   },
+  "samsungcloudplatformv2_iam_group_member": {
+    "highest_stage": "destroy",
+    "last_run_url": "",
+    "last_seen": "2026-06-19T02:20:41Z",
+    "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_iam_group.regr",
+    "stages": {
+      "apply": "ok",
+      "destroy": "ok",
+      "import": "unsupported",
+      "plan": "ok",
+      "replan": "ok",
+      "update": "skip",
+      "validate": "ok"
+    }
+  },
   "samsungcloudplatformv2_iam_group_policy_bindings": {
     "highest_stage": "destroy",
     "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27055812382",
@@ -900,31 +915,31 @@
     }
   },
   "samsungcloudplatformv2_iam_user": {
-    "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27659871231",
-    "last_seen": "2026-06-17T01:49:28Z",
-    "note": "Error: Error creating user with samsungcloudplatformv2_iam_user.regr, on main.tf line 37, in resource \"samsungcloudplatformv2_iam_user\" \"regr\": 37: resource \"samsungcloudplatformv2_iam_user\" \"regr\" { Could not create user, unexpected error: 401 Unauthorized Reason: [HMAC] HMAC valid fail",
+    "highest_stage": "destroy",
+    "last_run_url": "",
+    "last_seen": "2026-06-19T02:20:41Z",
+    "note": "import: could not resolve primary resource addr/id:",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
+      "apply": "ok",
+      "destroy": "ok",
       "import": "skip",
       "plan": "ok",
-      "replan": "skip",
+      "replan": "ok",
       "update": "skip",
       "validate": "ok"
     }
   },
   "samsungcloudplatformv2_iam_user_policy_bindings": {
-    "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-    "last_seen": "2026-06-05T01:30:00Z",
-    "note": "403 user not part of project (perms)",
+    "highest_stage": "destroy",
+    "last_run_url": "",
+    "last_seen": "2026-06-19T02:20:41Z",
+    "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_iam_policy.regr",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
-      "import": "skip",
+      "apply": "ok",
+      "destroy": "ok",
+      "import": "unsupported",
       "plan": "ok",
-      "replan": "skip",
+      "replan": "ok",
       "update": "skip",
       "validate": "ok"
     }
@@ -1635,16 +1650,16 @@
     }
   },
   "samsungcloudplatformv2_vpc_vpc_peering": {
-    "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27238242719",
-    "last_seen": "2026-06-09T22:04:56Z",
-    "note": "Error: Error creating vpc peering with samsungcloudplatformv2_vpc_vpc_peering.regr, on main.tf line 44, in resource \"samsungcloudplatformv2_vpc_vpc_peering\" \"regr\": 44: resource \"samsungcloudplatformv2_vpc_vpc_peering\" \"regr\" { Could not create vpc peering, unexpected error: no value given for required property approver_vpc_name Reason: Invalid error data | LEAK: partial-create cleanup destroy failed: Error: Error Deleting vpc Could not delete vpc, unexpected error: 409 Conflict Reason: Cannot terminate due to associated resources. Please terminate the following associated resources first and then terminate the VPC. Error: Error Deleting vpc Could not delete vpc, unexpected error: 409 Conflict Reason: Cannot terminate due to associated resources. Please terminate the following associated resources first and then terminate the VPC.",
+    "highest_stage": "destroy",
+    "last_run_url": "",
+    "last_seen": "2026-06-19T02:20:41Z",
+    "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_vpc_vpc.approver",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
-      "import": "skip",
+      "apply": "ok",
+      "destroy": "ok",
+      "import": "unsupported",
       "plan": "ok",
-      "replan": "skip",
+      "replan": "ok",
       "update": "skip",
       "validate": "ok"
     }
@@ -1665,16 +1680,16 @@
     }
   },
   "samsungcloudplatformv2_vpc_vpc_peering_rule": {
-    "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27238242719",
-    "last_seen": "2026-06-09T22:04:56Z",
-    "note": "Error: Error creating vpc with samsungcloudplatformv2_vpc_vpc.requester, on main.tf line 39, in resource \"samsungcloudplatformv2_vpc_vpc\" \"requester\": 39: resource \"samsungcloudplatformv2_vpc_vpc\" \"requester\" { Could not create vpc, unexpected error: 400 Bad Request Reason: The number(5) of VPCs that can be created in this account has been exceeded. Please contact the administrator. Error: Error creating vpc",
+    "highest_stage": "destroy",
+    "last_run_url": "",
+    "last_seen": "2026-06-19T02:20:41Z",
+    "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_vpc_vpc.approver",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
-      "import": "skip",
+      "apply": "ok",
+      "destroy": "ok",
+      "import": "unsupported",
       "plan": "ok",
-      "replan": "skip",
+      "replan": "ok",
       "update": "skip",
       "validate": "ok"
     }

@@ -24,6 +24,8 @@ Usage:  python cmd/dbaas_probe/probe.py <engine> [more engines...]
         python cmd/dbaas_probe/probe.py mysql postgresql eventstreams
         python cmd/dbaas_probe/probe.py all
         python cmd/dbaas_probe/probe.py sqlserver-versions searchengine-license
+        python cmd/dbaas_probe/probe.py catalog            # read-only: dump server-types + engine-versions
+        python cmd/dbaas_probe/probe.py cachestore-servertypes   # iterate live server-types to find a valid one
 """
 from __future__ import annotations
 
@@ -403,6 +405,144 @@ def searchengine_fixture_body(name, ev_id, subnet_id, stype):
     }
 
 
+CACHESTORE_NAME_PREFIX = "prbcsst"  # + 2 letters = 9
+
+
+def cachestore_fixture_body(name, ev_id, subnet_id, stype):
+    """Field-for-field mirror of scenarios/cachestore_cluster/main.tf: single
+    MASTER instance group, OS(104)+DATA(200) SSD block storage, replica_count 0,
+    sentinel_port 26379, database_port 6379. service_ip_address omitted (like the
+    fixture). The ONLY variable under test is server_type_name (`stype`)."""
+    return {
+        "name": name,
+        "dbaas_engine_version_id": ev_id,
+        "ha_enabled": False,
+        "nat_enabled": False,
+        "timezone": "Asia/Seoul",
+        "instance_name_prefix": name[:8],  # prefix max_length 13, ^[a-z][a-zA-Z0-9-]*$
+        "allowable_ip_addresses": ["10.0.0.0/24"],
+        "subnet_id": subnet_id,
+        "replica_count": 0,
+        "init_config_option": {
+            "database_user_password": "Regr1234!@",
+            "database_port": 6379,
+            "sentinel_port": 26379,
+            "backup_option": {
+                "retention_period_day": "7",
+                "starting_time_hour": "11",
+            },
+        },
+        "instance_groups": [
+            {
+                "role_type": "MASTER",
+                "server_type_name": stype,
+                "block_storage_groups": [
+                    {"role_type": "OS", "size_gb": 104, "volume_type": "SSD"},
+                    {"role_type": "DATA", "size_gb": 200, "volume_type": "SSD"},
+                ],
+                "instances": [
+                    {"role_type": "MASTER"},
+                ],
+            },
+        ],
+    }
+
+
+def list_catalog(c, svc, label):
+    """Read-only dump of an engine's server-type + engine-version catalog (leak-0;
+    it never POSTs). This is what the orchestrator harvests for the live, valid
+    server_type_name / engine_version_id to pin the fixtures — there is no provider
+    data source for server-types (only engine-versions)."""
+    print(f"== catalog: {label} (service={svc}) ==")
+    st, sts, raw = get_items(c, svc, "/v1/server-types")
+    print(f"[{label}] server-types -> {st} ({len(sts)} available)")
+    for s in sts:
+        name = s.get("name") or s.get("server_type_name") or ""
+        print(f"[{label}]   server_type name={name!r} cpu={s.get('cpu_core')!r} "
+              f"mem={s.get('memory_gb')!r} purpose={s.get('purpose')!r} "
+              f"type={s.get('type')!r} product_type={s.get('product_type')!r} "
+              f"product_image_type={s.get('product_image_type')!r}")
+    if not sts:
+        print(f"[{label}]   raw server-types body: {raw}")
+    st, evs, raw = get_items(c, svc, "/v1/engine-versions")
+    print(f"[{label}] engine-versions -> {st} ({len(evs)} available)")
+    first_id = ""
+    for v in evs:
+        print(f"[{label}]   {json.dumps(v, ensure_ascii=False, sort_keys=True)}")
+        if not first_id and not v.get("end_of_service"):
+            first_id = v.get("id") or v.get("dbaas_engine_version_id") or ""
+    if not evs:
+        print(f"[{label}]   raw engine-versions body: {raw}")
+    # engine-version properties may document the supported server-type tier /
+    # min spec that the create API silently accepts then FAILS provisioning on.
+    if first_id:
+        st, props, raw = get_items(c, svc, f"/v1/engine-versions/{first_id}/properties")
+        print(f"[{label}] engine-version {first_id} properties -> {st} ({len(props)} entries)")
+        for p in props:
+            print(f"[{label}]   prop {p.get('name')!r} = {p.get('value')!r}")
+    print("-" * 70)
+
+
+def probe_catalog(c):
+    """List the live server-type + engine-version catalog for the three blocked
+    engines (read-only). Harvest the printed server_type names to pin fixtures."""
+    for engine in ("cachestore", "searchengine", "sqlserver"):
+        svc, _ = ENGINES[engine]
+        list_catalog(c, svc, engine)
+
+
+def probe_cachestore_servertypes(c):
+    """Resolve the cachestore 400 'invalid data (Server type)' (runs 27661036920,
+    27666147128: redis1v1m2 and redis1v2m4 both rejected — neither is a live
+    catalog name). Enumerate the LIVE /v1/server-types catalog and try a
+    fixture-mirror create per server_type_name until one returns 202; delete it
+    (leak-0). The winning name is what to pin into
+    scenarios/cachestore_cluster/main.tf (server_type_name default)."""
+    svc, _ = ENGINES["cachestore"]
+
+    st, sts, raw = get_items(c, svc, "/v1/server-types")
+    print(f"[cachestore-servertypes] server-types -> {st} ({len(sts)} entries)")
+    if not sts:
+        print(f"[cachestore-servertypes] raw body: {raw}"); return
+    names = []
+    for s in sts:
+        n = s.get("name") or s.get("server_type_name") or ""
+        names.append(n)
+        print(f"[cachestore-servertypes] ENTRY name={n!r} cpu={s.get('cpu_core')!r} "
+              f"mem={s.get('memory_gb')!r} purpose={s.get('purpose')!r} "
+              f"type={s.get('type')!r} product_image_type={s.get('product_image_type')!r}")
+
+    # engine version: first non-EOS (the fixture resolves this via the data source)
+    st, evs, _ = get_items(c, svc, "/v1/engine-versions")
+    ev_id = ""
+    for v in evs:
+        if not v.get("end_of_service"):
+            ev_id = v.get("id") or v.get("dbaas_engine_version_id") or ""
+            break
+    if not ev_id and evs:
+        ev_id = evs[0].get("id", "")
+    print(f"[cachestore-servertypes] engine-version picked id={ev_id!r} ({len(evs)} available)")
+
+    subnet_id = pick_subnet(c, "cachestore-servertypes")
+    results = []
+    for n in names:
+        if not n:
+            continue
+        name = lettername(CACHESTORE_NAME_PREFIX, 2)  # 9 chars, letters-only
+        payload = cachestore_fixture_body(name, ev_id, subnet_id, n)
+        status = attempt_create(c, svc, payload, f"server_type={n}")
+        results.append((n, status))
+        if status is None:
+            return
+        if status and 200 <= status < 300:
+            print(f"[cachestore-servertypes] *** {n!r} is a VALID server_type_name — "
+                  f"pin it into the fixture; stopping ***")
+            break
+    print("[cachestore-servertypes] summary: " +
+          ", ".join(f"{n}->{s}" for n, s in results))
+    print("-" * 70)
+
+
 def probe_sqlserver_versions(c):
     """Resolve the sqlserver 400 'Invalid Engine Version.' (sweep 27399112864).
 
@@ -553,6 +693,7 @@ def wait_gone(c, svc, cid, timeout=300, interval=20):
 PROBE_NAME_PREFIXES = {
     "sqlserver":    (SQLSERVER_NAME_PREFIX,),
     "searchengine": (SEARCHENGINE_NAME_PREFIX,),
+    "cachestore":   (CACHESTORE_NAME_PREFIX,),
 }
 
 
@@ -586,7 +727,9 @@ def main(argv):
     if args == ["all"]:
         args = list(ENGINES)
     modes = {"sqlserver-versions": probe_sqlserver_versions,
-             "searchengine-license": probe_searchengine_license}
+             "searchengine-license": probe_searchengine_license,
+             "cachestore-servertypes": probe_cachestore_servertypes,
+             "catalog": probe_catalog}
     for engine in args:
         if engine in modes:
             modes[engine](c)

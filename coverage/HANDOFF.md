@@ -1,11 +1,102 @@
 # Coverage-expansion session handoff
 
-**Branch:** `main` — session 2026-06-17 merged via PR #26. Dev branch `claude/epic-ride-9zotgp`.
-**Last updated:** 2026-06-17
+**Branch:** `main` — session 2026-06-18 (v4 reconciliation). Dev branch `claude/epic-ride-9zotgp`.
+**Last updated:** 2026-06-18
 **Purpose:** Single source of truth for resuming the Terraform-provider coverage
 expansion work in a fresh session. **Start at [`AGENTS.md`](../AGENTS.md)** (mission +
 multi-agent architecture + session bootstrap), then this file, then `tasks/lessons.md`
 (correction rules), then `coverage/registry.yaml`. Run `/session-start` to automate this.
+
+---
+
+## 0. Session 2026-06-19 (LATEST) — per-resource agent fleet → engineering wave + serial sweep pipeline
+
+**Method:** orchestrator + 7 parallel role agents (one per greenable FAMILY, not per
+resource — families share a root cause). Agents did engineering only (patch + fixture +
+local build/validate + fork issue); they did NOT commit/push or trigger CI. Orchestrator
+consolidates + serializes the account-touching sweeps under the 5-VPC quota.
+
+**Provider patches (fork `claude/epic-ride-9zotgp`, commit 93a2ae5, combined `go build` PASS):**
+- **dns** `service/dns/{private_dns,hosted_zone,record}.go` — wait-for-gone on Delete (async
+  202 must finish before return; VPC binding releases only when private_dns is gone). **#93**.
+- **vpc/vpcpeering.go** — stop deriving/sending `approver_vpc_name` (response-only field; API
+  create never accepts it); schema Computed-only. **#61** (prior fix was directionally WRONG).
+- **vpc/vpc_transit_gateway_rule.go** — tolerate create-202 omitting server-set `created_at`
+  (SDK model wrongly required); recover id by list+match. **#95**.
+- **iam/user.go** — `account_id` Required + validator + default to caller acct, replacing the
+  opaque 401 "[HMAC] HMAC valid fail". **#74** (IAM trio reclassified: provider-fixable, NOT
+  an account boundary or HMAC race — both disproven).
+
+**Test-repo (commit ea95260):** TGW family (6) fixtures gained firewall+firewall_connection
+prereq chains; IAM 3 fixtures pass account_id (`TF_VAR_account_id` already injected all lanes);
+`vpc_vpc_peering_approval`→**excluded** (cross-account); `cmd/dbaas_probe/probe.py` +leak-0
+`catalog`/`cachestore-servertypes` modes; `docs/domain/*` (dns, vpc-peering, tgw-private-nat,
+dbaas) + `domain.yaml` curated; **build-ref main→claude/epic-ride-9zotgp** (source-builds the patch).
+
+**Issues:** #61/#74/#93/#95/#96 + NEW #94 (vpc_vpc_endpoint connectable-resources/Read bug) +
+comments on #60 (vpc_cidr graceful-Delete) / #82 (platform-500 cluster). Triage confirmed the
+hard-blocked set stays broken/excluded (backup#80, budget/cert/dns_public_domain/lb_listener#82).
+
+**SERIAL SWEEP PIPELINE (orchestrator drives; only the family-of-interest is `untested` at push):**
+1. **IAM ×3** (vpc:none, leak-0) — IN FLIGHT run **27798318949** (push ea95260). Expect green.
+2. **DNS** (dns_hosted_zone, dns_record; vpc:pool, LEAK-RISK) — flip 2→untested, reap before/after.
+3. **Peering** (vpc_vpc_peering[_rule]; vpc:self, multi-VPC leak-prone) — isolated, reap before/after.
+4. **TGW Batch A** (firewall, firewall_connection, uplink_rule — vpc:none, ≤3 TGW) then **Batch B**
+   (transit_gateway_rule, private_nat, private_nat_ip — vpc:pool). A and B NOT concurrent (3-TGW cap); reap between.
+5. **DBaaS**: dispatch *DBaaS Probe* `engines=catalog` (read-only, leak-0) → harvest live
+   `server_type_name`; pin into cachestore fixture → flip cachestore_cluster→untested→sweep.
+   searchengine/sqlserver stay broken (platform provisions FAILED; api-test never reached RUNNING).
+**Per VPC-touching family: push api-reaper (SWEEP_ALL=1) before AND after; confirm quota clear
+before trusting reds (quota-cascade red = environmental).** Flip registry green ONLY on a real
+clean-lifecycle matrix. Heavy families may span multiple sessions — this list is the resume point.
+
+**RESULTS (this session, registry green 89 → 96, +7):**
+- ✅ **IAM ×3 GREEN** (run 27798318949, novpc leak-0): iam_user, iam_user_policy_bindings,
+  iam_group_member — #74 fix (account_id Required+default) + account_id fixtures.
+- ✅ **DNS ×2 GREEN** (run 27798451467, pool, teardown clean = #93 fixed): dns_hosted_zone,
+  dns_record — validate/plan/apply/replan/**update**/destroy all ok, no VPC leak.
+- ✅ **Peering ×2 GREEN** (run 27799716751 selfvpc, destroy_verify=ok = leak-0): vpc_vpc_peering,
+  vpc_vpc_peering_rule — #61 rework (drop response-only approver_vpc_name from create body) works.
+- ❌ **TGW Batch A ×3 still broken** (run 27799716751 novpc): firewall, firewall_connection,
+  uplink_rule all `400 "firewall connection state INACTIVE"` — the firewall_connection never
+  reaches ACTIVE before the dependent firewall create. PLATFORM state-machine (#96), not
+  provider/fixture-fixable in one apply. apply-fail left TGW partial-creates → api-reaper fired after.
+
+**STILL TODO (lower-confidence / lower-value, not yet swept):**
+- `vpc_transit_gateway_rule` — blocker (#95 created_at decode) is INDEPENDENT of the firewall
+  ACTIVE issue; provider fix is in. Worth ONE isolated pool sweep (needs TGW + vpc_connection only).
+- `vpc_private_nat`, `vpc_private_nat_ip` — same ACTIVE-firewall-connection blocker as Batch A;
+  do NOT expect green until the platform ACTIVE precondition is solvable. Keep broken.
+- `cachestore_cluster` — dispatch *DBaaS Probe* `engines=catalog` (read-only, leak-0) to harvest a
+  live `server_type_name`, pin into the fixture, then one pool sweep. searchengine/sqlserver stay
+  broken (platform provisions FAILED).
+
+---
+
+## 0. Session 2026-06-18 — v4.0.0 reconciliation + coverage reality check
+
+**v4.0.0 reconciliation (upstream released v4.0.0; we test our patched v3.3.x+fixes):**
+- Tested the **released v4.0.0 binary** (`SCP_PROVIDER_SOURCE_BUILD=0`/`VERSION=4.0.0`,
+  branch-only; reverted to `=1` patched mode after). v4 SDK is private → can't build v4.
+- **v4 fixed only 4 of ~60 issues** → closed #59/#25/#71/#89. v4's real wins: **ImportState on
+  37 resources** (we had 1; empirically 10 scenarios import=ok) + ~13 validators.
+- **Labels on the fork** (single-query hand-off): `v4-must-fix` (12 P0), `v4-still-lacks` (45,
+  all provider-fixable lacks), `fix-verified-green` (7, ready patches).
+- **Deliverables:** `docs/V4_RECONCILIATION.md` (full), `docs/V4_MUST_FIX.{md,html,txt}` (P0
+  hand-off) — **published**: https://kyle-agent.github.io/terraform-test-automation/V4_MUST_FIX.html
+
+**Coverage reality check (broken→green is mostly tapped out):**
+- registry: **green 89 / broken 24 / excluded 8**; coverage.json strict lifecycle-green **54/79**.
+- Most broken are **hard-blocked** (platform-500, account-perm, cross-account — see lessons).
+- **peering #61 fix is INEFFECTIVE** (re-test 27736779212 on a confirmed patched build still
+  400s "no value given for approver_vpc_name"). peering reverted to broken.
+- VPC quota was exhausted by leaks → reaped clean (run 27737291663). Quota free now.
+
+**NEXT (greenable broken needs real engineering — pick one):** (a) rework provider #61
+auto-resolve in fork `vpcpeering.go` → peering green + a verified patch; (b) DBaaS #83
+fixtures (searchengine/sqlserver — create ACCEPTED, self-contained, low leak risk);
+(c) TGW family fixture ordering (private_nat/transit_gateway_firewall — depends_on/wait,
+complex + multi-VPC leak-prone). Multi-VPC tests: isolate + reap before/after (lessons).
 
 ---
 

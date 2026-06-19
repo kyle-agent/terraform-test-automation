@@ -38,6 +38,12 @@ variable "ip_address" {
   default     = "192.168.64.10"
 }
 
+variable "product_type" {
+  type        = string
+  description = "Transit gateway firewall product type. Valid: TGW_IGW, TGW_GGW, TGW_DGW, TGW_BM."
+  default     = "TGW_BM"
+}
+
 resource "samsungcloudplatformv2_vpc_transit_gateway" "regr" {
   name        = "regr-pni-tgw${var.name_suffix}"
   description = "regr-test"
@@ -50,6 +56,21 @@ resource "samsungcloudplatformv2_vpc_transit_gateway_vpc_connection" "regr" {
   vpc_id             = var.vpc_id
 }
 
+# A private NAT requires the TGW to be Connectable, which means an ACTIVE firewall
+# connection (a created vpc_connection alone is NOT enough). Register a firewall
+# and create the connection; the provider's firewall-connection Create waits for
+# ATTACHING -> ACTIVE, so once this resource exists the TGW is Connectable.
+resource "samsungcloudplatformv2_vpc_transit_gateway_firewall" "regr" {
+  product_type       = var.product_type
+  transit_gateway_id = samsungcloudplatformv2_vpc_transit_gateway.regr.id
+}
+
+resource "samsungcloudplatformv2_vpc_transit_gateway_firewall_connection" "regr" {
+  transit_gateway_id = samsungcloudplatformv2_vpc_transit_gateway.regr.id
+
+  depends_on = [samsungcloudplatformv2_vpc_transit_gateway_firewall.regr]
+}
+
 resource "samsungcloudplatformv2_vpc_private_nat" "regr" {
   cidr                = var.private_nat_cidr
   name                = "regr-pnatip${var.name_suffix}"
@@ -57,7 +78,10 @@ resource "samsungcloudplatformv2_vpc_private_nat" "regr" {
   service_type        = "TRANSIT_GATEWAY"
   description         = "regr-test"
 
-  depends_on = [samsungcloudplatformv2_vpc_transit_gateway_vpc_connection.regr]
+  depends_on = [
+    samsungcloudplatformv2_vpc_transit_gateway_vpc_connection.regr,
+    samsungcloudplatformv2_vpc_transit_gateway_firewall_connection.regr,
+  ]
 }
 
 # IP reserved under the private NAT (top-level private_nat id used for chaining).

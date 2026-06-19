@@ -8,7 +8,7 @@
 # read this to build correct bootstraps, ordering, and cleanup.
 
 schema_version: 1
-last_updated: 2026-06-08
+last_updated: 2026-06-19
 
 account:
   # The dedicated single-tenant test account. Destructive ops are guarded by this id.
@@ -99,6 +99,95 @@ constraints:
     - iam_user            # 401 HMAC
     - loggingaudit
 
+# ── Per-service domain facts (schemas + state machines + proven gotchas). ──────────
+# Schema source: api-test-automation/data/api_docs.json (Open API ref). Prose:
+# docs/domain/{dns,vpc-peering,transit-gateway-private-nat,
+# dbaas-cachestore-searchengine-sqlserver}.md. confidence: schema=confirmed.
+services:
+
+  dns:                                   # docs/domain/dns.md ; endpoints networking/dns/*
+    private_dns:
+      create: "POST /v1/private-dns (PrivateDnsCreateRequest)"
+      required: [name]                   # name pattern ^[a-zA-Z0-9-]*$ len 3-20
+      optional: [connected_vpc_ids, description, tags]
+      activate: "POST /v1/private-dns/activate {name}"   # 2-step: create then activate
+      disassociate_then_delete: true     # #79: PUT /v1/private-dns/{id} {connected_vpc_ids: []} BEFORE DELETE
+      delete: "DELETE /v1/private-dns/{private_dns_id}"
+    hosted_zone:
+      create: "POST /v1/hosted-zones (HostedZoneCreateRequestV1Dot3)"
+      required: [name, type]             # type enum (public, private)
+      private_dns_id_required_when: "type=private"
+    record:
+      create: "POST /v1/hosted-zones/{hosted_zone_id}/records (RecordCreateRequest)"
+      required: [name, type, records]    # records=array[object]; ttl optional
+    gotchas:
+      - "#79 LEAK: provider destroy does not unbind private_dns from VPC -> VPC delete 409; disassociate first"
+      - "public-domain-name has NO delete API (#82) -> console/release only"
+
+  vpc_peering:                           # docs/domain/vpc-peering.md ; needs 2 VPCs (self-lane)
+    create: "POST /v1/vpc-peerings (VpcPeeringCreateRequest)"
+    required: [name, requester_vpc_id, approver_vpc_id, approver_vpc_account_id]
+    no_such_create_field: [approver_vpc_name]   # response-only on VpcPeering model; NOT a create input (#61)
+    approval: "PUT /v1/vpc-peerings/{id}/approval {type}"   # type enum CREATE_APPROVE/.../DELETE_APPROVE
+    rule: "POST /v1/vpc-peerings/{id}/routing-rules (VpcPeeringRuleCreateRequest)"  # destination_cidr + destination_vpc_type(REQUESTER_VPC|APPROVER_VPC)
+    state_enum: [CREATING, CREATING_REQUESTING, ACTIVE, REJECTED, CANCELED, EDITING, DELETING, DELETING_REQUESTING, DELETED, ERROR]
+    same_account_rule: "account_type=SAME -> peering goes straight to ACTIVE; approval endpoint 400 'Approval is not required for Same Account VPC peering' (probe 27401023616). approval UNTESTABLE single-account."
+    contradiction:
+      - "#61 OPEN: provider create 400 'no value given for required property approver_vpc_name' but api_docs proves create schema has NO approver_vpc_name -> provider bug, fixture correct"
+
+  transit_gateway:                       # docs/domain/transit-gateway-private-nat.md
+    max_per_account: 3
+    create: "POST /v1/transit-gateways (TransitGatewayCreateRequest)"  # required: name
+    children:
+      vpc_connection: "POST .../vpc-connections (TransitGatewayVpcConnectionCreateRequest) required: vpc_id"
+      firewall: "POST .../firewalls (TransitGatewayFirewallCreateRequest) required: product_type enum(TGW_IGW,TGW_GGW,TGW_DGW,TGW_BM)"
+      firewall_connection: "POST .../firewall-connections (no body model; path-only)"
+      rule: "POST .../routing-rules (TransitGatewayRuleCreateRequest) required: destination_cidr, destination_type(VPC|TGW), tgw_connection_vpc_id"
+      uplink_rule: "POST .../uplink-routing-rules (TransitGatewayUplinkRuleCreateRequest) required: destination_cidr, destination_type(TGW|ON_PREMISE)"
+    server_set_fields_not_in_create: [created_at, created_by, modified_at, modified_by, id, state, account_id]
+    state_enum:
+      transit_gateway: [CREATING, ACTIVE, DELETING, DELETED, ERROR, EDITING]
+      vpc_connection: [CREATING, ACTIVE, DELETING, DELETED, ERROR]
+      firewall: [CREATING, ACTIVE, DELETING, DELETED, EDITING, ERROR, DEPLOYING]
+    connectable_precondition: "firewall/uplink_rule/private_nat(service_type=TGW) require the TGW FIREWALL CONNECTION to be ACTIVE first; in-line depends_on insufficient. 400 'Cannot find the Transit Gateway in Connectable state' / 'Transit Gateway Firewall connection state is not Active (INACTIVE)'. (runs 27243446403/27244474565/27399112864)"
+    destroy:
+      order: [routing_rules, uplink_rules, firewalls, vpc_connections, transit_gateway]
+      trap: "vpc-connection delete 400 'state not Active (EDITING)' if a rule add/remove left TGW EDITING -> wait ACTIVE first"
+    gotchas:
+      - "rule create 400 'no value given for required property created_at' (run 27241816399): provider treats server-set created_at as required (same class as #61)"
+      - "#76: TGW status-waiter infinite hang; vpc_connection green only with patched waiter"
+
+  private_nat:                           # docs/domain/transit-gateway-private-nat.md §2
+    create: "POST /v1/private-nats (PrivateNatCreateRequestV1Dot2)"
+    required: [name, cidr, service_resource_id, service_type]   # service_type enum(DIRECT_CONNECT, TRANSIT_GATEWAY)
+    ip: "POST /v1/private-nats/{id}/private-nat-ips (PrivateNatIpCreateRequest) ip_address blank->auto-assign"
+    state_enum: [CREATING, ACTIVE, DELETING, DELETED, ERROR]
+    blocked_by: "TGW Connectable precondition (ACTIVE firewall connection) for service_type=TRANSIT_GATEWAY"
+
+  dbaas:                                 # docs/domain/dbaas-cachestore-searchengine-sqlserver.md
+    common_create: "POST /v1/clusters (one host per engine)"
+    common_required: [name, instance_name_prefix, subnet_id, timezone, dbaas_engine_version_id, init_config_option, instance_groups]
+    resolve_live:
+      server_type_name: "/v1/server-types (no provider data source; guessed names 400 'invalid data (Server type)')"
+      dbaas_engine_version_id: "/v1/engine-versions (not every listed id is provisionable - sqlserver 'Invalid Engine Version.')"
+    os_block_storage_size_gb: 104
+    name_max_empirical: 9                 # doc says 20 but platform caps ~9 (probe; opaque value_error #83)
+    prefix_max_empirical: 8
+    cachestore:                           # RedisClusterCreateRequest - CREATABLE (202)
+      role_type_enum: [MASTER, MASTER_REPLICA, REPLICA, SENTINEL]
+      init_required: [database_user_password]
+      gap: "server_type_name must come from live cachestore catalog (redis1v1m2/redis1v2m4 both 400 - runs 27661036920/27666147128)"
+    searchengine:                         # SearchEngineClusterCreateRequest
+      license: "optional string|null; doc example license:'' ; SDK NullableString+omitempty makes omitted!=''; crack order omitted->''->null->OPEN_SOURCE/BASIC/ENTERPRISE"
+      outcome: "create ACCEPTED (202) but cluster -> state:FAILED (run 27406093988); pins subnet/VPC; platform-side"
+    sqlserver:                            # SqlserverClusterCreateRequest
+      init_required: [license, database_service_name, database_user_name, database_user_password, databases]
+      collation_enum: [SQL_Latin1_General_CP1_CI_AS, Korean_Wansung_CS_AS, Chinese_PRC_CI_AS]
+      outcome: "create ACCEPTED (202, probe 27403108280) with base non-KB engine version but cluster -> state:FAILED (run 27406093988); pins subnet/VPC; platform-side"
+    eventstreams:                         # EventStreamsClusterCreateRequestV1Dot1 - reference crack case
+      status: "still 1 bare value_error; NOT license/role; likely topology (separate ZOOKEEPER+BROKER groups or is_combined:true) and/or SASL fields"
+    failed_state_pins_subnet: true        # a FAILED cluster pins its subnet/VPC -> must be reaped
+
 # ── Test lanes (axis ②). See docs/TEST_STRATEGY.md. ────────────────────────────────
 lanes:
   none: "no VPC needed; high parallel (iam/dns/cert/servicewatch/resourcemanager/billing)"
@@ -108,6 +197,7 @@ lanes:
 # ── Known provider issues (cross-ref). Full detail: docs/PROVIDER_ISSUES.md. ───────
 known_issues:
   "#58": iam_access_key
+  "#61": vpc_peering create requires phantom approver_vpc_name (provider, fixture correct)
   "#59": vpc_subnet post-deploy require
   "#60": vpc_cidr replan
   "#69": virtualserver_volume
