@@ -1349,15 +1349,11 @@ vpc_cidr:
   depends_on: []
   family: vpc
   import: false
-  issues:
-  - '#60: API exposes no secondary-CIDR DELETE (only POST add); the unmapped DELETE 403s. PROVIDER FIX
-    (fork claude/pensive-goldberg-e34mtm): vpc_cidr.go Delete now treats that 403 as a graceful state-only
-    removal (warn, not error) — the CIDR is reclaimed when the VPC is destroyed. Retesting with the patched
-    build-ref.'
+  issues: []
   needs:
   - vpc_id
   parallel: low
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -1540,17 +1536,18 @@ vpc_transit_gateway_firewall_connection:
   family: vpc
   import: false
   issues:
-  - '#96 CONNECTION-FIRST experiment: prior fixtures created a firewall first, but firewall.Create 400s
-    "connection state INACTIVE" unless the connection is already ACTIVE (circular). Fixture now creates the
-    connection alone (no firewall); provider waiter (fork claude/pensive-goldberg-e34mtm) tolerates
-    ATTACHING/INACTIVE with a bounded 12-min wait for ACTIVE. Tests whether POST /firewall-connections
-    self-activates without a firewall. If it times out at INACTIVE, the circular dep is a platform limit.'
-  needs: []
+  - '#96: NOT a platform circular limit (prior conclusion overturned). Run 27812898493 (patched provider +
+    connection-first fixture) got past the old INACTIVE error and 400d "There must be at least one connected
+    VPC to proceed" — the real prereq is a vpc_connection. Fixture now chains TGW -> vpc_connection ->
+    firewall_connection (vpc:pool); patched waiter (fork branch) carries ATTACHING/INACTIVE -> ACTIVE
+    (bounded 12 min). Retesting.'
+  needs:
+  - vpc_id
   parallel: normal
   status: untested
   timeout_class: fast
   update: false
-  vpc: none
+  vpc: pool
 vpc_transit_gateway_rule:
   cost: cheap
   depends_on: []
