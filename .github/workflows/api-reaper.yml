@@ -18,6 +18,8 @@ on:
   # Triggered 2026-06-19: reap TGW partial-creates from TGW Batch A apply-fail (run
   # 27799716751: firewall create 400 INACTIVE left TGWs/firewall_connections stranded;
   # TGW max=3 so clear them before any future TGW sweep). Peering ran clean (destroy_verify=ok).
+  # Triggered 2026-06-19 (d): reap leaked TGW+firewall_connection+vpc_connection from run 27814565373
+  # (provider Value Conversion Error after API create; orphaned fw_connection blocks vpc_connection delete).
   # Triggered 2026-06-19 (c): reap stranded TGW from the firewall-connection probe (run 27812898493:
   # connection create 400'd "needs a connected VPC" -> TGW left, no auto-destroy). TGW max=3, clear before retest.
   # Triggered 2026-06-19 (b): reap cachestore_cluster partial-create leak from run 27802519587
