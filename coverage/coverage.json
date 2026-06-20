@@ -1590,16 +1590,16 @@
     }
   },
   "samsungcloudplatformv2_vpc_transit_gateway_uplink_rule": {
-    "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27872045009",
-    "last_seen": "2026-06-20T13:52:12Z",
-    "note": "Error: Error Creating Transit Gateway Uplink Rule with samsungcloudplatformv2_vpc_transit_gateway_uplink_rule.regr, on main.tf line 65, in resource \"samsungcloudplatformv2_vpc_transit_gateway_uplink_rule\" \"regr\": 65: resource \"samsungcloudplatformv2_vpc_transit_gateway_uplink_rule\" \"regr\" { Could not create uplink rule, unexpected error: 400 Bad Request Reason: If destination type is TGW, the destination cidr should be included in vpc cidr blocks: 192.168.40.0/24",
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27873181296",
+    "last_seen": "2026-06-20T14:24:51Z",
+    "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_vpc_transit_gateway.regr",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
-      "import": "skip",
+      "apply": "ok",
+      "destroy": "ok",
+      "import": "unsupported",
       "plan": "ok",
-      "replan": "skip",
+      "replan": "ok",
       "update": "skip",
       "validate": "ok"
     }

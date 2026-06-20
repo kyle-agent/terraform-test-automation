@@ -1556,14 +1556,11 @@ vpc_transit_gateway_uplink_rule:
   exclude_reason: ''
   family: vpc
   import: false
-  issues:
-  - 'Re-retest: chain (TGW->vpc_connection->firewall_connection) reached uplink_rule create; 400 ''destination
-    cidr should be included in vpc cidr blocks'' -> destination_cidr fixed to the pool VPC cidr 192.168.0.0/24
-    (was 192.168.40.0/24). Re-sweeping.'
+  issues: []
   needs:
   - vpc_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
