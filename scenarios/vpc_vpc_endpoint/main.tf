@@ -96,12 +96,12 @@ resource "samsungcloudplatformv2_vpc_vpc_endpoint" "regr" {
   # resource_info should likewise come from the SAME connectable-resources item
   # as resource_key (the API returns them as a matched pair). The harness should
   # inject TF_VAR_resource_info alongside TF_VAR_resource_key.
-  resource_info       = var.resource_info
+  resource_info = var.resource_info
   # #94: pass the injected opaque key verbatim. Do NOT fall back to account_id
   # (backend 400s it); an empty value is meant to fail until a real key is wired.
-  resource_key        = var.resource_key
-  resource_type       = var.resource_type
-  subnet_id           = samsungcloudplatformv2_vpc_subnet.regr_endpoint.id
-  vpc_id              = var.vpc_id
-  description         = "regr-test"
+  resource_key  = var.resource_key
+  resource_type = var.resource_type
+  subnet_id     = samsungcloudplatformv2_vpc_subnet.regr_endpoint.id
+  vpc_id        = var.vpc_id
+  description   = "regr-test"
 }
