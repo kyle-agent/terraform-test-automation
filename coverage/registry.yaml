@@ -1537,15 +1537,19 @@ vpc_transit_gateway_firewall_connection:
   family: vpc
   import: false
   issues:
-  - "#96: NOT a platform circular limit (prior conclusion overturned). Run 27812898493 (patched provider\
-    \ + connection-first fixture) got past the old INACTIVE error and 400d \"There must be at least one\
-    \ connected VPC to proceed\" \u2014 the real prereq is a vpc_connection. Fixture now chains TGW ->\
-    \ vpc_connection -> firewall_connection (vpc:pool); patched waiter (fork branch) carries ATTACHING/INACTIVE\
-    \ -> ACTIVE (bounded 12 min). Retesting."
+  - '#96 ADVANCED, not a platform dead-end (run 27859964524). The connection-first fixture (TGW->vpc_connection->firewall_connection)
+    + patched 12-min waiter got PAST both platform preconditions (old INACTIVE error and the ''needs a
+    connected VPC'' 400) and reached firewall_connection create -- which now fails on a PROVIDER bug:
+    ''Value Conversion Error ... Expected framework type from provider logic ... This is always an error
+    in the provider'' at firewall_connection.regr (main.tf:46), the same terraform-plugin-framework type-mismatch
+    class as #92 but on the CREATE/apply path. validate/plan ok, apply=fail. Partial-create cleanup also
+    400s ''Firewall Connection must be disconnected before all VPC connections can be deleted'' -> leaks
+    the pool VPC (reaper order fw-conn->vpc-conn->TGW reclaims it). Next: provider fix to the firewall_connection
+    Create/Read state model, then re-retest.'
   needs:
   - vpc_id
   parallel: normal
-  status: untested
+  status: broken
   timeout_class: fast
   update: false
   vpc: pool

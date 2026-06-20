@@ -9,7 +9,44 @@ multi-agent architecture + session bootstrap), then this file, then `tasks/lesso
 
 ---
 
-## 0. Session 2026-06-19c (LATEST) — provider fixes: vpc_cidr GREEN + TGW #96 myth overturned
+## 0. Session 2026-06-20 (LATEST) — TGW firewall_connection retest: #96 is a PROVIDER bug, not a platform dead-end
+
+**Branch:** `claude/confident-carson-gnchzx` (this repo). Resumed via `/session-start`. The prior
+handoff's "Task A" (vpc_transit_gateway_rule + cachestore_cluster) was already GREEN (done in 0b) — a
+stale note. User approved spending one TGW-pool sweep to retest `vpc_transit_gateway_firewall_connection`.
+
+**Result — firewall_connection retest (sweep 27859964524, pool lane, build-ref=fork `main`):**
+- ✅ **#96 "platform circular limit" fully OVERTURNED.** With the rechained fixture
+  (TGW→vpc_connection→firewall_connection) + the patched 12-min waiter, the create got PAST every
+  platform precondition (old INACTIVE, then "needs a connected VPC"). validate ✅ plan ✅ **apply ❌**.
+- ❌ **New blocker = PROVIDER bug.** apply fails `Value Conversion Error … Expected framework type from
+  provider logic … This is always an error in the provider` at firewall_connection.regr (main.tf:46) — a
+  terraform-plugin-framework type mismatch in the firewall_connection Create/Read **state model** (same
+  class as #92, on the create path). firewall_connection stays **broken**; the path forward is a PROVIDER
+  fix, not fixture/waiter work.
+- ⚠️ **Teardown trap + leak.** Partial-create cleanup 400s "Firewall Connection must be disconnected
+  before all VPC connections can be deleted" → bootstrap pool VPC `42b72d76` (rpv278599645240) leaked on
+  the teardown 409. **Reap-after IN FLIGHT (run 27860555251)** — reaper order fw-conn→vpc-conn→TGW
+  reclaims it; VERIFY it reached `sweep_all done` and the VPC is gone.
+
+**Recorded this session:** registry `vpc_transit_gateway_firewall_connection` untested→broken w/ the new
+diagnosis; `docs/PROVIDER_ISSUES.md` #96 row corrected (+ #92 row added); dashboard merged
+(coverage.json / COVERAGE.md / docs/index.html — lifecycle green unchanged **64**); `tasks/lessons.md`
+TGW entry rewritten. **Account:** reap-before (27859481902) cleared the stranded regr-tgwfwc TGWs →
+**TGW 0**; one permanently-stuck VPC `rpv273154960170` (subnet a7793ccc, 2026-06-11 dbaas leak, reaper
+can't clear with current key) → **4 of 5 VPC free**.
+
+**NEXT:**
+1. **Provider fix (axis ①):** patch fork `service/vpc/transit_gateway_firewall_connection.go` Create/Read
+   state mapping for the Value Conversion Error (identify the mismatching attribute — pull the full error
+   from sweep 27859964524 pool-job step 7). Source-build, re-retest firewall_connection; if green, cascade
+   the vpc_connection prereq to firewall / uplink_rule / private_nat[_ip].
+2. **Decide (outward, needs steer):** file a NEW fork issue for the Value Conversion Error, or comment the
+   correction on #96 (it currently claims a platform-limit story now disproven).
+3. Confirm reap-after 27860555251 cleaned VPC 42b72d76. Live Pages dashboard publishes from `main` only;
+   this session's dashboard delta is in-branch until a merge/PR.
+
+## 0. Session 2026-06-19c — provider fixes: vpc_cidr GREEN + TGW #96 myth overturned
 
 **Branch:** `claude/pensive-goldberg-e34mtm` (both repos). Continued from 0b below.
 **Provider fork PR #98 → fork main (MERGED, sha 8a1b4bb):** two fixes for the dev team.
