@@ -27,6 +27,9 @@ on:
   # provider Value Conversion Error AFTER creating TGW+vpc_connection+firewall_connection; partial-create
   # cleanup 400'd ("Firewall Connection must be disconnected before VPC connections can be deleted") -> pool
   # VPC 42b72d76 (rpv278599645240) leaked on a 409. Reaper order (fw-conn -> vpc-conn -> TGW) clears it.
+  # Triggered 2026-06-20 (c): reap-after PASS 2. Pass 1 (run 27860555251) ran ~6min post-apply and the
+  # firewall connection was still settling: vpc-connection d47aa814 delete 400'd, TGW e50f2da4
+  # (regr-tgwfwca0f3ea) 409'd, pool VPC 42b72d76 still pinned. Retry now that it has settled.
   # Triggered 2026-06-19 (b): reap cachestore_cluster partial-create leak from run 27802519587
   # (apply failed "inconsistent result: sentinel_port 26379->26378" provider bug; scenario
   # cleanup destroy 500'd reading the server -> leaked cachestore cluster + maybe its subnet/VPC).
