@@ -1406,13 +1406,13 @@ vpc_private_nat:
   family: vpc
   import: false
   issues:
-  - 'Fixture fix: TGW "Connectable" needs an ACTIVE firewall connection, not just a vpc_connection (fork
-    #96, HANDOFF 0Y). Added firewall + firewall_connection (depends_on); private_nat depends_on both connections.
-    Retest with patched provider.'
+  - 'Re-retest (#96 cascade) with the firewall_connection fix (PR #99). Fixture rechained to TGW->vpc_connection->firewall_connection
+    (dropped the separate, broken vpc_transit_gateway_firewall resource), mirroring the green firewall_connection
+    scenario.'
   needs:
   - vpc_id
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
@@ -1422,12 +1422,13 @@ vpc_private_nat_ip:
   family: vpc
   import: false
   issues:
-  - 'Fixture fix: same as vpc_private_nat - TGW Connectable needs an ACTIVE firewall connection (fork
-    #96). Added firewall + firewall_connection (depends_on). Retest with patched provider.'
+  - 'Re-retest (#96 cascade) with the firewall_connection fix (PR #99). Fixture rechained to TGW->vpc_connection->firewall_connection
+    (dropped the separate, broken vpc_transit_gateway_firewall resource), mirroring the green firewall_connection
+    scenario.'
   needs:
   - ip_address
   parallel: normal
-  status: broken
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool

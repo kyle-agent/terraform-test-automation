@@ -56,19 +56,16 @@ resource "samsungcloudplatformv2_vpc_transit_gateway_vpc_connection" "regr" {
   vpc_id             = var.vpc_id
 }
 
-# A private NAT requires the TGW to be Connectable, which means an ACTIVE firewall
-# connection (a created vpc_connection alone is NOT enough). Register a firewall
-# and create the connection; the provider's firewall-connection Create waits for
-# ATTACHING -> ACTIVE, so once this resource exists the TGW is Connectable.
-resource "samsungcloudplatformv2_vpc_transit_gateway_firewall" "regr" {
-  product_type       = var.product_type
-  transit_gateway_id = samsungcloudplatformv2_vpc_transit_gateway.regr.id
-}
-
+# A private NAT requires the TGW to be Connectable = an ACTIVE firewall connection.
+# The firewall_connection Create itself registers the firewall and waits ATTACHING
+# -> ACTIVE; its only real prerequisite is a vpc_connection (proven by the green
+# vpc_transit_gateway_firewall_connection scenario + fork PR #99). The separate
+# vpc_transit_gateway_firewall resource is NOT needed (and is itself broken), so
+# the chain is TGW -> vpc_connection -> firewall_connection.
 resource "samsungcloudplatformv2_vpc_transit_gateway_firewall_connection" "regr" {
   transit_gateway_id = samsungcloudplatformv2_vpc_transit_gateway.regr.id
 
-  depends_on = [samsungcloudplatformv2_vpc_transit_gateway_firewall.regr]
+  depends_on = [samsungcloudplatformv2_vpc_transit_gateway_vpc_connection.regr]
 }
 
 resource "samsungcloudplatformv2_vpc_private_nat" "regr" {
@@ -85,8 +82,11 @@ resource "samsungcloudplatformv2_vpc_private_nat" "regr" {
 }
 
 # IP reserved under the private NAT (top-level private_nat id used for chaining).
+# ip_address must sit inside the private NAT range (var.private_nat_cidr). Derive it
+# from the cidr with cidrhost so the pool lane's injected TF_VAR_ip_address (the
+# bootstrap PUBLIC ip, ~123.x) cannot clobber it out of range.
 resource "samsungcloudplatformv2_vpc_private_nat_ip" "regr" {
-  ip_address     = var.ip_address
+  ip_address     = cidrhost(var.private_nat_cidr, 10)
   private_nat_id = samsungcloudplatformv2_vpc_private_nat.regr.id
   description    = "regr-test"
 }
