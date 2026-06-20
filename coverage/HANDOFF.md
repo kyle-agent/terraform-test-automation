@@ -9,7 +9,7 @@ multi-agent architecture + session bootstrap), then this file, then `tasks/lesso
 
 ---
 
-## 0. Session 2026-06-20 (continued, LATEST) — provider fix PR #99 → firewall_connection GREEN
+## 0. Session 2026-06-20 (continued, LATEST) — provider fix PR #99 → entire #96 TGW-firewall family GREEN
 
 **Branch:** `claude/confident-carson-gnchzx` (both repos). Continued from the retest diagnosis below.
 
@@ -32,8 +32,12 @@ fork PR #99 merged to fork `main`.
   `vpc_transit_gateway_firewall` resource — firewall_connection registers its own firewall), and derived
   private_nat_ip's IP via `cidrhost(private_nat_cidr,10)` so the pool lane's injected public
   `TF_VAR_ip_address` can't push it out of range → **registry 100→102, lifecycle 65→67 (85.9%)**.
-  Remaining family: `vpc_transit_gateway_firewall` + `vpc_transit_gateway_uplink_rule` (still broken;
-  uplink_rule needs the same rechain + lane none→pool; firewall needs its own investigation).
+  `vpc_transit_gateway_firewall` (sweep 27872045009) and `vpc_transit_gateway_uplink_rule` (sweep
+  27873181296, after fixing `destination_cidr`→ the pool VPC cidr 192.168.0.0/24) **also GREEN** →
+  **the ENTIRE #96 TGW-firewall family is now green**: firewall_connection, firewall, uplink_rule,
+  private_nat, private_nat_ip. All 5 rechained to `TGW→vpc_connection→firewall_connection` (the only
+  needed fix beyond the provider PR #99 `firewall_id`). **Session arc: lifecycle green 64 → 69 (88.5%),
+  registry green 99 → 104.** #96 family fully closed; nothing left in it to chase.
 - **Persistent leak:** TGW `e50f2da4` + pool VPC `42b72d76` from the FAILED retest remain stranded after
   ~5h + 3 reap passes (the un-listable firewall connection blocks teardown) — now behaving like the
   permanently-stuck `rpv273154960170`; likely needs console/owner or a platform-side timeout. Account

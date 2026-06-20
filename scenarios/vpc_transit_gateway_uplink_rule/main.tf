@@ -16,6 +16,12 @@ variable "name_suffix" {
   default     = ""
 }
 
+variable "vpc_id" {
+  type        = string
+  description = "Existing VPC connected to the TGW (for the vpc_connection the firewall_connection needs). The pool lane injects TF_VAR_vpc_id."
+  default     = "00000000-0000-0000-0000-000000000000"
+}
+
 variable "destination_type" {
   type        = string
   description = "Uplink rule destination type. Valid: TGW, ON_PREMISE."
@@ -24,44 +30,38 @@ variable "destination_type" {
 
 variable "destination_cidr" {
   type        = string
-  description = "Destination CIDR the uplink rule routes to."
-  default     = "192.168.40.0/24"
-}
-
-variable "product_type" {
-  type        = string
-  description = "Transit gateway firewall product type. Valid: TGW_IGW, TGW_GGW, TGW_DGW, TGW_BM."
-  default     = "TGW_BM"
+  description = "Destination CIDR the uplink rule routes to. For destination_type=TGW the platform requires it to be included in the connected VPC's cidr blocks, so default to the pool VPC cidr (192.168.0.0/24)."
+  default     = "192.168.0.0/24"
 }
 
 # An uplink rule needs a transit gateway parent (not exported by the bootstrap),
-# so the TGW is created in-line here and the rule attaches to it. A transit
-# gateway consumes no account VPC quota, so this stays within quota.
+# so the TGW is created in-line here. A TGW consumes no account VPC quota.
 resource "samsungcloudplatformv2_vpc_transit_gateway" "regr" {
   name        = "regr-tgwul${var.name_suffix}"
   description = "regr-test"
 }
 
 # An uplink rule can only be created once the TGW has an ACTIVE firewall
-# connection (uplink routing is a firewall feature). Build the full prerequisite
-# chain: firewall registered on the TGW -> firewall connection (ATTACHING ->
-# ACTIVE). The provider's firewall-connection Create waits for ACTIVE, so once
-# the connection resource is created the TGW is firewall-active.
-resource "samsungcloudplatformv2_vpc_transit_gateway_firewall" "regr" {
-  product_type       = var.product_type
+# connection. The firewall_connection Create registers the firewall itself and
+# waits ATTACHING -> ACTIVE; its only real prerequisite is a vpc_connection
+# (proven by the green vpc_transit_gateway_firewall_connection scenario + fork
+# PR #99). So the chain is TGW -> vpc_connection -> firewall_connection; vpc:pool
+# supplies a real vpc_id for the connection.
+resource "samsungcloudplatformv2_vpc_transit_gateway_vpc_connection" "regr" {
   transit_gateway_id = samsungcloudplatformv2_vpc_transit_gateway.regr.id
+  vpc_id             = var.vpc_id
 }
 
 resource "samsungcloudplatformv2_vpc_transit_gateway_firewall_connection" "regr" {
   transit_gateway_id = samsungcloudplatformv2_vpc_transit_gateway.regr.id
 
-  depends_on = [samsungcloudplatformv2_vpc_transit_gateway_firewall.regr]
+  depends_on = [samsungcloudplatformv2_vpc_transit_gateway_vpc_connection.regr]
 }
 
-# Transit gateway uplink rule fixture guarding networking coverage: a TGW uplink
-# route must re-plan cleanly with no spurious update or replacement.
-# Required args: destination_cidr, destination_type, transit_gateway_id.
-# Optional: description. depends_on the firewall connection so it is ACTIVE first.
+# Transit gateway uplink rule: a TGW uplink route must re-plan cleanly with no
+# spurious update or replacement. Required args: destination_cidr,
+# destination_type, transit_gateway_id. depends_on the firewall connection so it
+# is ACTIVE first.
 resource "samsungcloudplatformv2_vpc_transit_gateway_uplink_rule" "regr" {
   destination_cidr   = var.destination_cidr
   destination_type   = var.destination_type

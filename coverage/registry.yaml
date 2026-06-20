@@ -1514,17 +1514,14 @@ vpc_transit_gateway_firewall:
   exclude_reason: ''
   family: vpc
   import: false
-  issues:
-  - "400 \"Transit Gateway Firewall connection state is not Active (INACTIVE)\" on firewall create (run\
-    \ 27799716751, patched provider + firewall_connection prereq chain). The firewall_connection does\
-    \ not reach ACTIVE before the dependent firewall create \u2014 platform state-machine constraint confirmed\
-    \ across sessions (#96). apply-fail; not provider/fixture-fixable in a single apply."
-  needs: []
+  issues: []
+  needs:
+  - vpc_id
   parallel: normal
-  status: broken
+  status: green
   timeout_class: fast
   update: false
-  vpc: none
+  vpc: pool
 vpc_transit_gateway_firewall_connection:
   cost: cheap
   depends_on: []
@@ -1559,17 +1556,14 @@ vpc_transit_gateway_uplink_rule:
   exclude_reason: ''
   family: vpc
   import: false
-  issues:
-  - "400 \"Transit Gateway Firewall connection state is not Active (INACTIVE)\" on firewall create (run\
-    \ 27799716751, patched provider + firewall_connection prereq chain). The firewall_connection does\
-    \ not reach ACTIVE before the dependent firewall create \u2014 platform state-machine constraint confirmed\
-    \ across sessions (#96). apply-fail; not provider/fixture-fixable in a single apply."
-  needs: []
+  issues: []
+  needs:
+  - vpc_id
   parallel: normal
-  status: broken
+  status: green
   timeout_class: fast
   update: false
-  vpc: none
+  vpc: pool
 vpc_transit_gateway_vpc_connection:
   cost: cheap
   depends_on: []

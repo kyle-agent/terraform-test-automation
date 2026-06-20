@@ -1545,16 +1545,16 @@
     }
   },
   "samsungcloudplatformv2_vpc_transit_gateway_firewall": {
-    "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27241816399",
-    "last_seen": "2026-06-09T23:33:14Z",
-    "note": "Error: Error creating CreateTransitGatewayFirewall with samsungcloudplatformv2_vpc_transit_gateway_firewall.regr, on main.tf line 28, in resource \"samsungcloudplatformv2_vpc_transit_gateway_firewall\" \"regr\": 28: resource \"samsungcloudplatformv2_vpc_transit_gateway_firewall\" \"regr\" { Could not create CreateTransitGatewayFirewall, unexpected error: 404 Not Found Reason: Not found with ID 00000000-0000-0000-0000-000000000000",
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27872045009",
+    "last_seen": "2026-06-20T13:52:12Z",
+    "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_vpc_transit_gateway.regr",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
-      "import": "skip",
+      "apply": "ok",
+      "destroy": "ok",
+      "import": "unsupported",
       "plan": "ok",
-      "replan": "skip",
+      "replan": "ok",
       "update": "skip",
       "validate": "ok"
     }
@@ -1590,16 +1590,16 @@
     }
   },
   "samsungcloudplatformv2_vpc_transit_gateway_uplink_rule": {
-    "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27241816399",
-    "last_seen": "2026-06-09T23:33:14Z",
-    "note": "Error: Error Creating Transit Gateway Uplink Rule with samsungcloudplatformv2_vpc_transit_gateway_uplink_rule.regr, on main.tf line 35, in resource \"samsungcloudplatformv2_vpc_transit_gateway_uplink_rule\" \"regr\": 35: resource \"samsungcloudplatformv2_vpc_transit_gateway_uplink_rule\" \"regr\" { Could not create uplink rule, unexpected error: 404 Not Found Reason: Not found with ID 00000000-0000-0000-0000-000000000000",
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27873181296",
+    "last_seen": "2026-06-20T14:24:51Z",
+    "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_vpc_transit_gateway.regr",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
-      "import": "skip",
+      "apply": "ok",
+      "destroy": "ok",
+      "import": "unsupported",
       "plan": "ok",
-      "replan": "skip",
+      "replan": "ok",
       "update": "skip",
       "validate": "ok"
     }
