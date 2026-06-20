@@ -114,3 +114,7 @@ jobs:
 # touch 2026-06-12b: re-reap stale VPCs (rpv273154960170 etc.) now that the dbaas probe clusters are gone
 # touch 2026-06-12c: reap run-27406093988 leaks (2 pool VPCs pinned by FAILED DBaaS clusters + peering VPCs; account at 5/5 quota)
 # touch 2026-06-12d: reap orphaned filestorage replication + pinned pool volume fff1a72c (run 27410597752)
+# touch 2026-06-20 (f): session wrap-up cleanup. Retry reclaiming the long-stranded TGW e50f2da4
+# (regr-tgwfwca0f3ea) + pool VPC 42b72d76 (rpv278599645240) from the firewall_connection retest
+# Value-Conversion partial-create. 5+ prior passes 409'd while the un-listable firewall connection
+# settled; ~hours have now elapsed (precedent: TGW 984b8825 cleared on a late pass), so try once more.
