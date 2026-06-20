@@ -1,7 +1,7 @@
 # Coverage-expansion session handoff
 
-**Branch:** `main` — session 2026-06-18 (v4 reconciliation). Dev branch `claude/epic-ride-9zotgp`.
-**Last updated:** 2026-06-18
+**Branch:** dev `claude/confident-carson-gnchzx` (both repos), synced to `main` (test-repo + fork).
+**Last updated:** 2026-06-20 (wrap-up)
 **Purpose:** Single source of truth for resuming the Terraform-provider coverage
 expansion work in a fresh session. **Start at [`AGENTS.md`](../AGENTS.md)** (mission +
 multi-agent architecture + session bootstrap), then this file, then `tasks/lessons.md`
@@ -9,7 +9,46 @@ multi-agent architecture + session bootstrap), then this file, then `tasks/lesso
 
 ---
 
-## 0. Session 2026-06-20 (continued, LATEST) — provider fix PR #99 → entire #96 TGW-firewall family GREEN
+## 0. Session 2026-06-20 (wrap-up, LATEST) — iam_user update GREEN landed + Static Checks un-blocked; easy surface EXHAUSTED
+
+**Branch:** `claude/confident-carson-gnchzx` (both repos), now synced to `main` (test-repo) / fork `main`.
+User picked **"마무리 + 계정 정리"** (wrap up + account cleanup) — broken→green AND the update axis are exhausted.
+
+**Landed this session (all on `main`):**
+- **iam_user update axis GREEN** (PR **#38** → `main`; dashboard published, Pages run 27882317927 = success).
+  Root cause was **API behavior, not a provider bug**: `UpdateIAMUser` REQUIRES `password_reuse_count > 0`
+  (create lets you omit it; SDK then sends `0` → 400). Fixed in the **fixture** (`password_reuse_count = 2`).
+  → **registry green 104, lifecycle green 69 (88.5%), in-place update verified 38 (49%), import 0.**
+- **Static Checks un-blocked** (PR **#39** → `main`). `terraform fmt -check` had been red on EVERY push:
+  `scenarios/vpc_vpc_endpoint/main.tf` lost fmt alignment when #94 inline comments split the groups
+  (over-padded to col 20 vs 14). Re-aligned → CI green (run 27882431669). The drift had ridden into `main`
+  via PR #37 unnoticed (`static.yml` only runs on `claude/**`, never on `main`).
+- Both dev branches **synced to their mains** (test-repo 4bcb509; fork 0105340). The dev branch is +1 ahead of
+  `main` by the **reaper-trigger touch c76c344 only** (CI trigger, intentionally NOT for merge).
+
+**IN-FLIGHT — harvest before trusting account state:**
+- **API Reaper run `27882919209`** (in_progress, push c76c344, SWEEP_ALL=1) — retrying the long-stranded
+  **TGW `e50f2da4` (regr-tgwfwca0f3ea) + pool VPC `42b72d76` (rpv278599645240)**. Read its sweep log: if they
+  still 409, the leak needs **console/owner** (5+ passes have failed; it behaves like the permanently-stuck
+  VPC `rpv273154960170`). Account ≈ TGW 1/3, ~3/5 VPC free.
+
+**What's next (all heavy — the cheap surface is gone; CONFIRM direction before starting):**
+1. **import axis (#81)** — stuck at 0%. The provider implements no `ImportState`; greening it means
+   implementing `ImportState` in the fork (large, multi-resource provider work). Biggest coverage headroom.
+2. **vpc_vpc_endpoint #94** — `resource_key` is an OPAQUE server id; needs a `connectable-resources`
+   data source (or runtime `TF_VAR_resource_key` injection + a real OBS target) to reach apply. Medium.
+3. **platform/console** — the stuck leak + permission-boundary resources (backup/scf/gslb/baremetal) need
+   account-owner/console access; not provider- or test-fixable from here.
+
+**Dead ends — do NOT re-attempt:**
+- iam_user update: fork PRs **#101** (provider state-guard) and **#102** (SDK `*int32`+omitempty) are **inert**
+  — neither greens it (state is also 0; #102 just flips the 400 to "Field required"). The **fixture** is the fix.
+- vpc_vpc_endpoint `resource_key`: `account_id` / `1.1.1.1` / a real OBS IP were ALL 400-rejected; only the
+  `connectable-resources` API yields a valid key.
+
+---
+
+## 0. Session 2026-06-20 (continued) — provider fix PR #99 → entire #96 TGW-firewall family GREEN
 
 **Branch:** `claude/confident-carson-gnchzx` (both repos). Continued from the retest diagnosis below.
 
