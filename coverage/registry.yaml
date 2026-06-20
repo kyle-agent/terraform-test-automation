@@ -878,7 +878,8 @@ iam_user:
   depends_on: []
   family: iam
   import: false
-  issues: []
+  issues:
+  - 'Update-axis re-sweep after fork PR #101 (Update no longer sends password_reuse_count=0); expect update=ok.'
   needs: []
   parallel: normal
   status: untested
