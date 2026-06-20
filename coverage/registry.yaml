@@ -1405,14 +1405,11 @@ vpc_private_nat:
   depends_on: []
   family: vpc
   import: false
-  issues:
-  - 'Fixture fix: TGW "Connectable" needs an ACTIVE firewall connection, not just a vpc_connection (fork
-    #96, HANDOFF 0Y). Added firewall + firewall_connection (depends_on); private_nat depends_on both connections.
-    Retest with patched provider.'
+  issues: []
   needs:
   - vpc_id
   parallel: normal
-  status: broken
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -1421,13 +1418,11 @@ vpc_private_nat_ip:
   depends_on: []
   family: vpc
   import: false
-  issues:
-  - 'Fixture fix: same as vpc_private_nat - TGW Connectable needs an ACTIVE firewall connection (fork
-    #96). Added firewall + firewall_connection (depends_on). Retest with patched provider.'
+  issues: []
   needs:
   - ip_address
   parallel: normal
-  status: broken
+  status: green
   timeout_class: fast
   update: false
   vpc: pool

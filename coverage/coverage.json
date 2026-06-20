@@ -1425,31 +1425,31 @@
     }
   },
   "samsungcloudplatformv2_vpc_private_nat": {
-    "highest_stage": "validate",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/26991198235",
-    "last_seen": "2026-06-05T01:30:00Z",
-    "note": "blocked: TGW Connectable race / #76",
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27869756258",
+    "last_seen": "2026-06-20T12:10:34Z",
+    "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_vpc_private_nat.regr",
     "stages": {
-      "apply": "skip",
-      "destroy": "skip",
-      "import": "skip",
-      "plan": "skip",
-      "replan": "skip",
+      "apply": "ok",
+      "destroy": "ok",
+      "import": "unsupported",
+      "plan": "ok",
+      "replan": "ok",
       "update": "skip",
       "validate": "ok"
     }
   },
   "samsungcloudplatformv2_vpc_private_nat_ip": {
-    "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27233794315",
-    "last_seen": "2026-06-09T20:46:06Z",
-    "note": "Error: Error creating Private NAT with samsungcloudplatformv2_vpc_private_nat.regr, on main.tf line 40, in resource \"samsungcloudplatformv2_vpc_private_nat\" \"regr\": 40: resource \"samsungcloudplatformv2_vpc_private_nat\" \"regr\" { Could not create Private NAT, unexpected error: 400 Bad Request Reason: Cannot found the Transit Gateway(f33f497de2a94f6b876e465ceec949b1) in Connectable state.",
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27869756258",
+    "last_seen": "2026-06-20T12:10:34Z",
+    "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_vpc_private_nat.regr",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
-      "import": "skip",
+      "apply": "ok",
+      "destroy": "ok",
+      "import": "unsupported",
       "plan": "ok",
-      "replan": "skip",
+      "replan": "ok",
       "update": "skip",
       "validate": "ok"
     }

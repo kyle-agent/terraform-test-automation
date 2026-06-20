@@ -63,20 +63,16 @@ resource "samsungcloudplatformv2_vpc_transit_gateway_vpc_connection" "regr" {
   vpc_id             = var.vpc_id
 }
 
-# A private NAT requires the TGW to be in a Connectable state, which means the
-# TGW must have an ACTIVE firewall connection (a created vpc_connection alone is
-# NOT enough). Register a firewall on the TGW and create the firewall connection;
-# the provider's firewall-connection Create waits for ATTACHING -> ACTIVE, so once
-# this resource exists the TGW is Connectable.
-resource "samsungcloudplatformv2_vpc_transit_gateway_firewall" "regr" {
-  product_type       = var.product_type
-  transit_gateway_id = samsungcloudplatformv2_vpc_transit_gateway.regr.id
-}
-
+# A private NAT requires the TGW to be in a Connectable state = an ACTIVE firewall
+# connection. The firewall_connection Create itself registers the firewall and
+# waits ATTACHING -> ACTIVE; its only real prerequisite is a vpc_connection (proven
+# by the green vpc_transit_gateway_firewall_connection scenario + fork PR #99).
+# The separate vpc_transit_gateway_firewall resource is NOT needed (and is itself
+# broken), so the chain is TGW -> vpc_connection -> firewall_connection.
 resource "samsungcloudplatformv2_vpc_transit_gateway_firewall_connection" "regr" {
   transit_gateway_id = samsungcloudplatformv2_vpc_transit_gateway.regr.id
 
-  depends_on = [samsungcloudplatformv2_vpc_transit_gateway_firewall.regr]
+  depends_on = [samsungcloudplatformv2_vpc_transit_gateway_vpc_connection.regr]
 }
 
 # Private NAT bound to the transit gateway (top-level id used for chaining).
