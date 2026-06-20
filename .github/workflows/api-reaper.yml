@@ -30,6 +30,9 @@ on:
   # Triggered 2026-06-20 (c): reap-after PASS 2. Pass 1 (run 27860555251) ran ~6min post-apply and the
   # firewall connection was still settling: vpc-connection d47aa814 delete 400'd, TGW e50f2da4
   # (regr-tgwfwca0f3ea) 409'd, pool VPC 42b72d76 still pinned. Retry now that it has settled.
+  # Triggered 2026-06-20 (d): reap-BEFORE the firewall_connection RE-retest after provider fix PR #99
+  # (adds missing firewall_id to the nested schema -> fixes the Value Conversion Error). Clean slate +
+  # another attempt to reclaim the still-stranded TGW e50f2da4 + pool VPC 42b72d76 (settling since 04:36).
   # Triggered 2026-06-19 (b): reap cachestore_cluster partial-create leak from run 27802519587
   # (apply failed "inconsistent result: sentinel_port 26379->26378" provider bug; scenario
   # cleanup destroy 500'd reading the server -> leaked cachestore cluster + maybe its subnet/VPC).
