@@ -20,6 +20,9 @@ on:
   # TGW max=3 so clear them before any future TGW sweep). Peering ran clean (destroy_verify=ok).
   # Triggered 2026-06-19 (c): reap stranded TGW from the firewall-connection probe (run 27812898493:
   # connection create 400'd "needs a connected VPC" -> TGW left, no auto-destroy). TGW max=3, clear before retest.
+  # Triggered 2026-06-20: reap-BEFORE the vpc_transit_gateway_firewall_connection retest. Run 27819033334
+  # left TGW regr-tgwfwc51bf10 (984b8825) on a final-delete 400 (vpc-connection still settling) + VPCs
+  # 225cc279/5b7e1937 on 409; clear the slate so the retest's verdict is trustworthy (TGW max=3).
   # Triggered 2026-06-19 (b): reap cachestore_cluster partial-create leak from run 27802519587
   # (apply failed "inconsistent result: sentinel_port 26379->26378" provider bug; scenario
   # cleanup destroy 500'd reading the server -> leaked cachestore cluster + maybe its subnet/VPC).
