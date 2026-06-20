@@ -1561,9 +1561,9 @@
   },
   "samsungcloudplatformv2_vpc_transit_gateway_firewall_connection": {
     "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27241816399",
-    "last_seen": "2026-06-09T23:33:14Z",
-    "note": "Error: Error creating Transit Gateway Firewall Connection with samsungcloudplatformv2_vpc_transit_gateway_firewall_connection.regr, on main.tf line 22, in resource \"samsungcloudplatformv2_vpc_transit_gateway_firewall_connection\" \"regr\": 22: resource \"samsungcloudplatformv2_vpc_transit_gateway_firewall_connection\" \"regr\" { Could not create Transit Gateway Firewall Connection, unexpected error: 404 Not Found Reason: Not found with ID 00000000-0000-0000-0000-000000000000",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27859964524",
+    "last_seen": "2026-06-20T04:47:40Z",
+    "note": "Error: Value Conversion Error with samsungcloudplatformv2_vpc_transit_gateway_firewall_connection.regr, on main.tf line 46, in resource \"samsungcloudplatformv2_vpc_transit_gateway_firewall_connection\" \"regr\": 46: resource \"samsungcloudplatformv2_vpc_transit_gateway_firewall_connection\" \"regr\" { An unexpected error was encountered while verifying an attribute value matched its expected type to prevent unexpected behavior or panics. This is always an error in the provider. Please report the following to the provider developer: Expected framework type from provider logic: | LEAK: partial-create cleanup destroy failed: Error: Error Deleting tgw vpc connection Could not delete tgw vpc connection, unexpected error: 400 Bad Request Reason: Transit Gateway Firewall Connection must be disconnected before all VPC connections can be deleted.",
     "stages": {
       "apply": "fail",
       "destroy": "skip",

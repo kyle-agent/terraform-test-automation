@@ -26,6 +26,8 @@ the GitHub issues on the fork are the actionable copies.
 | #81 | **all resources** | **no `ImportState`** → terraform can't adopt/clean leaks (reaper compensates via API) | open (systemic) | scp-api SKILL |
 | #82 | dns public-domain-name | create returns **500 but leaves the resource**; no delete API → orphan | open | scp-api SKILL |
 | #83 | **DBaaS family** | weak client-side validation; provider **drops the API error body** → `400 value_error` names no field | open (systemic) | cmd/dbaas_probe/FINDINGS.md |
+| #92 | vpc_port / virtualserver_server | **Value Conversion Error** (unknown value) in the Update model — raw framework type | open | registry, dashboard |
+| #96 | vpc_transit_gateway_firewall_connection | create/apply **Value Conversion Error** ("Expected framework type from provider logic … always an error in the provider") — the prior "platform circular limit" conclusion is **overturned**: with a vpc_connection prereq + the patched waiter the create gets past the platform preconditions and the real blocker is a framework type mismatch in the firewall_connection Create/Read **state model** (same class as #92, but on the create path). Teardown also needs fw-conn disconnected before vpc-conn delete. | open (confirmed) | sweep 27859964524 (matrix note); reaper 27860555251 |
 
 ## Idempotency / schema defects (from `docs/findings/regression-idempotency.md`)
 
