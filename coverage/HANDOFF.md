@@ -24,17 +24,21 @@ stale note. User approved spending one TGW-pool sweep to retest `vpc_transit_gat
   terraform-plugin-framework type mismatch in the firewall_connection Create/Read **state model** (same
   class as #92, on the create path). firewall_connection stays **broken**; the path forward is a PROVIDER
   fix, not fixture/waiter work.
-- ⚠️ **Teardown trap + leak.** Partial-create cleanup 400s "Firewall Connection must be disconnected
-  before all VPC connections can be deleted" → bootstrap pool VPC `42b72d76` (rpv278599645240) leaked on
-  the teardown 409. **Reap-after IN FLIGHT (run 27860555251)** — reaper order fw-conn→vpc-conn→TGW
-  reclaims it; VERIFY it reached `sweep_all done` and the VPC is gone.
+- ⚠️ **Teardown trap + leak (NOT yet reclaimed — needs a follow-up reaper pass).** Partial-create cleanup
+  400s "Firewall Connection must be disconnected before all VPC connections can be deleted" → the retest's
+  TGW `e50f2da4` (regr-tgwfwca0f3ea) + bootstrap pool VPC `42b72d76` (rpv278599645240) leaked. **Two reap
+  passes (27860555251, 27861502444) did NOT clear them:** the Value-Conversion partial-create left a
+  firewall connection that does NOT appear in the firewall-connections LIST yet still blocks the
+  vpc_connection delete (400) → TGW + VPC 409. Precedent (reap-before TGW 984b8825) cleared only on a pass
+  ~hours later, so this just needs a FOLLOW-UP reaper pass once it settles (not an emergency).
 
 **Recorded this session:** registry `vpc_transit_gateway_firewall_connection` untested→broken w/ the new
 diagnosis; `docs/PROVIDER_ISSUES.md` #96 row corrected (+ #92 row added); dashboard merged
 (coverage.json / COVERAGE.md / docs/index.html — lifecycle green unchanged **64**); `tasks/lessons.md`
-TGW entry rewritten. **Account:** reap-before (27859481902) cleared the stranded regr-tgwfwc TGWs →
-**TGW 0**; one permanently-stuck VPC `rpv273154960170` (subnet a7793ccc, 2026-06-11 dbaas leak, reaper
-can't clear with current key) → **4 of 5 VPC free**.
+TGW entry rewritten. **Account (final):** reap-before (27859481902) cleared the older regr-tgwfwc TGWs;
+after the retest + 2 reap passes, **TGW `e50f2da4` + pool VPC `42b72d76` remain stranded** (settling, see
+above) alongside the permanently-stuck VPC `rpv273154960170` (subnet a7793ccc, 2026-06-11 dbaas leak) →
+**TGW 1/3, 3 of 5 VPC free** (workable, not leak-0).
 
 **NEXT:**
 1. **Provider fix (axis ①):** patch fork `service/vpc/transit_gateway_firewall_connection.go` Create/Read
@@ -43,8 +47,9 @@ can't clear with current key) → **4 of 5 VPC free**.
    the vpc_connection prereq to firewall / uplink_rule / private_nat[_ip].
 2. **Decide (outward, needs steer):** file a NEW fork issue for the Value Conversion Error, or comment the
    correction on #96 (it currently claims a platform-limit story now disproven).
-3. Confirm reap-after 27860555251 cleaned VPC 42b72d76. Live Pages dashboard publishes from `main` only;
-   this session's dashboard delta is in-branch until a merge/PR.
+3. **Follow-up reaper (leak):** fire api-reaper again next session to reclaim TGW `e50f2da4` + pool VPC
+   `42b72d76` once the stuck firewall connection settles (precedent ~hours). Live Pages dashboard
+   publishes from `main` only; this session's dashboard delta is in-branch until a merge/PR.
 
 ## 0. Session 2026-06-19c — provider fixes: vpc_cidr GREEN + TGW #96 myth overturned
 
