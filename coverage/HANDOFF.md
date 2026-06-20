@@ -35,7 +35,8 @@ stale note. User approved spending one TGW-pool sweep to retest `vpc_transit_gat
 **Recorded this session:** registry `vpc_transit_gateway_firewall_connection` untested→broken w/ the new
 diagnosis; `docs/PROVIDER_ISSUES.md` #96 row corrected (+ #92 row added); dashboard merged
 (coverage.json / COVERAGE.md / docs/index.html — lifecycle green unchanged **64**); `tasks/lessons.md`
-TGW entry rewritten. **Account (final):** reap-before (27859481902) cleared the older regr-tgwfwc TGWs;
+TGW entry rewritten. **Posted the correcting finding as a comment on fork #96** (the platform-limit
+framing there is now superseded by the provider Value Conversion Error — no need to re-post). **Account (final):** reap-before (27859481902) cleared the older regr-tgwfwc TGWs;
 after the retest + 2 reap passes, **TGW `e50f2da4` + pool VPC `42b72d76` remain stranded** (settling, see
 above) alongside the permanently-stuck VPC `rpv273154960170` (subnet a7793ccc, 2026-06-11 dbaas leak) →
 **TGW 1/3, 3 of 5 VPC free** (workable, not leak-0).
