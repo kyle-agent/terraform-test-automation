@@ -101,10 +101,12 @@ certificate_manager_self_sign:
   depends_on: []
   family: certificate
   import: false
-  issues: []
+  issues:
+  - 'Import-axis verification (#81): ImportState (passthrough) added in fork; sweeping to confirm import=ok.
+    Was: []. Flip back green+import:true after.'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -787,11 +789,13 @@ iam_access_key:
   family: iam
   import: false
   issues:
-  - 'GREEN with patched provider #58 (Delete disables an enabled key before deleting); full lifecycle
-    ok once the account access-key quota slot was freed (run 27241816399). Requires patched provider.'
+  - 'Import-axis verification (#81): ImportState (passthrough) added in fork; sweeping to confirm import=ok.
+    Was: [''GREEN with patched provider #58 (Delete disables an enabled key before deleting); full lifecycle
+    ok once the account access-key quota slot was freed (run 27241816399). Requires patched provider.''].
+    Flip back green+import:true after.'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -801,10 +805,12 @@ iam_group:
   family: iam
   import: false
   issues:
-  - 'GREEN (run 27663213235). update=ok; import=unsupported (no ImportState, #81).'
+  - 'Import-axis verification (#81): ImportState (passthrough) added in fork; sweeping to confirm import=ok.
+    Was: [''GREEN (run 27663213235). update=ok; import=unsupported (no ImportState, #81).'']. Flip back
+    green+import:true after.'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -838,10 +844,12 @@ iam_policy:
   family: iam
   import: false
   issues:
-  - 'GREEN (run 27663213235). update=ok; import=unsupported (no ImportState, #81).'
+  - 'Import-axis verification (#81): ImportState (passthrough) added in fork; sweeping to confirm import=ok.
+    Was: [''GREEN (run 27663213235). update=ok; import=unsupported (no ImportState, #81).'']. Flip back
+    green+import:true after.'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -851,11 +859,12 @@ iam_role:
   family: iam
   import: false
   issues:
-  - 'GREEN with patched provider #75 (CreateRole policy_ids -> [] not null); full lifecycle ok (run 27233487205).
-    Requires patched provider.'
+  - 'Import-axis verification (#81): ImportState (passthrough) added in fork; sweeping to confirm import=ok.
+    Was: [''GREEN with patched provider #75 (CreateRole policy_ids -> [] not null); full lifecycle ok
+    (run 27233487205). Requires patched provider.'']. Flip back green+import:true after.'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -1026,10 +1035,12 @@ loggingaudit_trail:
   depends_on: []
   family: loggingaudit
   import: false
-  issues: []
+  issues:
+  - 'Import-axis verification (#81): ImportState (passthrough) added in fork; sweeping to confirm import=ok.
+    Was: []. Flip back green+import:true after.'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -1095,10 +1106,12 @@ resourcemanager_resource_group:
   depends_on: []
   family: resourcemanager
   import: false
-  issues: []
+  issues:
+  - 'Import-axis verification (#81): ImportState (passthrough) added in fork; sweeping to confirm import=ok.
+    Was: []. Flip back green+import:true after.'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -1126,13 +1139,12 @@ security_group_basic:
   cost: cheap
   depends_on: []
   family: security
-  import: false
+  import: true
   issues:
-  - 'Import-axis verification (#81): ImportState (passthrough) added in fork branch; re-sweeping to confirm
-    import=ok. Flip back to green + import:true after.'
+  - GREEN. update=ok; import=ok via ImportState passthrough (#81, run 27883551816).
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: true
   vpc: pool
@@ -1154,10 +1166,12 @@ servicewatch_alert:
   depends_on: []
   family: servicewatch
   import: false
-  issues: []
+  issues:
+  - 'Import-axis verification (#81): ImportState (passthrough) added in fork; sweeping to confirm import=ok.
+    Was: []. Flip back green+import:true after.'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -1166,10 +1180,12 @@ servicewatch_dashboard:
   depends_on: []
   family: servicewatch
   import: false
-  issues: []
+  issues:
+  - 'Import-axis verification (#81): ImportState (passthrough) added in fork; sweeping to confirm import=ok.
+    Was: []. Flip back green+import:true after.'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -1178,10 +1194,12 @@ servicewatch_event_rule:
   depends_on: []
   family: servicewatch
   import: false
-  issues: []
+  issues:
+  - 'Import-axis verification (#81): ImportState (passthrough) added in fork; sweeping to confirm import=ok.
+    Was: []. Flip back green+import:true after.'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -1190,10 +1208,12 @@ servicewatch_log_group:
   depends_on: []
   family: servicewatch
   import: false
-  issues: []
+  issues:
+  - 'Import-axis verification (#81): ImportState (passthrough) added in fork; sweeping to confirm import=ok.
+    Was: []. Flip back green+import:true after.'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -1435,13 +1455,12 @@ vpc_publicip:
   cost: cheap
   depends_on: []
   family: vpc
-  import: false
+  import: true
   issues:
-  - 'Import-axis verification (#81): ImportState (passthrough) added in fork branch; re-sweeping to confirm
-    import=ok. Flip back to green + import:true after.'
+  - 'Lifecycle + import GREEN (ImportState passthrough, #81; run 27883551816).'
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none
@@ -1449,14 +1468,15 @@ vpc_subnet:
   cost: cheap
   depends_on: []
   family: vpc
-  import: false
+  import: true
   issues:
-  - 'Import-axis verification (#81): ImportState (passthrough) added in fork branch; re-sweeping to confirm
-    import=ok. Flip back to green + import:true after.'
+  - "update axis FAIL (run 27666766466): 400 'IP address is not valid ()' when updating description \u2014\
+    \ provider re-sends subnet body with an empty IP on update. Lifecycle green; update not in-place-safe."
+  - import=ok via ImportState passthrough (#81, run 27883551816).
   needs:
   - vpc_id
   parallel: low
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -1508,10 +1528,12 @@ vpc_transit_gateway:
   exclude_reason: ''
   family: vpc
   import: false
-  issues: []
+  issues:
+  - 'Import-axis verification (#81): ImportState (passthrough) added in fork; sweeping to confirm import=ok.
+    Was: []. Flip back green+import:true after.'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -1591,13 +1613,12 @@ vpc_vpc:
   cost: cheap
   depends_on: []
   family: vpc
-  import: false
+  import: true
   issues:
-  - 'Import-axis verification (#81): ImportState (passthrough) added in fork branch; re-sweeping to confirm
-    import=ok. Flip back to green + import:true after.'
+  - GREEN. update=ok; import=ok via ImportState passthrough (#81, run 27883551816).
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: true
   vpc: self
