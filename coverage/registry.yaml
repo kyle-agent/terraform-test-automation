@@ -878,7 +878,13 @@ iam_user:
   depends_on: []
   family: iam
   import: false
-  issues: []
+  issues:
+  - 'Lifecycle GREEN. UPDATE-axis defect (real provider/SDK bug, kept failing per guardrail): in-place
+    Update 400s ''Input should be greater than 0'' when the user does not manage password_reuse_count.
+    Root cause: SDK IAMUserUpdateRequest serializes password_reuse_count as a plain int32 (no omitempty),
+    so UpdateUser always sends 0. Fork PR #101 (provider guard using state) is INSUFFICIENT because state
+    is also 0 after create. Real fix = make the SDK field nullable+omitempty (like Description) across
+    iam/1.1.'
   needs: []
   parallel: normal
   status: green
@@ -1599,9 +1605,13 @@ vpc_vpc_endpoint:
   family: vpc
   import: false
   issues:
-  - resource_key rejected for 1.1.1.1, the real OBS IP, AND the account id (runs 27401616476/27406093988/27419601096)
-    - the valid OBS resource key is not derivable from docs; needs the console/vendor value. Subnet-type
-    + reserved-IP findings remain valid.
+  - '#94 two defects. (1) PROVIDER: Create/Read/Update mapped resource_key from account_id instead of
+    the real ResourceKey -> state corruption + spurious replace; FIXED fork PR #100 (build-verified).
+    (2) Apply still blocked: resource_key is an opaque server-issued id, derivable only from GET /v1/vpc-endpoints/connectable-resources?resource_type=OBS;
+    provider exposes no data source for it and the harness can''t inject a valid one, so create 400s ''Resource
+    Key is not valid''. GREEN path = add a connectable_resources data source (or bootstrap-inject TF_VAR_resource_key)
+    AND the account must offer an OBS connectable target. Fixture cleaned (dropped the wrong account_id
+    fallback).'
   needs:
   - subnet_id
   - vpc_id

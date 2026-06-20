@@ -44,19 +44,19 @@ variable "resource_type" {
   default     = "OBS"
 }
 
-# OBS is account-namespaced ({account_id}:{bucket} path form, cf. virtualserver
-# image #86) and the doc example resource_key (07c5364702384471b650147321b52173)
-# is a 32-hex id of the same shape as an account id - so for OBS the resource
-# key is the ACCOUNT ID, not an IP (1.1.1.1 and the real OBS IP both 400ed).
+# resource_key is an OPAQUE, server-issued 32-hex identifier (issue #94). It has
+# NO client-derivable form: account_id, 1.1.1.1, and the real OBS IP were ALL
+# 400-rejected by the backend ("Resource Key is not valid", runs 27401616476 /
+# 27406093988 / 27419601096). The ONLY valid source is the discovery endpoint
+# GET /v1/vpc-endpoints/connectable-resources?resource_type=OBS, whose items
+# return {resource_info, resource_key, resource_type} for each connectable target.
+# => The harness MUST inject a real key via TF_VAR_resource_key (look it up via
+# that API for this account/region first). Leaving it empty makes create 400 by
+# design; do NOT substitute account_id (that is the bug #94 documents).
 variable "resource_key" {
   type        = string
-  description = "Endpoint resource key (for OBS: the account id). Harness injects TF_VAR_resource_key or account id is used."
+  description = "Endpoint resource key: OPAQUE server-issued id from GET /v1/vpc-endpoints/connectable-resources (issue #94). Harness MUST inject TF_VAR_resource_key; no client-side formula exists."
   default     = ""
-}
-
-variable "account_id" {
-  type    = string
-  default = "00000000000000000000000000000000"
 }
 
 # For OBS the docs say resource_info is the service URL (https://xxx...).
@@ -93,8 +93,13 @@ variable "endpoint_ip_address" {
 resource "samsungcloudplatformv2_vpc_vpc_endpoint" "regr" {
   endpoint_ip_address = var.endpoint_ip_address
   name                = "${var.endpoint_name}${var.name_suffix}"
+  # resource_info should likewise come from the SAME connectable-resources item
+  # as resource_key (the API returns them as a matched pair). The harness should
+  # inject TF_VAR_resource_info alongside TF_VAR_resource_key.
   resource_info       = var.resource_info
-  resource_key        = var.resource_key != "" ? var.resource_key : var.account_id
+  # #94: pass the injected opaque key verbatim. Do NOT fall back to account_id
+  # (backend 400s it); an empty value is meant to fail until a real key is wired.
+  resource_key        = var.resource_key
   resource_type       = var.resource_type
   subnet_id           = samsungcloudplatformv2_vpc_subnet.regr_endpoint.id
   vpc_id              = var.vpc_id
