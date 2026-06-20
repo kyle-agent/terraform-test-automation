@@ -879,13 +879,15 @@ iam_user:
   family: iam
   import: false
   issues:
-  - 'Update-axis re-sweep against fork PR #102 (SDK password_reuse_count -> *int32 omitempty, the REAL
-    fix superseding the insufficient #101 guard); expect update=ok.'
+  - 'Lifecycle + UPDATE axis GREEN (run 27881799582). The update 400 was API behavior, not a pure provider
+    bug: UpdateIAMUser REQUIRES password_reuse_count > 0 (create allows omitting it). Resolved by setting
+    password_reuse_count=2 in the fixture. (Provider PRs #101 state-guard / #102 SDK omitempty were detours,
+    now inert; the config supplying the required field is what greens it.)'
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
-  update: false
+  update: true
   vpc: none
 iam_user_policy_bindings:
   cost: cheap
