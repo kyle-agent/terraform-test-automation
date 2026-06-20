@@ -33,6 +33,8 @@ on:
   # Triggered 2026-06-20 (d): reap-BEFORE the firewall_connection RE-retest after provider fix PR #99
   # (adds missing firewall_id to the nested schema -> fixes the Value Conversion Error). Clean slate +
   # another attempt to reclaim the still-stranded TGW e50f2da4 + pool VPC 42b72d76 (settling since 04:36).
+  # Triggered 2026-06-20 (e): reap-BEFORE the #96-family cascade (vpc_private_nat + vpc_private_nat_ip,
+  # 2 new TGWs). Confirm TGW count (cap=3) and free a slot from the stranded e50f2da4 if it has cleared.
   # Triggered 2026-06-19 (b): reap cachestore_cluster partial-create leak from run 27802519587
   # (apply failed "inconsistent result: sentinel_port 26379->26378" provider bug; scenario
   # cleanup destroy 500'd reading the server -> leaked cachestore cluster + maybe its subnet/VPC).
