@@ -41,13 +41,24 @@ variable "user_tags" {
   }
 }
 
+# The Update API REQUIRES password_reuse_count and rejects 0 ("Input should be
+# greater than 0"); create allows omitting it (server default). Set a valid (>0)
+# value so the in-place update carries it. See fork #74 follow-up / PRs #101/#102:
+# no provider/SDK change can supply this — the config must.
+variable "password_reuse_count" {
+  type        = number
+  description = "Number of previous passwords that cannot be reused (API requires > 0 on update)."
+  default     = 2
+}
+
 # IAM user fixture: guards idempotency on the user resource. A second apply with
 # no config change must produce a clean plan (no destroy+create). group_ids /
 # policy_ids are left unset so the fixture validates without referencing real
 # ids; integration runs attach them via TF_VAR_*.
 resource "samsungcloudplatformv2_iam_user" "regr" {
-  account_id  = var.account_id
-  user_name   = var.user_name
-  description = var.user_description
-  tags        = var.user_tags
+  account_id           = var.account_id
+  user_name            = var.user_name
+  description          = var.user_description
+  tags                 = var.user_tags
+  password_reuse_count = var.password_reuse_count
 }
