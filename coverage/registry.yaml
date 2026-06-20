@@ -1536,15 +1536,11 @@ vpc_transit_gateway_firewall_connection:
   exclude_reason: ''
   family: vpc
   import: false
-  issues:
-  - 'Re-retesting with provider fix PR #99 (fork main 4e0cb9d): the nested transit_gateway schema was
-    missing firewall_id, so ObjectValueFrom(model.AttributeTypes()) produced a 14-key object that failed
-    State.Set against the 13-key schema -> Value Conversion Error on create (run 27859964524). PR #99
-    adds firewall_id (14/14). build-ref=main carries it; expect full lifecycle green.'
+  issues: []
   needs:
   - vpc_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool

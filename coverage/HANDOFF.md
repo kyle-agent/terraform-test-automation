@@ -9,7 +9,35 @@ multi-agent architecture + session bootstrap), then this file, then `tasks/lesso
 
 ---
 
-## 0. Session 2026-06-20 (LATEST) — TGW firewall_connection retest: #96 is a PROVIDER bug, not a platform dead-end
+## 0. Session 2026-06-20 (continued, LATEST) — provider fix PR #99 → firewall_connection GREEN
+
+**Branch:** `claude/confident-carson-gnchzx` (both repos). Continued from the retest diagnosis below.
+
+**Root cause + fix (fork PR #99 → fork `main`, sha 4e0cb9d):** the firewall_connection `Value Conversion
+Error` was a schema/model mismatch. `service/vpc/transit_gateway_firewall_connection.go` builds the
+computed `transit_gateway` nested object via `ObjectValueFrom(tgw.AttributeTypes(), tgw)`, but the SDK
+model `TransitGateway.AttributeTypes()` returns **14** keys (incl. `firewall_id`) while the resource
+schema declared only **13** (missing `firewall_id`). Once the #98 waiter reached ACTIVE, `State.Set`
+rejected the 14-key value against the 13-key schema. PR #99 declares `firewall_id` (Computed) → 14/14.
+
+**Re-retest GREEN (sweep 27867591203, build-ref=`main` carrying the fix):** `vpc_transit_gateway_firewall_connection`
+→ validate/plan/apply/replan/destroy/**destroy_verify all ok** (leak-0, clean teardown).
+→ **registry green 99→100; lifecycle green 64→65 (83.3%)**. #96 firewall_connection RESOLVED
+(`PROVIDER_ISSUES.md` #96 → fixed/verified). Test-repo merged to `main` (PR #33, dashboard published);
+fork PR #99 merged to fork `main`.
+
+**Still open:**
+- **Cascade (#96 family):** `vpc_transit_gateway_firewall`, `_uplink_rule`, `vpc_private_nat[_ip]` can now
+  chain through a WORKING firewall_connection — the next coverage target (each needs a fixture chain + a
+  sweep, and may surface its own schema/model mismatch).
+- **Persistent leak:** TGW `e50f2da4` + pool VPC `42b72d76` from the FAILED retest remain stranded after
+  ~5h + 3 reap passes (the un-listable firewall connection blocks teardown) — now behaving like the
+  permanently-stuck `rpv273154960170`; likely needs console/owner or a platform-side timeout. Account
+  workable at TGW 1/3, ~3/5 VPC free. The GREEN re-retest itself left NO new leak (destroy_verify ok).
+
+---
+
+## 0. Session 2026-06-20 — TGW firewall_connection retest (diagnosis; superseded by the fix above): #96 is a PROVIDER bug, not a platform dead-end
 
 **Branch:** `claude/confident-carson-gnchzx` (this repo). Resumed via `/session-start`. The prior
 handoff's "Task A" (vpc_transit_gateway_rule + cachestore_cluster) was already GREEN (done in 0b) — a

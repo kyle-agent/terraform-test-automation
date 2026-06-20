@@ -1560,16 +1560,16 @@
     }
   },
   "samsungcloudplatformv2_vpc_transit_gateway_firewall_connection": {
-    "highest_stage": "plan",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27859964524",
-    "last_seen": "2026-06-20T04:47:40Z",
-    "note": "Error: Value Conversion Error with samsungcloudplatformv2_vpc_transit_gateway_firewall_connection.regr, on main.tf line 46, in resource \"samsungcloudplatformv2_vpc_transit_gateway_firewall_connection\" \"regr\": 46: resource \"samsungcloudplatformv2_vpc_transit_gateway_firewall_connection\" \"regr\" { An unexpected error was encountered while verifying an attribute value matched its expected type to prevent unexpected behavior or panics. This is always an error in the provider. Please report the following to the provider developer: Expected framework type from provider logic: | LEAK: partial-create cleanup destroy failed: Error: Error Deleting tgw vpc connection Could not delete tgw vpc connection, unexpected error: 400 Bad Request Reason: Transit Gateway Firewall Connection must be disconnected before all VPC connections can be deleted.",
+    "highest_stage": "destroy",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27867591203",
+    "last_seen": "2026-06-20T10:24:52Z",
+    "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_vpc_transit_gateway.regr",
     "stages": {
-      "apply": "fail",
-      "destroy": "skip",
-      "import": "skip",
+      "apply": "ok",
+      "destroy": "ok",
+      "import": "unsupported",
       "plan": "ok",
-      "replan": "skip",
+      "replan": "ok",
       "update": "skip",
       "validate": "ok"
     }
