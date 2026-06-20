@@ -1128,10 +1128,11 @@ security_group_basic:
   family: security
   import: false
   issues:
-  - 'GREEN (run 27663213235). update=ok; import=unsupported (no ImportState, #81).'
+  - 'Import-axis verification (#81): ImportState (passthrough) added in fork branch; re-sweeping to confirm
+    import=ok. Flip back to green + import:true after.'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: true
   vpc: pool
@@ -1435,10 +1436,12 @@ vpc_publicip:
   depends_on: []
   family: vpc
   import: false
-  issues: []
+  issues:
+  - 'Import-axis verification (#81): ImportState (passthrough) added in fork branch; re-sweeping to confirm
+    import=ok. Flip back to green + import:true after.'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: none
@@ -1448,12 +1451,12 @@ vpc_subnet:
   family: vpc
   import: false
   issues:
-  - "update axis FAIL (run 27666766466): 400 'IP address is not valid ()' when updating description \u2014\
-    \ provider re-sends subnet body with an empty IP on update. Lifecycle green; update not in-place-safe."
+  - 'Import-axis verification (#81): ImportState (passthrough) added in fork branch; re-sweeping to confirm
+    import=ok. Flip back to green + import:true after.'
   needs:
   - vpc_id
   parallel: low
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: pool
@@ -1590,10 +1593,11 @@ vpc_vpc:
   family: vpc
   import: false
   issues:
-  - 'GREEN (run 27663213235). update=ok; import=unsupported (no ImportState, #81).'
+  - 'Import-axis verification (#81): ImportState (passthrough) added in fork branch; re-sweeping to confirm
+    import=ok. Flip back to green + import:true after.'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: true
   vpc: self
