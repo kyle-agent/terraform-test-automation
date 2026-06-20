@@ -916,16 +916,16 @@
   },
   "samsungcloudplatformv2_iam_user": {
     "highest_stage": "destroy",
-    "last_run_url": "",
-    "last_seen": "2026-06-19T02:20:41Z",
-    "note": "import: could not resolve primary resource addr/id:",
+    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27875505723",
+    "last_seen": "2026-06-20T15:36:28Z",
+    "note": "update apply failed: Error: Error updating User with samsungcloudplatformv2_iam_user.regr, on main.tf line 48, in resource \"samsungcloudplatformv2_iam_user\" \"regr\": 48: resource \"samsungcloudplatformv2_iam_user\" \"regr\" { Could not update User, unexpected error: 400 Bad Request Reason: Input should be greater than 0 | import: could not resolve primary resource addr/id:",
     "stages": {
       "apply": "ok",
       "destroy": "ok",
       "import": "skip",
       "plan": "ok",
       "replan": "ok",
-      "update": "skip",
+      "update": "fail",
       "validate": "ok"
     }
   },

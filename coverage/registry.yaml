@@ -879,10 +879,15 @@ iam_user:
   family: iam
   import: false
   issues:
-  - 'Update-axis re-sweep after fork PR #101 (Update no longer sends password_reuse_count=0); expect update=ok.'
+  - 'Lifecycle GREEN. UPDATE-axis defect (real provider/SDK bug, kept failing per guardrail): in-place
+    Update 400s ''Input should be greater than 0'' when the user does not manage password_reuse_count.
+    Root cause: SDK IAMUserUpdateRequest serializes password_reuse_count as a plain int32 (no omitempty),
+    so UpdateUser always sends 0. Fork PR #101 (provider guard using state) is INSUFFICIENT because state
+    is also 0 after create. Real fix = make the SDK field nullable+omitempty (like Description) across
+    iam/1.1.'
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: none

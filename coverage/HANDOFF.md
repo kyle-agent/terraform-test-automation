@@ -38,6 +38,18 @@ fork PR #99 merged to fork `main`.
   private_nat, private_nat_ip. All 5 rechained to `TGW→vpc_connection→firewall_connection` (the only
   needed fix beyond the provider PR #99 `firewall_id`). **Session arc: lifecycle green 64 → 69 (88.5%),
   registry green 99 → 104.** #96 family fully closed; nothing left in it to chase.
+- **Post-family axis work (둘다해봐) — 2 more provider bugs filed, 0 new greens (greenable surface exhausted):**
+  (1) **vpc_vpc_endpoint #94**: fixed a real provider bug — Create/Read/Update mapped `resource_key` from
+  `account_id` instead of the real `ResourceKey` (state corruption/spurious replace) → **fork PR #100**.
+  GREEN still blocked: `resource_key` is an opaque server id with no client form and no provider data source
+  (needs a `connectable_resources` DS or runtime `TF_VAR_resource_key` injection + a platform OBS target).
+  Fixture cleaned; stays broken.
+  (2) **update axis**: nearly exhausted (45 `update.tfvars` already existed). `iam_user` was the only new
+  candidate and it SURFACED a real provider/SDK Update bug — `password_reuse_count` is a plain `int32` (no
+  `omitempty`) in SDK `IAMUserUpdateRequest`, so Update sends `0` → API 400 "Input should be greater than 0".
+  **Fork PR #101 (provider state-guard) is INSUFFICIENT** (state is also 0 after create); real fix = SDK
+  field nullable+omitempty across iam/1.1 (fragile multi-method generated-code edit, not done). `iam_user`
+  stays lifecycle-green with **update=fail kept red per guardrail**.
 - **Persistent leak:** TGW `e50f2da4` + pool VPC `42b72d76` from the FAILED retest remain stranded after
   ~5h + 3 reap passes (the un-listable firewall connection blocks teardown) — now behaving like the
   permanently-stuck `rpv273154960170`; likely needs console/owner or a platform-side timeout. Account
