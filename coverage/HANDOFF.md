@@ -32,8 +32,11 @@ fork PR #99 merged to fork `main`.
   `vpc_transit_gateway_firewall` resource — firewall_connection registers its own firewall), and derived
   private_nat_ip's IP via `cidrhost(private_nat_cidr,10)` so the pool lane's injected public
   `TF_VAR_ip_address` can't push it out of range → **registry 100→102, lifecycle 65→67 (85.9%)**.
-  Remaining family: `vpc_transit_gateway_firewall` + `vpc_transit_gateway_uplink_rule` (still broken;
-  uplink_rule needs the same rechain + lane none→pool; firewall needs its own investigation).
+  Remaining family: `vpc_transit_gateway_firewall` **now also GREEN** (sweep 27872045009, same rechain
+  TGW→vpc_connection→firewall_connection→firewall, leak-0 → lifecycle 67→68). Only
+  `vpc_transit_gateway_uplink_rule` left: the chain reached its create but 400'd "destination cidr should
+  be included in vpc cidr blocks" → `destination_cidr` fixed to the pool VPC cidr 192.168.0.0/24 (was
+  192.168.40.0/24), re-sweeping.
 - **Persistent leak:** TGW `e50f2da4` + pool VPC `42b72d76` from the FAILED retest remain stranded after
   ~5h + 3 reap passes (the un-listable firewall connection blocks teardown) — now behaving like the
   permanently-stuck `rpv273154960170`; likely needs console/owner or a platform-side timeout. Account

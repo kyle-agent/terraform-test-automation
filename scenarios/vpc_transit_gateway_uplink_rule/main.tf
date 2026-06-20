@@ -30,8 +30,8 @@ variable "destination_type" {
 
 variable "destination_cidr" {
   type        = string
-  description = "Destination CIDR the uplink rule routes to."
-  default     = "192.168.40.0/24"
+  description = "Destination CIDR the uplink rule routes to. For destination_type=TGW the platform requires it to be included in the connected VPC's cidr blocks, so default to the pool VPC cidr (192.168.0.0/24)."
+  default     = "192.168.0.0/24"
 }
 
 # An uplink rule needs a transit gateway parent (not exported by the bootstrap),
