@@ -118,3 +118,6 @@ jobs:
 # (regr-tgwfwca0f3ea) + pool VPC 42b72d76 (rpv278599645240) from the firewall_connection retest
 # Value-Conversion partial-create. 5+ prior passes 409'd while the un-listable firewall connection
 # settled; ~hours have now elapsed (precedent: TGW 984b8825 cleared on a late pass), so try once more.
+# touch 2026-06-21 (g): pre-selfvpc-import cleanup. Retry reclaiming the 2 stuck VPCs (firewall-conn
+# 42b72d76 + dbaas rpv273154960170/subnet a7793ccc) that quota-starved the batch-2 self lane. Any slot
+# freed gives the selfvpc import re-verification headroom; selfvpc then runs in small (<=3 VPC) batches.

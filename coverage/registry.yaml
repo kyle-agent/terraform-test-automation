@@ -74,7 +74,10 @@ cachestore_cluster:
   depends_on: []
   family: cachestore
   import: false
-  issues: []
+  issues:
+  - "import=FAIL (#62-class, exposed by #81): Read Value Conversion \u2014 nested config object `maintenance_option`\
+    \ is null on show-by-id and raw-typed. Lifecycle green (apply/replan/destroy ok). DBaaS family pattern:\
+    \ maintenance_option / init_config_option need null-safe types.*."
   needs:
   - subnet_id
   parallel: normal
@@ -709,6 +712,9 @@ epas_cluster:
   issues:
   - 'GREEN incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy,
     clean teardown.'
+  - "import=FAIL (#62-class, exposed by #81): Read Value Conversion \u2014 nested config object `init_config_option`\
+    \ is null on show-by-id and raw-typed. Lifecycle green (apply/replan/destroy ok). DBaaS family pattern:\
+    \ maintenance_option / init_config_option need null-safe types.*."
   needs:
   - subnet_id
   parallel: normal
@@ -721,7 +727,10 @@ eventstreams_basic:
   depends_on: []
   family: eventstreams
   import: false
-  issues: []
+  issues:
+  - "import=FAIL (#62-class, exposed by #81): Read Value Conversion \u2014 nested config object `init_config_option`\
+    \ is null on show-by-id and raw-typed. Lifecycle green (apply/replan/destroy ok). DBaaS family pattern:\
+    \ maintenance_option / init_config_option need null-safe types.*."
   needs:
   - subnet_id
   parallel: normal
@@ -773,9 +782,8 @@ firewall_firewall_rule:
   family: firewall
   import: false
   issues:
-  - "import not verified \u2014 selfvpc lane was quota-starved (2 stuck VPCs) and wrote no matrix in run\
-    \ 27884229273. ImportState (passthrough) IS in the provider; will accrue on the next regression sweep\
-    \ against fork main."
+  - "import=FAIL (#62, exposed by #81): Read Value Conversion Error \u2014 firewall rule SourceAddress/DestinationAddress\
+    \ are raw []string (can't hold null on show-by-id), already listed in #62. Lifecycle green."
   needs: []
   parallel: normal
   status: green
@@ -942,9 +950,8 @@ loadbalancer_basic:
   issues:
   - "update axis FAIL (run 27682344740): provider 'Value Conversion Error' on Update \u2014 same bug as\
     \ fork #92 (loadbalancer_loadbalancer). Lifecycle green."
-  - "import not verified \u2014 selfvpc lane was quota-starved (2 stuck VPCs) and wrote no matrix in run\
-    \ 27884229273. ImportState (passthrough) IS in the provider; will accrue on the next regression sweep\
-    \ against fork main."
+  - 'import=FAIL (#62-class, exposed by #81): loadbalancer_loadbalancer Read Value Conversion Error (raw-type
+    field null on show-by-id; also #92-class on update). Lifecycle green.'
   needs: []
   parallel: normal
   status: green
@@ -1068,6 +1075,9 @@ mariadb_cluster:
   issues:
   - 'GREEN incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy,
     clean teardown.'
+  - "import=FAIL (#62-class, exposed by #81): Read Value Conversion \u2014 nested config object `maintenance_option`\
+    \ is null on show-by-id and raw-typed. Lifecycle green (apply/replan/destroy ok). DBaaS family pattern:\
+    \ maintenance_option / init_config_option need null-safe types.*."
   needs:
   - subnet_id
   parallel: normal
@@ -1083,6 +1093,9 @@ mysql_cluster:
   issues:
   - 'GREEN incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy,
     clean teardown.'
+  - "import=FAIL (#62-class, exposed by #81): Read Value Conversion \u2014 nested config object `init_config_option`\
+    \ is null on show-by-id and raw-typed. Lifecycle green (apply/replan/destroy ok). DBaaS family pattern:\
+    \ maintenance_option / init_config_option need null-safe types.*."
   needs:
   - subnet_id
   parallel: normal
@@ -1110,6 +1123,9 @@ postgresql_cluster:
   issues:
   - 'GREEN incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy,
     clean teardown.'
+  - "import=FAIL (#62-class, exposed by #81): Read Value Conversion \u2014 nested config object `maintenance_option`\
+    \ is null on show-by-id and raw-typed. Lifecycle green (apply/replan/destroy ok). DBaaS family pattern:\
+    \ maintenance_option / init_config_option need null-safe types.*."
   needs:
   - subnet_id
   parallel: normal
@@ -1245,10 +1261,11 @@ ske_cluster:
   cost: heavy
   depends_on: []
   family: ske
-  import: false
+  import: true
   issues:
   - "update axis FAIL (run 27682344740): provider 'Value Conversion Error' on Update \u2014 same bug as\
     \ fork #92 (ske_cluster). Lifecycle green."
+  - import=ok via ImportState passthrough (#81, run 27898159015).
   needs:
   - kubernetes_version
   - security_group_id_list
@@ -1264,8 +1281,9 @@ ske_nodepool:
   cost: heavy
   depends_on: []
   family: ske
-  import: false
-  issues: []
+  import: true
+  issues:
+  - import=ok via ImportState passthrough (#81, run 27898159015).
   needs:
   - keypair_name
   - kubernetes_version
@@ -1403,11 +1421,9 @@ vpc_internet_gateway:
   cost: cheap
   depends_on: []
   family: vpc
-  import: false
+  import: true
   issues:
-  - "import not verified \u2014 selfvpc lane was quota-starved (2 stuck VPCs) and wrote no matrix in run\
-    \ 27884229273. ImportState (passthrough) IS in the provider; will accrue on the next regression sweep\
-    \ against fork main."
+  - import=ok via ImportState passthrough (#81, run 27896616960).
   needs: []
   parallel: normal
   status: green
@@ -1668,11 +1684,9 @@ vpc_vpc_peering:
   cost: cheap
   depends_on: []
   family: vpc
-  import: false
+  import: true
   issues:
-  - "import not verified \u2014 selfvpc lane was quota-starved (2 stuck VPCs) and wrote no matrix in run\
-    \ 27884229273. ImportState (passthrough) IS in the provider; will accrue on the next regression sweep\
-    \ against fork main."
+  - import=ok via ImportState passthrough (#81, run 27897280576).
   needs: []
   parallel: normal
   status: green
@@ -1714,11 +1728,9 @@ vpn_vpn_gateway:
   cost: cheap
   depends_on: []
   family: vpn
-  import: false
+  import: true
   issues:
-  - "import not verified \u2014 selfvpc lane was quota-starved (2 stuck VPCs) and wrote no matrix in run\
-    \ 27884229273. ImportState (passthrough) IS in the provider; will accrue on the next regression sweep\
-    \ against fork main."
+  - import=ok via ImportState passthrough (#81, run 27896616960).
   needs:
   - ip_address
   - ip_id
@@ -1732,13 +1744,11 @@ vpn_vpn_tunnel:
   cost: cheap
   depends_on: []
   family: vpn
-  import: false
+  import: true
   issues:
   - 'GREEN reconfirmed on the patched provider (run 27659871231): full lifecycle validate->destroy, clean
     teardown.'
-  - "import not verified \u2014 selfvpc lane was quota-starved (2 stuck VPCs) and wrote no matrix in run\
-    \ 27884229273. ImportState (passthrough) IS in the provider; will accrue on the next regression sweep\
-    \ against fork main."
+  - import=ok via ImportState passthrough (#81, run 27897280576).
   needs: []
   parallel: normal
   status: green
