@@ -9,25 +9,22 @@ multi-agent architecture + session bootstrap), then this file, then `tasks/lesso
 
 ---
 
-## 0. Session 2026-06-20 (import axis, LATEST) — provider ImportState on 53 resources → import 0→27%
+## 0. Session 2026-06-20/21 (import axis, LATEST) — provider ImportState on 53 resources → import 0→35%
 
-**Branch:** `claude/confident-carson-gnchzx` (both repos), synced to `main` / fork `main`. User: "import 개선 자율로 최대한 진행."
+**Branch:** `claude/confident-carson-gnchzx` (both repos). User: "import 개선 자율로 최대한 진행" then "순서대로 진행해" (do ①selfvpc ②DBaaS ③#62-comment ④wrap in order).
 
-**Delivered (all on `main`):**
-- **Provider fork PR #103 → fork `main` (sha c244107):** `ImportState` via `resource.ImportStatePassthroughID(ctx, path.Root("id"), …)` on **53 single-id ("bucket A") resources** (was 1: only multinodegpucluster_gpunode). Each Read repopulates from the opaque id alone. Composite-id resources deferred (need custom id parsing). `go build` clean.
-- **Test-repo PR #41 → `main` (sha 271ef7d):** dashboard **import 0 → 21 (27%)**; lifecycle 69 / update 38 unchanged. Build-ref reverted to `main`.
-- **21 verified import=ok** across none/pool/self (pilot 27883551816, batch-1 27883944508, batch-2 27884229273).
+**Delivered:**
+- **Provider fork PR #103 → fork `main` (sha c244107):** `ImportState` via `resource.ImportStatePassthroughID(ctx, path.Root("id"), …)` on **53 single-id ("bucket A") resources** (was 1). `go build` clean. Build-ref reverted to `main`.
+- **Dashboard import 0 → 27 (35%); lifecycle green 69 → 70 (89.7%)** (ske_nodepool also gained full lifecycle). Test-repo PR #41 landed the first 21 (27%) to `main`; the **selfvpc + DBaaS gains (21→27) are on the dev branch pending the final main PR**.
+- **27 verified import=ok** across all lanes incl. ske_cluster/ske_nodepool (pilot 27883551816, batch-1 27883944508, batch-2 27884229273, selfvpc 27896616960/27897280576, DBaaS 27898159015).
 
-**How it works (for the next session):** import is a matrix stage (`MATRIX_IMPORT=1`, already on every sweep) — it `terraform import`s the scenario's FIRST state resource into a throwaway dir; ok if the command succeeds (no re-plan). `primaryResourceAddrID` picks the first resource, so self-contained scenarios may import a *prereq* (e.g. iam_role imports its iam_policy). Verify a new ImportState by re-sweeping the scenario (build-ref=main now has it) and merging the matrix with `build_coverage.py` — **the matrix file is a LIST of records; build_coverage stamps `last_seen=now()` and most-recent-wins, so pass the raw downloaded list (a dict won't merge).**
+**How it works (next session):** import is a matrix stage (`MATRIX_IMPORT=1`, always on) — `terraform import`s the scenario's FIRST state resource into a throwaway dir; ok if the command succeeds (no re-plan). `primaryResourceAddrID` picks the first resource (self-contained scenarios import a *prereq*). Merge results with `build_coverage.py` — **the matrix file is a LIST of records; pass the raw downloaded list (a dict silently won't merge); build_coverage stamps `last_seen=now()`, most-recent-wins.** Selfvpc lane TIMES OUT + writes no matrix if you sweep too many self scenarios at once under quota — **run ≤4 at a time** (pool shards are independent jobs and don't have this problem).
 
-**Recorded import=false (honest, NOT ImportState defects):**
-- **#62/#92-class Read Value-Conversion bugs exposed by import** (`docs/PROVIDER_ISSUES.md`): `iam_policy` (`policy_version` raw type can't hold the null show-by-id returns) + `iam_role` (imports its policy prereq) + `dns_hosted_zone` + `virtualserver_server`. Fix = make those fields null-safe (`types.*`). **Candidate: comment on fork #62 with the consolidated list of import-exposed null fields.**
-- **3 pool transient apply-fails** (directconnect_routing_rule / dns_private_dns / loadbalancer_lb_health_check) — environmental (sibling-VPC-connected / service-quota / shared-subnet) under the 3-free-VPC sweep, EXCLUDED from the merge so they didn't regress. Re-sweepable.
+**Recorded import=false — all #62-class Read Value-Conversion bugs import EXPOSED (NOT ImportState defects), consolidated on fork #62 + `PROVIDER_ISSUES.md`:** a field maps to a raw type that can't hold the null/unknown show-by-id returns. Instances + field: `iam_policy` (`policy_version`)/`iam_role`; `dns_hosted_zone`; `virtualserver_server`; `firewall_firewall_rule` (`source_address`/`destination_address`); `loadbalancer`; DBaaS `cachestore`/`mariadb`/`postgresql` (`maintenance_option`) + `epas`/`eventstreams`/`mysql` (`init_config_option`). Each flips to import=ok once its field is null-safe (`types.*`); ImportState is already in.
 
-**What's left on the import axis (quota/cost-gated — accrues on the next full green regression sweep against `main`, no code needed):**
-- **selfvpc 6** (vpc_internet_gateway, firewall_firewall_rule, vpc_vpc_peering, vpn_vpn_gateway, vpn_vpn_tunnel, loadbalancer_basic) — the self lane was **quota-starved** (2 stuck VPCs), ran 45 min and wrote NO matrix. Re-verify when VPC quota is healthy (reclaim the stuck VPCs first) or run them 2-3 at a time.
-- **Heavy DBaaS (~7: cachestore/epas/mysql/mariadb/postgresql/searchengine/ske)** — ImportState code is in; deferred from active sweeping (slow + billable).
-- **Account: 2 VPCs still stuck** — firewall-conn `42b72d76` + dbaas `rpv273154960170` (subnet a7793ccc). Both need console/owner; they throttle pool+self lanes. (The wrap-up reaper 27882919209 cleared TGW e50f2da4 but not these.)
+**Import axis ~exhausted.** Remaining unverified: only composite-id resources (need custom ImportState parsing, not passthrough) + the ~11 #62-blocked ones above (need the provider null-safe fix). 3 pool scenarios (directconnect_routing_rule/dns_private_dns/loadbalancer_lb_health_check) had environmental apply-fails under quota — re-sweepable for import.
+
+**Account:** 2 VPCs still stuck — firewall-conn `42b72d76` + dbaas `rpv273154960170` (subnet a7793ccc); need console/owner (reaper 27895949886 cleared 9 strays but not these). DBaaS run 27898159015 tore down all 8 clusters clean (no leaks).
 
 ---
 
