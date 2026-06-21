@@ -75,12 +75,13 @@ cachestore_cluster:
   family: cachestore
   import: false
   issues:
-  - 'Import-axis verification (#81 DBaaS, heavy): build-ref=main has ImportState (#103). Was: []. Flip
-    back after.'
+  - "import=FAIL (#62-class, exposed by #81): Read Value Conversion \u2014 nested config object `maintenance_option`\
+    \ is null on show-by-id and raw-typed. Lifecycle green (apply/replan/destroy ok). DBaaS family pattern:\
+    \ maintenance_option / init_config_option need null-safe types.*."
   needs:
   - subnet_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: slow
   update: false
   vpc: pool
@@ -709,13 +710,15 @@ epas_cluster:
   family: epas
   import: false
   issues:
-  - 'Import-axis verification (#81 DBaaS, heavy): build-ref=main has ImportState (#103). Was: [''GREEN
-    incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy,
-    clean teardown.'']. Flip back after.'
+  - 'GREEN incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy,
+    clean teardown.'
+  - "import=FAIL (#62-class, exposed by #81): Read Value Conversion \u2014 nested config object `init_config_option`\
+    \ is null on show-by-id and raw-typed. Lifecycle green (apply/replan/destroy ok). DBaaS family pattern:\
+    \ maintenance_option / init_config_option need null-safe types.*."
   needs:
   - subnet_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: slow
   update: false
   vpc: pool
@@ -725,12 +728,13 @@ eventstreams_basic:
   family: eventstreams
   import: false
   issues:
-  - 'Import-axis verification (#81 DBaaS, heavy): build-ref=main has ImportState (#103). Was: []. Flip
-    back after.'
+  - "import=FAIL (#62-class, exposed by #81): Read Value Conversion \u2014 nested config object `init_config_option`\
+    \ is null on show-by-id and raw-typed. Lifecycle green (apply/replan/destroy ok). DBaaS family pattern:\
+    \ maintenance_option / init_config_option need null-safe types.*."
   needs:
   - subnet_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: slow
   update: false
   vpc: pool
@@ -1069,13 +1073,15 @@ mariadb_cluster:
   family: mariadb
   import: false
   issues:
-  - 'Import-axis verification (#81 DBaaS, heavy): build-ref=main has ImportState (#103). Was: [''GREEN
-    incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy,
-    clean teardown.'']. Flip back after.'
+  - 'GREEN incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy,
+    clean teardown.'
+  - "import=FAIL (#62-class, exposed by #81): Read Value Conversion \u2014 nested config object `maintenance_option`\
+    \ is null on show-by-id and raw-typed. Lifecycle green (apply/replan/destroy ok). DBaaS family pattern:\
+    \ maintenance_option / init_config_option need null-safe types.*."
   needs:
   - subnet_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: slow
   update: false
   vpc: pool
@@ -1085,13 +1091,15 @@ mysql_cluster:
   family: mysql
   import: false
   issues:
-  - 'Import-axis verification (#81 DBaaS, heavy): build-ref=main has ImportState (#103). Was: [''GREEN
-    incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy,
-    clean teardown.'']. Flip back after.'
+  - 'GREEN incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy,
+    clean teardown.'
+  - "import=FAIL (#62-class, exposed by #81): Read Value Conversion \u2014 nested config object `init_config_option`\
+    \ is null on show-by-id and raw-typed. Lifecycle green (apply/replan/destroy ok). DBaaS family pattern:\
+    \ maintenance_option / init_config_option need null-safe types.*."
   needs:
   - subnet_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: slow
   update: false
   vpc: pool
@@ -1113,13 +1121,15 @@ postgresql_cluster:
   family: postgresql
   import: false
   issues:
-  - 'Import-axis verification (#81 DBaaS, heavy): build-ref=main has ImportState (#103). Was: [''GREEN
-    incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy,
-    clean teardown.'']. Flip back after.'
+  - 'GREEN incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy,
+    clean teardown.'
+  - "import=FAIL (#62-class, exposed by #81): Read Value Conversion \u2014 nested config object `maintenance_option`\
+    \ is null on show-by-id and raw-typed. Lifecycle green (apply/replan/destroy ok). DBaaS family pattern:\
+    \ maintenance_option / init_config_option need null-safe types.*."
   needs:
   - subnet_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: slow
   update: false
   vpc: pool
@@ -1251,11 +1261,11 @@ ske_cluster:
   cost: heavy
   depends_on: []
   family: ske
-  import: false
+  import: true
   issues:
-  - "Import-axis verification (#81 DBaaS, heavy): build-ref=main has ImportState (#103). Was: [\"update\
-    \ axis FAIL (run 27682344740): provider 'Value Conversion Error' on Update \u2014 same bug as fork\
-    \ #92 (ske_cluster). Lifecycle green.\"]. Flip back after."
+  - "update axis FAIL (run 27682344740): provider 'Value Conversion Error' on Update \u2014 same bug as\
+    \ fork #92 (ske_cluster). Lifecycle green."
+  - import=ok via ImportState passthrough (#81, run 27898159015).
   needs:
   - kubernetes_version
   - security_group_id_list
@@ -1263,7 +1273,7 @@ ske_cluster:
   - volume_id
   - vpc_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: slow
   update: false
   vpc: pool
@@ -1271,10 +1281,9 @@ ske_nodepool:
   cost: heavy
   depends_on: []
   family: ske
-  import: false
+  import: true
   issues:
-  - 'Import-axis verification (#81 DBaaS, heavy): build-ref=main has ImportState (#103). Was: []. Flip
-    back after.'
+  - import=ok via ImportState passthrough (#81, run 27898159015).
   needs:
   - keypair_name
   - kubernetes_version
@@ -1284,7 +1293,7 @@ ske_nodepool:
   - volume_id
   - vpc_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: slow
   update: false
   vpc: pool
