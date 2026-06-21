@@ -74,11 +74,13 @@ cachestore_cluster:
   depends_on: []
   family: cachestore
   import: false
-  issues: []
+  issues:
+  - 'Import-axis verification (#81 DBaaS, heavy): build-ref=main has ImportState (#103). Was: []. Flip
+    back after.'
   needs:
   - subnet_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: slow
   update: false
   vpc: pool
@@ -707,12 +709,13 @@ epas_cluster:
   family: epas
   import: false
   issues:
-  - 'GREEN incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy,
-    clean teardown.'
+  - 'Import-axis verification (#81 DBaaS, heavy): build-ref=main has ImportState (#103). Was: [''GREEN
+    incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy,
+    clean teardown.'']. Flip back after.'
   needs:
   - subnet_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: slow
   update: false
   vpc: pool
@@ -721,11 +724,13 @@ eventstreams_basic:
   depends_on: []
   family: eventstreams
   import: false
-  issues: []
+  issues:
+  - 'Import-axis verification (#81 DBaaS, heavy): build-ref=main has ImportState (#103). Was: []. Flip
+    back after.'
   needs:
   - subnet_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: slow
   update: false
   vpc: pool
@@ -1064,12 +1069,13 @@ mariadb_cluster:
   family: mariadb
   import: false
   issues:
-  - 'GREEN incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy,
-    clean teardown.'
+  - 'Import-axis verification (#81 DBaaS, heavy): build-ref=main has ImportState (#103). Was: [''GREEN
+    incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy,
+    clean teardown.'']. Flip back after.'
   needs:
   - subnet_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: slow
   update: false
   vpc: pool
@@ -1079,12 +1085,13 @@ mysql_cluster:
   family: mysql
   import: false
   issues:
-  - 'GREEN incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy,
-    clean teardown.'
+  - 'Import-axis verification (#81 DBaaS, heavy): build-ref=main has ImportState (#103). Was: [''GREEN
+    incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy,
+    clean teardown.'']. Flip back after.'
   needs:
   - subnet_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: slow
   update: false
   vpc: pool
@@ -1106,12 +1113,13 @@ postgresql_cluster:
   family: postgresql
   import: false
   issues:
-  - 'GREEN incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy,
-    clean teardown.'
+  - 'Import-axis verification (#81 DBaaS, heavy): build-ref=main has ImportState (#103). Was: [''GREEN
+    incl replan on the patched provider (run 27661036920): full lifecycle validate->plan->apply->replan->destroy,
+    clean teardown.'']. Flip back after.'
   needs:
   - subnet_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: slow
   update: false
   vpc: pool
@@ -1245,8 +1253,9 @@ ske_cluster:
   family: ske
   import: false
   issues:
-  - "update axis FAIL (run 27682344740): provider 'Value Conversion Error' on Update \u2014 same bug as\
-    \ fork #92 (ske_cluster). Lifecycle green."
+  - "Import-axis verification (#81 DBaaS, heavy): build-ref=main has ImportState (#103). Was: [\"update\
+    \ axis FAIL (run 27682344740): provider 'Value Conversion Error' on Update \u2014 same bug as fork\
+    \ #92 (ske_cluster). Lifecycle green.\"]. Flip back after."
   needs:
   - kubernetes_version
   - security_group_id_list
@@ -1254,7 +1263,7 @@ ske_cluster:
   - volume_id
   - vpc_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: slow
   update: false
   vpc: pool
@@ -1263,7 +1272,9 @@ ske_nodepool:
   depends_on: []
   family: ske
   import: false
-  issues: []
+  issues:
+  - 'Import-axis verification (#81 DBaaS, heavy): build-ref=main has ImportState (#103). Was: []. Flip
+    back after.'
   needs:
   - keypair_name
   - kubernetes_version
@@ -1273,7 +1284,7 @@ ske_nodepool:
   - volume_id
   - vpc_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: slow
   update: false
   vpc: pool
