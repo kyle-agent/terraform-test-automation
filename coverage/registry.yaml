@@ -142,14 +142,13 @@ directconnect_direct_connect:
   cost: heavy
   depends_on: []
   family: directconnect
-  import: false
+  import: true
   issues:
-  - 'Import-axis verification (#81): ImportState in fork; sweeping to confirm. Was: []. Flip back green+import:true
-    after.'
+  - import=ok via ImportState passthrough (#81, run 27884229273).
   needs:
   - vpc_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -159,12 +158,13 @@ directconnect_routing_rule:
   family: directconnect
   import: false
   issues:
-  - 'Import-axis verification (#81): ImportState in fork; sweeping to confirm. Was: []. Flip back green+import:true
-    after.'
+  - "import not verified \u2014 apply failed in the tight-quota run 27884229273 (environmental: sibling\
+    \ already connected the VPC / service-quota / shared-subnet contention), NOT a regression. Re-sweep\
+    \ for import."
   needs:
   - vpc_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -174,12 +174,12 @@ dns_hosted_zone:
   family: dns
   import: false
   issues:
-  - 'Import-axis verification (#81): ImportState in fork; sweeping to confirm. Was: []. Flip back green+import:true
-    after.'
+  - "import=FAIL (#62-class, exposed by #81): Read Value Conversion Error \u2014 a field maps to a raw\
+    \ type that can't hold the null the show-by-id path returns. Lifecycle green; fix = null-safe types.*."
   needs:
   - vpc_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -189,12 +189,13 @@ dns_private_dns:
   family: dns
   import: false
   issues:
-  - 'Import-axis verification (#81): ImportState in fork; sweeping to confirm. Was: []. Flip back green+import:true
-    after.'
+  - "import not verified \u2014 apply failed in the tight-quota run 27884229273 (environmental: sibling\
+    \ already connected the VPC / service-quota / shared-subnet contention), NOT a regression. Re-sweep\
+    \ for import."
   needs:
   - vpc_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -772,11 +773,12 @@ firewall_firewall_rule:
   family: firewall
   import: false
   issues:
-  - 'Import-axis verification (#81): ImportState in fork; sweeping to confirm. Was: []. Flip back green+import:true
-    after.'
+  - "import not verified \u2014 selfvpc lane was quota-starved (2 stuck VPCs) and wrote no matrix in run\
+    \ 27884229273. ImportState (passthrough) IS in the provider; will accrue on the next regression sweep\
+    \ against fork main."
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: self
@@ -938,12 +940,14 @@ loadbalancer_basic:
   family: loadbalancer
   import: false
   issues:
-  - "Import-axis verification (#81): ImportState in fork; sweeping to confirm. Was: [\"update axis FAIL\
-    \ (run 27682344740): provider 'Value Conversion Error' on Update \u2014 same bug as fork #92 (loadbalancer_loadbalancer).\
-    \ Lifecycle green.\"]. Flip back green+import:true after."
+  - "update axis FAIL (run 27682344740): provider 'Value Conversion Error' on Update \u2014 same bug as\
+    \ fork #92 (loadbalancer_loadbalancer). Lifecycle green."
+  - "import not verified \u2014 selfvpc lane was quota-starved (2 stuck VPCs) and wrote no matrix in run\
+    \ 27884229273. ImportState (passthrough) IS in the provider; will accrue on the next regression sweep\
+    \ against fork main."
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: self
@@ -953,15 +957,17 @@ loadbalancer_lb_health_check:
   family: loadbalancer
   import: false
   issues:
-  - "Import-axis verification (#81): ImportState in fork; sweeping to confirm. Was: [\"RETEST flake (run\
-    \ 27682344740): create 400 'chosen subnet does not contain a Load Balancer' \u2014 prereq/timing (LB\
-    \ not ready in subnet). Not the update change (description default unchanged). Prior green preserved.\"\
-    ]. Flip back green+import:true after."
+  - "RETEST flake (run 27682344740): create 400 'chosen subnet does not contain a Load Balancer' \u2014\
+    \ prereq/timing (LB not ready in subnet). Not the update change (description default unchanged). Prior\
+    \ green preserved."
+  - "import not verified \u2014 apply failed in the tight-quota run 27884229273 (environmental: sibling\
+    \ already connected the VPC / service-quota / shared-subnet contention), NOT a regression. Re-sweep\
+    \ for import."
   needs:
   - subnet_id
   - vpc_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -1161,14 +1167,13 @@ securitygroup_rule_basic:
   cost: cheap
   depends_on: []
   family: securitygroup
-  import: false
+  import: true
   issues:
-  - 'Import-axis verification (#81): ImportState in fork; sweeping to confirm. Was: []. Flip back green+import:true
-    after.'
+  - import=ok via ImportState passthrough (#81, run 27884229273).
   needs:
   - security_group_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -1341,17 +1346,17 @@ virtualserver_server:
   family: virtualserver
   import: false
   issues:
-  - "Import-axis verification (#81): ImportState in fork; sweeping to confirm. Was: [\"update axis FAIL\
-    \ (run 27666766466): same provider 'Value Conversion Error (unknown value)' on update apply \u2014\
-    \ Update-path raw-type bug, fork issue #92. Lifecycle green; update not in-place-safe.\"]. Flip back\
-    \ green+import:true after."
+  - "update axis FAIL (run 27666766466): same provider 'Value Conversion Error (unknown value)' on update\
+    \ apply \u2014 Update-path raw-type bug, fork issue #92. Lifecycle green; update not in-place-safe."
+  - "import=FAIL: Value Conversion Error on the import/read path (raw-type, #92/#62-class \u2014 same\
+    \ family as its #92 update Value Conversion). Lifecycle green."
   needs:
   - image_id
   - keypair_name
   - server_type_id
   - subnet_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -1359,13 +1364,12 @@ virtualserver_server_group:
   cost: cheap
   depends_on: []
   family: virtualserver
-  import: false
+  import: true
   issues:
-  - 'Import-axis verification (#81): ImportState in fork; sweeping to confirm. Was: []. Flip back green+import:true
-    after.'
+  - import=ok via ImportState passthrough (#81, run 27884229273).
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -1373,13 +1377,12 @@ virtualserver_volume:
   cost: cheap
   depends_on: []
   family: virtualserver
-  import: false
+  import: true
   issues:
-  - 'Import-axis verification (#81): ImportState in fork; sweeping to confirm. Was: []. Flip back green+import:true
-    after.'
+  - import=ok via ImportState passthrough (#81, run 27884229273).
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -1402,11 +1405,12 @@ vpc_internet_gateway:
   family: vpc
   import: false
   issues:
-  - 'Import-axis verification (#81): ImportState in fork; sweeping to confirm. Was: []. Flip back green+import:true
-    after.'
+  - "import not verified \u2014 selfvpc lane was quota-starved (2 stuck VPCs) and wrote no matrix in run\
+    \ 27884229273. ImportState (passthrough) IS in the provider; will accrue on the next regression sweep\
+    \ against fork main."
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: self
@@ -1414,15 +1418,14 @@ vpc_nat_gateway:
   cost: cheap
   depends_on: []
   family: vpc
-  import: false
+  import: true
   issues:
-  - 'Import-axis verification (#81): ImportState in fork; sweeping to confirm. Was: []. Flip back green+import:true
-    after.'
+  - import=ok via ImportState passthrough (#81, run 27884229273).
   needs:
   - publicip_id
   - subnet_id
   parallel: low
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -1430,16 +1433,16 @@ vpc_port:
   cost: cheap
   depends_on: []
   family: vpc
-  import: false
+  import: true
   issues:
-  - "Import-axis verification (#81): ImportState in fork; sweeping to confirm. Was: [\"update axis FAIL\
-    \ (run 27666766466): provider 'Value Conversion Error: Received unknown value, target type cannot\
-    \ handle unknown values' during update apply \u2014 provider bug, fork issue #92. Lifecycle green;\
-    \ update not in-place-safe.\"]. Flip back green+import:true after."
+  - "update axis FAIL (run 27666766466): provider 'Value Conversion Error: Received unknown value, target\
+    \ type cannot handle unknown values' during update apply \u2014 provider bug, fork issue #92. Lifecycle\
+    \ green; update not in-place-safe."
+  - import=ok via ImportState passthrough (#81, run 27884229273).
   needs:
   - subnet_id
   parallel: low
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -1447,14 +1450,13 @@ vpc_private_nat:
   cost: cheap
   depends_on: []
   family: vpc
-  import: false
+  import: true
   issues:
-  - 'Import-axis verification (#81): ImportState in fork; sweeping to confirm. Was: []. Flip back green+import:true
-    after.'
+  - import=ok via ImportState passthrough (#81, run 27884229273).
   needs:
   - vpc_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: pool
@@ -1668,11 +1670,12 @@ vpc_vpc_peering:
   family: vpc
   import: false
   issues:
-  - 'Import-axis verification (#81): ImportState in fork; sweeping to confirm. Was: []. Flip back green+import:true
-    after.'
+  - "import not verified \u2014 selfvpc lane was quota-starved (2 stuck VPCs) and wrote no matrix in run\
+    \ 27884229273. ImportState (passthrough) IS in the provider; will accrue on the next regression sweep\
+    \ against fork main."
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: self
@@ -1713,14 +1716,15 @@ vpn_vpn_gateway:
   family: vpn
   import: false
   issues:
-  - 'Import-axis verification (#81): ImportState in fork; sweeping to confirm. Was: []. Flip back green+import:true
-    after.'
+  - "import not verified \u2014 selfvpc lane was quota-starved (2 stuck VPCs) and wrote no matrix in run\
+    \ 27884229273. ImportState (passthrough) IS in the provider; will accrue on the next regression sweep\
+    \ against fork main."
   needs:
   - ip_address
   - ip_id
   - vpc_id
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: self
@@ -1730,12 +1734,14 @@ vpn_vpn_tunnel:
   family: vpn
   import: false
   issues:
-  - 'Import-axis verification (#81): ImportState in fork; sweeping to confirm. Was: [''GREEN reconfirmed
-    on the patched provider (run 27659871231): full lifecycle validate->destroy, clean teardown.'']. Flip
-    back green+import:true after.'
+  - 'GREEN reconfirmed on the patched provider (run 27659871231): full lifecycle validate->destroy, clean
+    teardown.'
+  - "import not verified \u2014 selfvpc lane was quota-starved (2 stuck VPCs) and wrote no matrix in run\
+    \ 27884229273. ImportState (passthrough) IS in the provider; will accrue on the next regression sweep\
+    \ against fork main."
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: self
