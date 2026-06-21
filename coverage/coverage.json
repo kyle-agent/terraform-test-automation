@@ -1652,12 +1652,12 @@
   "samsungcloudplatformv2_vpc_vpc_peering": {
     "highest_stage": "destroy",
     "last_run_url": "",
-    "last_seen": "2026-06-19T02:20:41Z",
-    "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_vpc_vpc.approver",
+    "last_seen": "2026-06-21T08:04:52Z",
+    "note": "",
     "stages": {
       "apply": "ok",
       "destroy": "ok",
-      "import": "unsupported",
+      "import": "ok",
       "plan": "ok",
       "replan": "ok",
       "update": "skip",
@@ -1711,13 +1711,13 @@
   },
   "samsungcloudplatformv2_vpn_vpn_tunnel": {
     "highest_stage": "destroy",
-    "last_run_url": "https://github.com/kyle-agent/terraform-test-automation/actions/runs/27682344740",
-    "last_seen": "2026-06-17T12:26:14Z",
-    "note": "import unsupported (no ImportState; see #4): samsungcloudplatformv2_vpc_internet_gateway.regr",
+    "last_run_url": "",
+    "last_seen": "2026-06-21T08:04:52Z",
+    "note": "",
     "stages": {
       "apply": "ok",
       "destroy": "ok",
-      "import": "unsupported",
+      "import": "ok",
       "plan": "ok",
       "replan": "ok",
       "update": "ok",

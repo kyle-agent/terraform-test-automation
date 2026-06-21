@@ -1664,13 +1664,12 @@ vpc_vpc_peering:
   cost: cheap
   depends_on: []
   family: vpc
-  import: false
+  import: true
   issues:
-  - 'Import-axis verification (#81 selfvpc retry-b): build-ref=main has ImportState (#103). Was: []. Flip
-    back after.'
+  - import=ok via ImportState passthrough (#81, run 27897280576).
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: self
@@ -1725,14 +1724,14 @@ vpn_vpn_tunnel:
   cost: cheap
   depends_on: []
   family: vpn
-  import: false
+  import: true
   issues:
-  - 'Import-axis verification (#81 selfvpc retry-b): build-ref=main has ImportState (#103). Was: [''GREEN
-    reconfirmed on the patched provider (run 27659871231): full lifecycle validate->destroy, clean teardown.''].
-    Flip back after.'
+  - 'GREEN reconfirmed on the patched provider (run 27659871231): full lifecycle validate->destroy, clean
+    teardown.'
+  - import=ok via ImportState passthrough (#81, run 27897280576).
   needs: []
   parallel: normal
-  status: untested
+  status: green
   timeout_class: fast
   update: false
   vpc: self
