@@ -773,12 +773,11 @@ firewall_firewall_rule:
   family: firewall
   import: false
   issues:
-  - "import not verified \u2014 selfvpc lane was quota-starved (2 stuck VPCs) and wrote no matrix in run\
-    \ 27884229273. ImportState (passthrough) IS in the provider; will accrue on the next regression sweep\
-    \ against fork main."
+  - 'Import-axis verification (#81 selfvpc retry, small batch): build-ref=main has ImportState (#103).
+    Was: []. Flip back green+import:true after.'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: self
@@ -940,14 +939,12 @@ loadbalancer_basic:
   family: loadbalancer
   import: false
   issues:
-  - "update axis FAIL (run 27682344740): provider 'Value Conversion Error' on Update \u2014 same bug as\
-    \ fork #92 (loadbalancer_loadbalancer). Lifecycle green."
-  - "import not verified \u2014 selfvpc lane was quota-starved (2 stuck VPCs) and wrote no matrix in run\
-    \ 27884229273. ImportState (passthrough) IS in the provider; will accrue on the next regression sweep\
-    \ against fork main."
+  - "Import-axis verification (#81 selfvpc retry, small batch): build-ref=main has ImportState (#103).\
+    \ Was: [\"update axis FAIL (run 27682344740): provider 'Value Conversion Error' on Update \u2014 same\
+    \ bug as fork #92 (loadbalancer_loadbalancer). Lifecycle green.\"]. Flip back green+import:true after."
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: self
@@ -1405,12 +1402,11 @@ vpc_internet_gateway:
   family: vpc
   import: false
   issues:
-  - "import not verified \u2014 selfvpc lane was quota-starved (2 stuck VPCs) and wrote no matrix in run\
-    \ 27884229273. ImportState (passthrough) IS in the provider; will accrue on the next regression sweep\
-    \ against fork main."
+  - 'Import-axis verification (#81 selfvpc retry, small batch): build-ref=main has ImportState (#103).
+    Was: []. Flip back green+import:true after.'
   needs: []
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: self
@@ -1716,15 +1712,14 @@ vpn_vpn_gateway:
   family: vpn
   import: false
   issues:
-  - "import not verified \u2014 selfvpc lane was quota-starved (2 stuck VPCs) and wrote no matrix in run\
-    \ 27884229273. ImportState (passthrough) IS in the provider; will accrue on the next regression sweep\
-    \ against fork main."
+  - 'Import-axis verification (#81 selfvpc retry, small batch): build-ref=main has ImportState (#103).
+    Was: []. Flip back green+import:true after.'
   needs:
   - ip_address
   - ip_id
   - vpc_id
   parallel: normal
-  status: green
+  status: untested
   timeout_class: fast
   update: false
   vpc: self
