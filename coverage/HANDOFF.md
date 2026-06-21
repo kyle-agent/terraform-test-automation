@@ -1,7 +1,7 @@
 # Coverage-expansion session handoff
 
 **Branch:** dev `claude/confident-carson-gnchzx` (both repos), synced to `main` (test-repo + fork).
-**Last updated:** 2026-06-20 (wrap-up)
+**Last updated:** 2026-06-20 (import axis)
 **Purpose:** Single source of truth for resuming the Terraform-provider coverage
 expansion work in a fresh session. **Start at [`AGENTS.md`](../AGENTS.md)** (mission +
 multi-agent architecture + session bootstrap), then this file, then `tasks/lessons.md`
@@ -9,7 +9,29 @@ multi-agent architecture + session bootstrap), then this file, then `tasks/lesso
 
 ---
 
-## 0. Session 2026-06-20 (wrap-up, LATEST) — iam_user update GREEN landed + Static Checks un-blocked; easy surface EXHAUSTED
+## 0. Session 2026-06-20 (import axis, LATEST) — provider ImportState on 53 resources → import 0→27%
+
+**Branch:** `claude/confident-carson-gnchzx` (both repos), synced to `main` / fork `main`. User: "import 개선 자율로 최대한 진행."
+
+**Delivered (all on `main`):**
+- **Provider fork PR #103 → fork `main` (sha c244107):** `ImportState` via `resource.ImportStatePassthroughID(ctx, path.Root("id"), …)` on **53 single-id ("bucket A") resources** (was 1: only multinodegpucluster_gpunode). Each Read repopulates from the opaque id alone. Composite-id resources deferred (need custom id parsing). `go build` clean.
+- **Test-repo PR #41 → `main` (sha 271ef7d):** dashboard **import 0 → 21 (27%)**; lifecycle 69 / update 38 unchanged. Build-ref reverted to `main`.
+- **21 verified import=ok** across none/pool/self (pilot 27883551816, batch-1 27883944508, batch-2 27884229273).
+
+**How it works (for the next session):** import is a matrix stage (`MATRIX_IMPORT=1`, already on every sweep) — it `terraform import`s the scenario's FIRST state resource into a throwaway dir; ok if the command succeeds (no re-plan). `primaryResourceAddrID` picks the first resource, so self-contained scenarios may import a *prereq* (e.g. iam_role imports its iam_policy). Verify a new ImportState by re-sweeping the scenario (build-ref=main now has it) and merging the matrix with `build_coverage.py` — **the matrix file is a LIST of records; build_coverage stamps `last_seen=now()` and most-recent-wins, so pass the raw downloaded list (a dict won't merge).**
+
+**Recorded import=false (honest, NOT ImportState defects):**
+- **#62/#92-class Read Value-Conversion bugs exposed by import** (`docs/PROVIDER_ISSUES.md`): `iam_policy` (`policy_version` raw type can't hold the null show-by-id returns) + `iam_role` (imports its policy prereq) + `dns_hosted_zone` + `virtualserver_server`. Fix = make those fields null-safe (`types.*`). **Candidate: comment on fork #62 with the consolidated list of import-exposed null fields.**
+- **3 pool transient apply-fails** (directconnect_routing_rule / dns_private_dns / loadbalancer_lb_health_check) — environmental (sibling-VPC-connected / service-quota / shared-subnet) under the 3-free-VPC sweep, EXCLUDED from the merge so they didn't regress. Re-sweepable.
+
+**What's left on the import axis (quota/cost-gated — accrues on the next full green regression sweep against `main`, no code needed):**
+- **selfvpc 6** (vpc_internet_gateway, firewall_firewall_rule, vpc_vpc_peering, vpn_vpn_gateway, vpn_vpn_tunnel, loadbalancer_basic) — the self lane was **quota-starved** (2 stuck VPCs), ran 45 min and wrote NO matrix. Re-verify when VPC quota is healthy (reclaim the stuck VPCs first) or run them 2-3 at a time.
+- **Heavy DBaaS (~7: cachestore/epas/mysql/mariadb/postgresql/searchengine/ske)** — ImportState code is in; deferred from active sweeping (slow + billable).
+- **Account: 2 VPCs still stuck** — firewall-conn `42b72d76` + dbaas `rpv273154960170` (subnet a7793ccc). Both need console/owner; they throttle pool+self lanes. (The wrap-up reaper 27882919209 cleared TGW e50f2da4 but not these.)
+
+---
+
+## 0. Session 2026-06-20 (wrap-up) — iam_user update GREEN landed + Static Checks un-blocked; easy surface EXHAUSTED
 
 **Branch:** `claude/confident-carson-gnchzx` (both repos), now synced to `main` (test-repo) / fork `main`.
 User picked **"마무리 + 계정 정리"** (wrap up + account cleanup) — broken→green AND the update axis are exhausted.
