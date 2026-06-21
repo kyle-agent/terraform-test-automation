@@ -100,8 +100,9 @@ certificate_manager_self_sign:
   cost: cheap
   depends_on: []
   family: certificate
-  import: false
-  issues: []
+  import: true
+  issues:
+  - import=ok via ImportState passthrough (#81, run 27883944508).
   needs: []
   parallel: normal
   status: green
@@ -141,8 +142,9 @@ directconnect_direct_connect:
   cost: heavy
   depends_on: []
   family: directconnect
-  import: false
-  issues: []
+  import: true
+  issues:
+  - import=ok via ImportState passthrough (#81, run 27884229273).
   needs:
   - vpc_id
   parallel: normal
@@ -155,7 +157,10 @@ directconnect_routing_rule:
   depends_on: []
   family: directconnect
   import: false
-  issues: []
+  issues:
+  - "import not verified \u2014 apply failed in the tight-quota run 27884229273 (environmental: sibling\
+    \ already connected the VPC / service-quota / shared-subnet contention), NOT a regression. Re-sweep\
+    \ for import."
   needs:
   - vpc_id
   parallel: normal
@@ -168,7 +173,9 @@ dns_hosted_zone:
   depends_on: []
   family: dns
   import: false
-  issues: []
+  issues:
+  - "import=FAIL (#62-class, exposed by #81): Read Value Conversion Error \u2014 a field maps to a raw\
+    \ type that can't hold the null the show-by-id path returns. Lifecycle green; fix = null-safe types.*."
   needs:
   - vpc_id
   parallel: normal
@@ -181,7 +188,10 @@ dns_private_dns:
   depends_on: []
   family: dns
   import: false
-  issues: []
+  issues:
+  - "import not verified \u2014 apply failed in the tight-quota run 27884229273 (environmental: sibling\
+    \ already connected the VPC / service-quota / shared-subnet contention), NOT a regression. Re-sweep\
+    \ for import."
   needs:
   - vpc_id
   parallel: normal
@@ -762,7 +772,10 @@ firewall_firewall_rule:
   depends_on: []
   family: firewall
   import: false
-  issues: []
+  issues:
+  - "import not verified \u2014 selfvpc lane was quota-starved (2 stuck VPCs) and wrote no matrix in run\
+    \ 27884229273. ImportState (passthrough) IS in the provider; will accrue on the next regression sweep\
+    \ against fork main."
   needs: []
   parallel: normal
   status: green
@@ -785,10 +798,11 @@ iam_access_key:
   cost: cheap
   depends_on: []
   family: iam
-  import: false
+  import: true
   issues:
   - 'GREEN with patched provider #58 (Delete disables an enabled key before deleting); full lifecycle
     ok once the account access-key quota slot was freed (run 27241816399). Requires patched provider.'
+  - import=ok via ImportState passthrough (#81, run 27883944508).
   needs: []
   parallel: normal
   status: green
@@ -799,9 +813,9 @@ iam_group:
   cost: cheap
   depends_on: []
   family: iam
-  import: false
+  import: true
   issues:
-  - 'GREEN (run 27663213235). update=ok; import=unsupported (no ImportState, #81).'
+  - import=ok via ImportState passthrough (#81, run 27883944508).
   needs: []
   parallel: normal
   status: green
@@ -839,6 +853,9 @@ iam_policy:
   import: false
   issues:
   - 'GREEN (run 27663213235). update=ok; import=unsupported (no ImportState, #81).'
+  - "import=FAIL (#81 exposed a #62-class bug): Read Value Conversion Error \u2014 `policy_version` maps\
+    \ to raw iam.PolicyVersionResource which can't hold null, and the show-by-id (import) path returns\
+    \ a null policy_version. Lifecycle green; import blocked until the field is made null-safe (types.*)."
   needs: []
   parallel: normal
   status: green
@@ -853,6 +870,9 @@ iam_role:
   issues:
   - 'GREEN with patched provider #75 (CreateRole policy_ids -> [] not null); full lifecycle ok (run 27233487205).
     Requires patched provider.'
+  - 'import=FAIL: the scenario''s iam_policy prereq hits the same policy_version Value Conversion Error
+    (#62-class). iam_role''s own ImportState is implemented, but the matrix imports the first state resource
+    (the policy).'
   needs: []
   parallel: normal
   status: green
@@ -922,6 +942,9 @@ loadbalancer_basic:
   issues:
   - "update axis FAIL (run 27682344740): provider 'Value Conversion Error' on Update \u2014 same bug as\
     \ fork #92 (loadbalancer_loadbalancer). Lifecycle green."
+  - "import not verified \u2014 selfvpc lane was quota-starved (2 stuck VPCs) and wrote no matrix in run\
+    \ 27884229273. ImportState (passthrough) IS in the provider; will accrue on the next regression sweep\
+    \ against fork main."
   needs: []
   parallel: normal
   status: green
@@ -937,6 +960,9 @@ loadbalancer_lb_health_check:
   - "RETEST flake (run 27682344740): create 400 'chosen subnet does not contain a Load Balancer' \u2014\
     \ prereq/timing (LB not ready in subnet). Not the update change (description default unchanged). Prior\
     \ green preserved."
+  - "import not verified \u2014 apply failed in the tight-quota run 27884229273 (environmental: sibling\
+    \ already connected the VPC / service-quota / shared-subnet contention), NOT a regression. Re-sweep\
+    \ for import."
   needs:
   - subnet_id
   - vpc_id
@@ -1025,8 +1051,9 @@ loggingaudit_trail:
   cost: cheap
   depends_on: []
   family: loggingaudit
-  import: false
-  issues: []
+  import: true
+  issues:
+  - import=ok via ImportState passthrough (#81, run 27883944508).
   needs: []
   parallel: normal
   status: green
@@ -1094,8 +1121,9 @@ resourcemanager_resource_group:
   cost: cheap
   depends_on: []
   family: resourcemanager
-  import: false
-  issues: []
+  import: true
+  issues:
+  - import=ok via ImportState passthrough (#81, run 27883944508).
   needs: []
   parallel: normal
   status: green
@@ -1126,9 +1154,9 @@ security_group_basic:
   cost: cheap
   depends_on: []
   family: security
-  import: false
+  import: true
   issues:
-  - 'GREEN (run 27663213235). update=ok; import=unsupported (no ImportState, #81).'
+  - GREEN. update=ok; import=ok via ImportState passthrough (#81, run 27883551816).
   needs: []
   parallel: normal
   status: green
@@ -1139,8 +1167,9 @@ securitygroup_rule_basic:
   cost: cheap
   depends_on: []
   family: securitygroup
-  import: false
-  issues: []
+  import: true
+  issues:
+  - import=ok via ImportState passthrough (#81, run 27884229273).
   needs:
   - security_group_id
   parallel: normal
@@ -1152,8 +1181,9 @@ servicewatch_alert:
   cost: cheap
   depends_on: []
   family: servicewatch
-  import: false
-  issues: []
+  import: true
+  issues:
+  - import=ok via ImportState passthrough (#81, run 27883944508).
   needs: []
   parallel: normal
   status: green
@@ -1164,8 +1194,9 @@ servicewatch_dashboard:
   cost: cheap
   depends_on: []
   family: servicewatch
-  import: false
-  issues: []
+  import: true
+  issues:
+  - import=ok via ImportState passthrough (#81, run 27883944508).
   needs: []
   parallel: normal
   status: green
@@ -1176,8 +1207,9 @@ servicewatch_event_rule:
   cost: cheap
   depends_on: []
   family: servicewatch
-  import: false
-  issues: []
+  import: true
+  issues:
+  - import=ok via ImportState passthrough (#81, run 27883944508).
   needs: []
   parallel: normal
   status: green
@@ -1188,8 +1220,9 @@ servicewatch_log_group:
   cost: cheap
   depends_on: []
   family: servicewatch
-  import: false
-  issues: []
+  import: true
+  issues:
+  - import=ok via ImportState passthrough (#81, run 27883944508).
   needs: []
   parallel: normal
   status: green
@@ -1315,6 +1348,8 @@ virtualserver_server:
   issues:
   - "update axis FAIL (run 27666766466): same provider 'Value Conversion Error (unknown value)' on update\
     \ apply \u2014 Update-path raw-type bug, fork issue #92. Lifecycle green; update not in-place-safe."
+  - "import=FAIL: Value Conversion Error on the import/read path (raw-type, #92/#62-class \u2014 same\
+    \ family as its #92 update Value Conversion). Lifecycle green."
   needs:
   - image_id
   - keypair_name
@@ -1329,8 +1364,9 @@ virtualserver_server_group:
   cost: cheap
   depends_on: []
   family: virtualserver
-  import: false
-  issues: []
+  import: true
+  issues:
+  - import=ok via ImportState passthrough (#81, run 27884229273).
   needs: []
   parallel: normal
   status: green
@@ -1341,8 +1377,9 @@ virtualserver_volume:
   cost: cheap
   depends_on: []
   family: virtualserver
-  import: false
-  issues: []
+  import: true
+  issues:
+  - import=ok via ImportState passthrough (#81, run 27884229273).
   needs: []
   parallel: normal
   status: green
@@ -1367,7 +1404,10 @@ vpc_internet_gateway:
   depends_on: []
   family: vpc
   import: false
-  issues: []
+  issues:
+  - "import not verified \u2014 selfvpc lane was quota-starved (2 stuck VPCs) and wrote no matrix in run\
+    \ 27884229273. ImportState (passthrough) IS in the provider; will accrue on the next regression sweep\
+    \ against fork main."
   needs: []
   parallel: normal
   status: green
@@ -1378,8 +1418,9 @@ vpc_nat_gateway:
   cost: cheap
   depends_on: []
   family: vpc
-  import: false
-  issues: []
+  import: true
+  issues:
+  - import=ok via ImportState passthrough (#81, run 27884229273).
   needs:
   - publicip_id
   - subnet_id
@@ -1392,11 +1433,12 @@ vpc_port:
   cost: cheap
   depends_on: []
   family: vpc
-  import: false
+  import: true
   issues:
   - "update axis FAIL (run 27666766466): provider 'Value Conversion Error: Received unknown value, target\
     \ type cannot handle unknown values' during update apply \u2014 provider bug, fork issue #92. Lifecycle\
     \ green; update not in-place-safe."
+  - import=ok via ImportState passthrough (#81, run 27884229273).
   needs:
   - subnet_id
   parallel: low
@@ -1408,8 +1450,9 @@ vpc_private_nat:
   cost: cheap
   depends_on: []
   family: vpc
-  import: false
-  issues: []
+  import: true
+  issues:
+  - import=ok via ImportState passthrough (#81, run 27884229273).
   needs:
   - vpc_id
   parallel: normal
@@ -1434,8 +1477,9 @@ vpc_publicip:
   cost: cheap
   depends_on: []
   family: vpc
-  import: false
-  issues: []
+  import: true
+  issues:
+  - 'Lifecycle + import GREEN (ImportState passthrough, #81; run 27883551816).'
   needs: []
   parallel: normal
   status: green
@@ -1446,10 +1490,11 @@ vpc_subnet:
   cost: cheap
   depends_on: []
   family: vpc
-  import: false
+  import: true
   issues:
   - "update axis FAIL (run 27666766466): 400 'IP address is not valid ()' when updating description \u2014\
     \ provider re-sends subnet body with an empty IP on update. Lifecycle green; update not in-place-safe."
+  - import=ok via ImportState passthrough (#81, run 27883551816).
   needs:
   - vpc_id
   parallel: low
@@ -1504,8 +1549,9 @@ vpc_transit_gateway:
   depends_on: []
   exclude_reason: ''
   family: vpc
-  import: false
-  issues: []
+  import: true
+  issues:
+  - import=ok via ImportState passthrough (#81, run 27883944508).
   needs: []
   parallel: normal
   status: green
@@ -1588,9 +1634,9 @@ vpc_vpc:
   cost: cheap
   depends_on: []
   family: vpc
-  import: false
+  import: true
   issues:
-  - 'GREEN (run 27663213235). update=ok; import=unsupported (no ImportState, #81).'
+  - GREEN. update=ok; import=ok via ImportState passthrough (#81, run 27883551816).
   needs: []
   parallel: normal
   status: green
@@ -1623,7 +1669,10 @@ vpc_vpc_peering:
   depends_on: []
   family: vpc
   import: false
-  issues: []
+  issues:
+  - "import not verified \u2014 selfvpc lane was quota-starved (2 stuck VPCs) and wrote no matrix in run\
+    \ 27884229273. ImportState (passthrough) IS in the provider; will accrue on the next regression sweep\
+    \ against fork main."
   needs: []
   parallel: normal
   status: green
@@ -1666,7 +1715,10 @@ vpn_vpn_gateway:
   depends_on: []
   family: vpn
   import: false
-  issues: []
+  issues:
+  - "import not verified \u2014 selfvpc lane was quota-starved (2 stuck VPCs) and wrote no matrix in run\
+    \ 27884229273. ImportState (passthrough) IS in the provider; will accrue on the next regression sweep\
+    \ against fork main."
   needs:
   - ip_address
   - ip_id
@@ -1684,6 +1736,9 @@ vpn_vpn_tunnel:
   issues:
   - 'GREEN reconfirmed on the patched provider (run 27659871231): full lifecycle validate->destroy, clean
     teardown.'
+  - "import not verified \u2014 selfvpc lane was quota-starved (2 stuck VPCs) and wrote no matrix in run\
+    \ 27884229273. ImportState (passthrough) IS in the provider; will accrue on the next regression sweep\
+    \ against fork main."
   needs: []
   parallel: normal
   status: green
